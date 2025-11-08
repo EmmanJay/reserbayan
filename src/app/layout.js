@@ -1,9 +1,19 @@
-import { Inter } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
+
+// Import your components here
+import Navbar from '@/components/home/Navbar';
+import Footer from '@/components/home/Footer';
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  weight: ['400', '600', '700', '800'], // Add weights you need
 });
 
 export const metadata = {
@@ -14,10 +24,17 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
-        {children}
+      <body className={`${inter.variable} font-sans antialiased`}>
+        {/* Navbar goes at the top */}
+        <Navbar />
+
+        {/* 'children' will be your homepage or any other page */}
+        <main>
+          {children}
+        </main>
+        
+        {/* Footer goes at the bottom */}
+        <Footer />
       </body>
     </html>
   );

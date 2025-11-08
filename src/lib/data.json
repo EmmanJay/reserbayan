@@ -1,0 +1,113 @@
+[
+  {
+    "id": "certificate-of-indigency",
+    "name": "Certificate of Indigency",
+    "shortDescription": "This proves that you have little income and need help for school or medical support.",
+    "imagePath": "/documents/certificate-of-indigency.png",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "A Certificate of Indigency is a document issued by the barangay certifying that the holder is a resident of the barangay and is considered one of the less fortunate or low-income families in the community. It is often used to avail of government services and aid.",
+      "processingTime": "30 minutes",
+      "pdfPath": "/forms/indigency-request-form.pdf",
+      "requirements": [
+        "Valid ID (Photocopy and Original)",
+        "Proof of residency (e.g., utility bill)",
+        "Completed request form"
+      ],
+      "uses": [
+        "Applying for scholarships",
+        "Medical assistance (hospital bills)",
+        "Legal aid",
+        "Burial assistance"
+      ]
+    }
+  },
+  {
+    "id": "barangay-certificate",
+    "name": "Barangay Certificate",
+    "shortDescription": "Certifies that you are a resident of the barangay and a good resident.",
+    "imagePath": "/documents/barangay-certificate.png",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "A Barangay Certificate is often required for various transactions to prove your residency in a specific barangay. It's a general-purpose document certifying your good standing in the community.",
+      "processingTime": "15-20 minutes",
+      "pdfPath": null,
+      "requirements": [
+        "Valid ID",
+        "Proof of residency"
+      ],
+      "uses": [
+        "Job applications",
+        "Proof of residency",
+        "Opening bank accounts"
+      ]
+    }
+  },
+  {
+    "id": "barangay-clearance",
+    "name": "Barangay Clearance",
+    "shortDescription": "Certifies that you have no derogatory records or cases in your barangay. It is required for jobs or permits.",
+    "imagePath": "/documents/barangay-clearance.png",
+    "details": {
+      "category": "Category 2",
+      "longDescription": "This document certifies that the applicant is a resident of the barangay and has no pending cases or negative records within the community. It is often a prerequisite for obtaining other permits, like a Mayor's Permit or a business permit.",
+      "processingTime": "30-45 minutes",
+      "pdfPath": "/forms/clearance-request-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Community Tax Certificate (Cedula)",
+        "Completed request form"
+      ],
+      "uses": [
+        "Business permit application",
+        "Mayor's permit",
+        "Employment requirements",
+        "Loan applications"
+      ]
+    }
+  },
+  {
+    "id": "first-time-job-seeker",
+    "name": "First-Time Job Seeker",
+    "shortDescription": "First-time job seekers get government papers without paying fees.",
+    "imagePath": "/documents/first-time-job-seeker.png",
+    "details": {
+      "category": "Category 2",
+      "longDescription": "Under Republic Act 11261, first-time job seekers are exempt from paying fees for certain government-issued documents. This certificate from the barangay is the first step to availing this benefit.",
+      "processingTime": "1 day",
+      "pdfPath": null,
+      "requirements": [
+        "Valid ID",
+        "Proof of residency",
+        "Barangay-issued application form",
+        "Sworn affidavit"
+      ],
+      "uses": [
+        "Waiving fees for NBI Clearance",
+        "Waiving fees for Police Clearance",
+        "Waiving fees for SSS/Pag-IBIG/PhilHealth numbers"
+      ]
+    }
+  },
+  {
+    "id": "cedula",
+    "name": "Cedula",
+    "shortDescription": "Community Tax Certificate. An official document required for various transactions.",
+    "imagePath": "/documents/cedula.png",
+    "details": {
+      "category": "Category 3",
+      "longDescription": "The Community Tax Certificate (CTC), or Cedula, is a proof of identity and residence required for many government transactions.",
+      "processingTime": "10 minutes",
+      "pdfPath": null,
+      "requirements": [
+        "Valid ID",
+        "Basic personal information (address, income, etc.)"
+      ],
+      "uses": [
+        "Notarization of documents",
+        "Applying for permits",
+        "Proof of residence"
+      ]
+    }
+  }
+]
