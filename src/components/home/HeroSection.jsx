@@ -46,15 +46,15 @@ export default function HeroSection() {
             Streamlined Document Requests for Every Residents
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-2xl">
+          <p className="text-lg md:text-xl text-gray-700 leading-relaxed max-w-2xl" style={{letterSpacing:"-.1px"}}>
             Experience hassle-free government document processing with <span className="font-semibold">ReserBayan</span>. <span className="font-semibold">Quick</span>, <span className="font-semibold">secure</span> and designed for the community.
           </p>
 
-          <p className="text-base text-gray-600 font-medium leading-relaxed">
+          <p className="text-base text-g ray-600 font-medium leading-relaxed" style={{letterSpacing:"-.1px"}}>
             Documents such as <span className="font-semibold text-[#1E2566]">Cedula</span>, <span className="font-semibold text-[#1E2566]">Barangay Certificate</span>, <span className="font-semibold text-[#1E2566]">Certificate of Indigency</span> and many more!
           </p>
 
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             <li className="flex items-center space-x-3">
               <Check className="text-[#1CC88A] w-5 h-5" />
               <span className="text-gray-800 font-medium">On the day - 24 hours processing time</span>

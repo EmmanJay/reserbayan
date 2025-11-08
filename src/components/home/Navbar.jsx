@@ -37,12 +37,17 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
+          
+          {/* THIS IS YOUR MAIN HOMEPAGE (HeroSection) */}
           <Link href="/" className="text-gray-700 hover:text-gray-900 font-semibold">
             Home
           </Link>
-          <Link href="/services" className="text-gray-700 hover:text-gray-900 font-semibold">
-            Services
+          
+          {/* THIS IS YOUR NEW GRID LAYOUT PAGE */}
+          <Link href="/homepage" className="text-gray-700 hover:text-gray-900 font-semibold">
+            Documents 
           </Link>
+          
           <Link href="/about" className="text-gray-700 hover:text-gray-900 font-semibold">
             About
           </Link>

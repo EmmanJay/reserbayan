@@ -1,15 +1,14 @@
-import Navbar from '@/components/home/Navbar';
 import HeroSection from '@/components/home/HeroSection';
-import Footer from '@/components/home/Footer';
+// You can also add other homepage-specific sections here
+// import FeaturesSection from '@/components/home/FeaturesSection';
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main>
-        <HeroSection />
-      </main>
-      <Footer />
-    </div>
+    // No <div> or <main> needed, layout.js handles it.
+    // Just return the sections for the homepage.
+    <>
+      <HeroSection />
+      {/* <FeaturesSection /> */}
+    </>
   );
 }
