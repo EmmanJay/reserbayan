@@ -89,8 +89,8 @@ export default function Navbar() {
             <Link href="/" className="block text-gray-700 hover:text-gray-900 font-semibold">
               Home
             </Link>
-            <Link href="/services" className="block text-gray-700 hover:text-gray-900 font-semibold">
-              Services
+            <Link href="/homepage" className="block text-gray-700 hover:text-gray-900 font-semibold">
+              Documents
             </Link>
             <Link href="/about" className="block text-gray-700 hover:text-gray-900 font-semibold">
               About

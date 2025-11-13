@@ -109,5 +109,229 @@
         "Proof of residence"
       ]
     }
+  },
+  {
+    "id": "barangay-certificate-of-solo-parent",
+    "name": "Barangay Certificate of Solo Parent",
+    "shortDescription": "Certification issued to solo parents for eligibility under RA 8972.",
+    "imagePath": "/images/solo-parent-cert.jpg",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "This certificate verifies that the applicant is a solo parent as defined by Republic Act 8972, granting eligibility for various benefits and services.",
+      "processingTime": "30 minutes",
+      "pdfPath": "/forms/solo-parent-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Birth certificate of children",
+        "Proof of income",
+        "Completed application form"
+      ],
+      "uses": [
+        "Applying for government benefits",
+        "School enrollment assistance",
+        "Medical aid applications"
+      ]
+    }
+  },
+  {
+    "id": "barangay-clearance-for-employment",
+    "name": "Barangay Clearance for Employment",
+    "shortDescription": "Clearance certifying good conduct for job applications.",
+    "imagePath": "/images/employment-clearance.jpg",
+    "details": {
+      "category": "Category 2",
+      "longDescription": "This clearance certifies that the applicant has no derogatory records in the barangay and is suitable for employment purposes.",
+      "processingTime": "20 minutes",
+      "pdfPath": "/forms/employment-clearance-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Community Tax Certificate",
+        "Proof of residency"
+      ],
+      "uses": [
+        "Job applications",
+        "Employment verification",
+        "Background checks"
+      ]
+    }
+  },
+  {
+    "id": "certificate-of-residency-duplicate",
+    "name": "Certificate of Residency (Duplicate Copy)",
+    "shortDescription": "Duplicate copy of residency certificate for lost or damaged originals.",
+    "imagePath": "/images/residency-duplicate.jpg",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "A duplicate certificate of residency issued when the original is lost, damaged, or requires replacement.",
+      "processingTime": "15 minutes",
+      "pdfPath": null,
+      "requirements": [
+        "Valid ID",
+        "Affidavit of loss (if applicable)",
+        "Proof of previous issuance"
+      ],
+      "uses": [
+        "Replacement for lost documents",
+        "Additional copies for various applications"
+      ]
+    }
+  },
+  {
+    "id": "certificate-of-low-income",
+    "name": "Certificate of Low Income",
+    "shortDescription": "Certifies low income status for government assistance programs.",
+    "imagePath": "/images/low-income-cert.jpg",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "This certificate confirms that the applicant belongs to a low-income household, qualifying them for various government assistance programs.",
+      "processingTime": "25 minutes",
+      "pdfPath": "/forms/low-income-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Income tax return or proof of income",
+        "Proof of residency",
+        "Completed application form"
+      ],
+      "uses": [
+        "Government subsidy applications",
+        "Social welfare programs",
+        "Medical assistance"
+      ]
+    }
+  },
+  {
+    "id": "certificate-of-good-conduct",
+    "name": "Certificate of Good Conduct",
+    "shortDescription": "Certifies that the applicant has no criminal record in the barangay.",
+    "imagePath": "/images/good-conduct-cert.jpg",
+    "details": {
+      "category": "Category 2",
+      "longDescription": "This certificate attests that the applicant has maintained good conduct and has no criminal or derogatory records within the barangay.",
+      "processingTime": "20 minutes",
+      "pdfPath": "/forms/good-conduct-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Community Tax Certificate",
+        "Proof of residency"
+      ],
+      "uses": [
+        "Employment applications",
+        "Visa applications",
+        "Character references"
+      ]
+    }
+  },
+  {
+    "id": "barangay-business-closure-certificate",
+    "name": "Barangay Business Closure Certificate",
+    "shortDescription": "Certificate issued upon closure of a barangay-registered business.",
+    "imagePath": "/images/business-closure.jpg",
+    "details": {
+      "category": "Category 3",
+      "longDescription": "This certificate is issued to confirm the closure of a business previously registered with the barangay.",
+      "processingTime": "30 minutes",
+      "pdfPath": "/forms/business-closure-form.pdf",
+      "requirements": [
+        "Business permit",
+        "Valid ID of owner",
+        "Closure affidavit"
+      ],
+      "uses": [
+        "Business deregistration",
+        "Tax clearance",
+        "Legal documentation"
+      ]
+    }
+  },
+  {
+    "id": "certificate-of-live-in-partnership",
+    "name": "Certificate of Live-In Partnership",
+    "shortDescription": "Certifies cohabitation and partnership status.",
+    "imagePath": "/images/live-in-partnership.jpg",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "This certificate acknowledges the live-in partnership status of two individuals cohabiting as a couple.",
+      "processingTime": "45 minutes",
+      "pdfPath": "/forms/live-in-partnership-form.pdf",
+      "requirements": [
+        "Valid IDs of both parties",
+        "Joint affidavit",
+        "Proof of cohabitation",
+        "Witness statements"
+      ],
+      "uses": [
+        "Legal partnerships",
+        "Benefit applications",
+        "Family-related documents"
+      ]
+    }
+  },
+  {
+    "id": "barangay-id-application",
+    "name": "Barangay ID Application",
+    "shortDescription": "Application for barangay-issued identification card.",
+    "imagePath": "/images/barangay-id.jpg",
+    "details": {
+      "category": "Category 1",
+      "longDescription": "Application process for obtaining a barangay identification card, which serves as proof of residency and identity.",
+      "processingTime": "1-2 days",
+      "pdfPath": "/forms/barangay-id-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Proof of residency",
+        "Recent photo",
+        "Birth certificate"
+      ],
+      "uses": [
+        "Local identification",
+        "Government transactions",
+        "Community services"
+      ]
+    }
+  },
+  {
+    "id": "barangay-blotter-report-copy",
+    "name": "Barangay Blotter Report Copy Request",
+    "shortDescription": "Request for copy of incident reports filed with the barangay.",
+    "imagePath": "/images/blotter-report.jpg",
+    "details": {
+      "category": "Category 2",
+      "longDescription": "Request for certified copies of blotter reports documenting incidents reported to the barangay authorities.",
+      "processingTime": "15 minutes",
+      "pdfPath": "/forms/blotter-copy-form.pdf",
+      "requirements": [
+        "Valid ID",
+        "Blotter report number",
+        "Purpose statement"
+      ],
+      "uses": [
+        "Legal proceedings",
+        "Insurance claims",
+        "Incident documentation"
+      ]
+    }
+  },
+  {
+    "id": "barangay-building-construction-clearance",
+    "name": "Barangay Building/Construction Clearance",
+    "shortDescription": "Clearance required for building or construction projects in the barangay.",
+    "imagePath": "/images/construction-clearance.jpg",
+    "details": {
+      "category": "Category 3",
+      "longDescription": "This clearance certifies that the proposed building or construction project complies with barangay zoning and safety regulations.",
+      "processingTime": "1 hour",
+      "pdfPath": "/forms/construction-clearance-form.pdf",
+      "requirements": [
+        "Building plans",
+        "Owner's valid ID",
+        "Zoning compliance certificate",
+        "Environmental clearance (if applicable)"
+      ],
+      "uses": [
+        "Construction permits",
+        "Building approvals",
+        "Zoning compliance"
+      ]
+    }
   }
 ]
