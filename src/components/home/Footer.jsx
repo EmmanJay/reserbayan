@@ -35,7 +35,7 @@ export default function Footer() {
             <h3 className="font-semibold">Quick Links</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link href="/" className="hover:text-white">Home</Link></li>
-              <li><Link href="/services" className="hover:text-white">Services</Link></li>
+              <li><Link href="/homepage" className="hover:text-white">Documents</Link></li>
               <li><Link href="/about" className="hover:text-white">About Us</Link></li>
               <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
@@ -45,11 +45,11 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold">Most Requested</h3>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><Link href="/services/barangay-clearance" className="hover:text-white">Barangay Clearance</Link></li>
-              <li><Link href="/services/certificate-indigency" className="hover:text-white">Certificate of Indigency</Link></li>
-              <li><Link href="/services/certificate-residency" className="hover:text-white">Certificate of Residency</Link></li>
-              <li><Link href="/services/barangay-business-permit" className="hover:text-white">Barangay Business Permit / Clearance</Link></li>
-              <li><Link href="/services/certificate-good-moral" className="hover:text-white">Certificate of Good Moral Character</Link></li>
+              <li><Link href="/homepage/barangay-clearance" className="hover:text-white">Barangay Clearance</Link></li>
+              <li><Link href="/homepage/certificate-indigency" className="hover:text-white">Certificate of Indigency</Link></li>
+              <li><Link href="/homepage/certificate-residency" className="hover:text-white">Certificate of Residency</Link></li>
+              <li><Link href="/homepage/barangay-business-permit" className="hover:text-white">Barangay Business Permit / Clearance</Link></li>
+              <li><Link href="/homepage/certificate-good-moral" className="hover:text-white">Certificate of Good Moral Character</Link></li>
             </ul>
           </div>
 
