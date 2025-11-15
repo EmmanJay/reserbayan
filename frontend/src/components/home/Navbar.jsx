@@ -51,8 +51,8 @@ export default function Navbar() {
           <Link href="/about" className="text-gray-700 hover:text-gray-900 font-semibold">
             About
           </Link>
-          <Link href="/contacts" className="text-gray-700 hover:text-gray-900 font-semibold">
-            Contacts
+          <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-semibold">
+            FAQ
           </Link>
         </nav>
 
@@ -89,14 +89,14 @@ export default function Navbar() {
             <Link href="/" className="block text-gray-700 hover:text-gray-900 font-semibold">
               Home
             </Link>
-            <Link href="/homepage" className="block text-gray-700 hover:text-gray-900 font-semibold">
+            <Link href="/documents" className="block text-gray-700 hover:text-gray-900 font-semibold">
               Documents
             </Link>
             <Link href="/about" className="block text-gray-700 hover:text-gray-900 font-semibold">
               About
             </Link>
             <Link href="/contacts" className="block text-gray-700 hover:text-gray-900 font-semibold">
-              Contacts
+              FAQ
             </Link>
             <div className="pt-4 space-y-2">
               <button
