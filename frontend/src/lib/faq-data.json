@@ -1,0 +1,38 @@
+[
+  {
+    "id": "q1",
+    "icon": "FileText",
+    "question": "What documents can I request through ReserBayan?",
+    "answer": "You can request a variety of barangay documents, including Cedula (Community Tax Certificate), Barangay Certificate, Certificate of Indigency, and First Time Jobseeker Certificates. We are continuously working to add more services."
+  },
+  {
+    "id": "q2",
+    "icon": "Clock",
+    "question": "How long is the processing time?",
+    "answer": "Our goal is to provide on-the-day to 24-hour processing for most requests submitted during business hours. Processing times may vary depending on the document type and verification requirements."
+  },
+  {
+    "id": "q3",
+    "icon": "Eye",
+    "question": "How can I track the status of my request?",
+    "answer": "You can track the status of your document in real-time through your user dashboard. You will receive notifications as your request moves from 'Pending' to 'In Progress' and finally to 'Ready for Pick-up' or 'Out for Delivery'."
+  },
+  {
+    "id": "q4",
+    "icon": "DollarSign",
+    "question": "Is this service free?",
+    "answer": "Using the ReserBayan platform to submit your request is free. However, standard government fees for each document (like the fee for a Cedula or Barangay Certificate) still apply. You can see the total cost before confirming your request."
+  },
+  {
+    "id": "q5",
+    "icon": "CheckSquare",
+    "question": "What do I need to prepare before requesting a document?",
+    "answer": "Requirements vary by document. Generally, you will need a valid government-issued ID for verification. Some documents, like a Certificate of Indigency, may require you to provide additional information about your household status. All requirements will be clearly listed on the request form."
+  },
+  {
+    "id": "q6",
+    "icon": "XCircle",
+    "question": "Can I cancel a request?",
+    "answer": "You can cancel a request as long as it is still in the 'Pending' status. Once the barangay has begun processing your document ('In Progress' status), it can no longer be cancelled."
+  }
+]
