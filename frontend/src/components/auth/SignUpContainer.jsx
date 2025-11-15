@@ -42,11 +42,16 @@ export default function SignUpContainer({ onClose }) {
   }, []);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-8 md:p-10 w-full max-w-[650px] mx-auto md:mx-0 relative min-h-[600px]">
+    <div className={`bg-white border-gray-200 border rounded-2xl shadow-xl p-8 md:p-10 w-full max-w-[650px] mx-auto md:mx-0 relative min-h-[600px] max-h-[80vh] overflow-y-auto`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+        className={`absolute top-6 right-6 transition-colors text-gray-400 hover:text-gray-600`}
         aria-label="Close signup form"
       >
         <X size={24} />
@@ -60,7 +65,7 @@ export default function SignUpContainer({ onClose }) {
           className={`pb-3 px-2 transition-colors ${
             activeTab === 'login'
               ? 'text-[#004AAD] border-b-3 border-[#004AAD]'
-              : 'text-gray-500 hover:text-[#004AAD]'
+              : `text-gray-500 hover:text-[#004AAD]`
           }`}
         >
           Log In
@@ -70,7 +75,7 @@ export default function SignUpContainer({ onClose }) {
           className={`pb-3 px-2 transition-colors ${
             activeTab === 'signup'
               ? 'text-[#004AAD] border-b-3 border-[#004AAD]'
-              : 'text-gray-500 hover:text-[#004AAD]'
+              : `text-gray-500 hover:text-[#004AAD]`
           }`}
         >
           Sign Up
@@ -81,7 +86,7 @@ export default function SignUpContainer({ onClose }) {
       {activeTab === 'login' && (
         <form onSubmit={handleSubmit} className="space-y-8 pl-4">
           <div className="space-y-3">
-            <label htmlFor="login-email" className="text-lg font-medium text-gray-700">
+            <label htmlFor="login-email" className={`text-lg font-medium text-gray-700`}>
               Email Address
             </label>
             <div className="relative">
@@ -97,7 +102,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="login-password" className="text-lg font-medium text-gray-700">
+            <label htmlFor="login-password" className={`text-lg font-medium text-gray-700`}>
               Password
             </label>
             <div className="relative">
@@ -126,7 +131,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="text-center pt-4">
-            <p className="text-gray-600">
+            <p className={`text-gray-600`}>
               Don't have an account?{' '}
               <button
                 type="button"
@@ -146,13 +151,13 @@ export default function SignUpContainer({ onClose }) {
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
-              <label htmlFor="first-name" className="text-lg font-medium text-gray-700">
+              <label htmlFor="first-name" className={`text-lg font-medium text-gray-700`}>
                 First Name
               </label>
               <Input id="first-name" placeholder="First name" className="text-lg py-4 h-14" required />
             </div>
             <div className="space-y-3">
-              <label htmlFor="last-name" className="text-lg font-medium text-gray-700">
+              <label htmlFor="last-name" className={`text-lg font-medium text-gray-700`}>
                 Last Name
               </label>
               <Input id="last-name" placeholder="Last name" className="text-lg py-4 h-14" required />
@@ -160,15 +165,15 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="middle-name" className="text-lg font-medium text-gray-700">
-              Middle Name <span className="text-gray-500 font-normal">(Optional)</span>
+            <label htmlFor="middle-name" className={`text-lg font-medium text-gray-700`}>
+              Middle Name <span className={`text-gray-500 font-normal`}>(Optional)</span>
             </label>
             <Input id="middle-name" placeholder="Middle name" className="text-lg py-4 h-14" />
           </div>
 
           {/* Contact Fields */}
           <div className="space-y-3">
-            <label htmlFor="address" className="text-lg font-medium text-gray-700">
+            <label htmlFor="address" className={`text-lg font-medium text-gray-700`}>
               Address
             </label>
             <Input
@@ -180,7 +185,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="phone" className="text-lg font-medium text-gray-700">
+            <label htmlFor="phone" className={`text-lg font-medium text-gray-700`}>
               Phone Number
             </label>
             <Input
@@ -193,7 +198,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="email" className="text-lg font-medium text-gray-700">
+            <label htmlFor="email" className={`text-lg font-medium text-gray-700`}>
               Email Address
             </label>
             <Input
@@ -206,7 +211,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="password" className="text-lg font-medium text-gray-700">
+            <label htmlFor="password" className={`text-lg font-medium text-gray-700`}>
               Password
             </label>
             <div className="relative">
@@ -229,7 +234,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="space-y-3">
-            <label htmlFor="confirm-password" className="text-lg font-medium text-gray-700">
+            <label htmlFor="confirm-password" className={`text-lg font-medium text-gray-700`}>
               Confirm Password
             </label>
             <div className="relative">
@@ -253,7 +258,7 @@ export default function SignUpContainer({ onClose }) {
 
           {/* Valid ID Field */}
           <div className="space-y-3">
-            <label htmlFor="valid-id" className="text-lg font-medium text-gray-700 flex items-center gap-3">
+            <label htmlFor="valid-id" className={`text-lg font-medium flex items-center gap-3 text-gray-700`}>
               <FileText className="w-5 h-5" />
               Valid ID Document
               {idFile && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -268,7 +273,7 @@ export default function SignUpContainer({ onClose }) {
                 className="border border-gray-300 rounded-lg p-2.5 w-full text-lg file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#004AAD] file:text-white hover:file:bg-[#003A88] transition-colors h-14"
               />
             </div>
-            <p className="text-base text-gray-500 ml-1">
+            <p className={`text-base ml-1 text-gray-500`}>
               Upload a valid government-issued ID (PNG, JPG, or PDF)
             </p>
           </div>
@@ -280,7 +285,7 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="text-center pt-4">
-            <p className="text-gray-600">
+            <p className={`text-gray-600`}>
               Already have an account?{' '}
               <button
                 type="button"
