@@ -44,7 +44,7 @@ export default function Navbar() {
           </Link>
           
           {/* THIS IS YOUR NEW GRID LAYOUT PAGE */}
-          <Link href="/homepage" className="text-gray-700 hover:text-gray-900 font-semibold">
+          <Link href="/documents" className="text-gray-700 hover:text-gray-900 font-semibold">
             Documents 
           </Link>
           
