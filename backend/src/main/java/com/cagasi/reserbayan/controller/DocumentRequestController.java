@@ -1,0 +1,63 @@
+package com.cagasi.reserbayan.controller;
+
+import com.cagasi.reserbayan.dto.DocumentRequestDTO;
+import com.cagasi.reserbayan.entity.DocumentRequest;
+import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.repository.DocumentRequestRepository;
+import com.cagasi.reserbayan.repository.ResidentRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/document-requests")
+@CrossOrigin(origins = "http://localhost:3000")
+public class DocumentRequestController {
+
+    @Autowired
+    private DocumentRequestRepository requestRepository;
+
+    @Autowired
+    private ResidentRepository residentRepository;
+
+    // CREATE new document request
+    @PostMapping
+    public ResponseEntity<?> createRequest(@RequestBody DocumentRequestDTO dto) {
+
+        Resident resident = residentRepository.findById(dto.getResidentId()).orElse(null);
+
+        if (resident == null) {
+            return ResponseEntity.badRequest().body("Resident not found");
+        }
+
+        DocumentRequest request = new DocumentRequest();
+        request.setDocumentId(dto.getDocumentId());
+        request.setDocumentName(dto.getDocumentName());
+        request.setResident(resident);
+        request.setDetails(dto.getDetails());
+        request.setStatus("Pending");
+        request.setSubmittedAt(LocalDateTime.now());
+        request.setUpdatedAt(LocalDateTime.now());
+
+        DocumentRequest saved = requestRepository.save(request);
+
+        return ResponseEntity.ok(saved);
+    }
+
+    // GET all requests made by a resident
+    @GetMapping("/resident/{residentId}")
+    public ResponseEntity<?> getRequestsByResident(@PathVariable Long residentId) {
+        List<DocumentRequest> requests = requestRepository.findByResident_ResidentId(residentId);
+        return ResponseEntity.ok(requests);
+    }
+
+    // GET all requests (Admin view)
+    @GetMapping
+    public ResponseEntity<?> getAllRequests() {
+        return ResponseEntity.ok(requestRepository.findAll());
+    }
+}
