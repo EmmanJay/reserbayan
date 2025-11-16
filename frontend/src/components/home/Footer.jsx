@@ -8,9 +8,9 @@ export default function Footer() {
   return (
     <footer className="bg-[#0B1D4E] text-white">
       <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
           {/* Brand Section */}
-          <div className="space-y-4">
+          <div className="space-y-4 mr-16">
             <div className="flex items-center space-x-2">
               <Image
                 src="/reserbayan-logo.png"
@@ -24,10 +24,6 @@ export default function Footer() {
             <p className="text-gray-300 text-sm">
               Serving the Filipino community with efficient, secure, and accessible document services.
             </p>
-            <div className="flex space-x-4">
-              <Facebook className="w-5 h-5 text-gray-300 hover:text-white cursor-pointer" />
-              <Instagram className="w-5 h-5 text-gray-300 hover:text-white cursor-pointer" />
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -42,7 +38,7 @@ export default function Footer() {
           </div>
 
           {/* Most Requested */}
-          <div className="space-y-4">
+          <div className="space-y-4 -ml-8">
             <h3 className="font-semibold">Most Requested</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li><Link href="/homepage/barangay-clearance" className="hover:text-white">Barangay Clearance</Link></li>
@@ -53,23 +49,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Stay Updated */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Stay Updated</h3>
-            <p className="text-sm text-gray-300">
-              Subscribe to our newsletter for the latest updates and announcements.
-            </p>
-            <div className="flex space-x-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="bg-white text-gray-900 border-gray-300"
-              />
-              <Button className="bg-[#004AAD] hover:bg-[#003A88] text-white">
-                Subscribe
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Footer Bottom */}
@@ -78,7 +57,6 @@ export default function Footer() {
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="/privacy" className="hover:text-white">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white">Terms of Service</Link>
-            <Link href="/accessibility" className="hover:text-white">Accessibility</Link>
           </div>
         </div>
       </div>

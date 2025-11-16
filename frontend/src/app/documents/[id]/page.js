@@ -17,55 +17,72 @@ function getDocumentData(id) {
 }
 
 export default function DocumentDetailPage({ params }) {
-  // params.id comes from the URL (e.g., "certificate-of-indigency")
   const resolvedParams = use(params);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
   const doc = getDocumentData(resolvedParams.id);
 
   return (
-    // Main content flex container (Image + Details)
     <motion.div
       layoutId={`card-container-${doc.id}`}
-      className={`flex flex-col lg:flex-row gap-8 lg:gap-12 ${from === 'grid' ? 'animate-in fade-in slide-in-from-bottom-5 duration-500' : ''}`}
+      className={`flex flex-col lg:flex-row gap-8 lg:gap-12 ${
+        from === 'grid'
+          ? 'animate-in fade-in slide-in-from-bottom-5 duration-500'
+          : ''
+      }`}
     >
-      
       {/* Left part: Image preview */}
       <div className="w-full lg:w-2/5 flex-shrink-0">
         <div className="bg-white border rounded-lg shadow-lg">
           <Image
-            src={doc.imagePath} // Using the path from JSON
+            src={doc.imagePath}
             alt={`${doc.name} preview`}
-            width={510}  // Standard document A4 ratio
-            height={660} // Standard document A4 ratio
+            width={510}
+            height={660}
             className="w-full h-auto rounded-lg"
-            priority // Load image faster
+            priority
           />
         </div>
       </div>
 
-      {/* Right part: Details (Styled to match Figma) */}
+      {/* Right part: Details */}
       <div className="w-full lg:w-3/5">
-        
         {/* Category Badge */}
         <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full font-medium text-sm">
           {doc.details.category}
         </span>
-        
+
         {/* Title */}
         <h1 className="font-montserrat font-extrabold text-4xl text-blue-900 mt-3">
           {doc.name.toUpperCase()}
         </h1>
-        
+
         {/* Processing Time */}
         <p className="text-base text-gray-600 mt-2 mb-4">
           <strong>Processing Time:</strong> {doc.details.processingTime}
         </p>
 
-        {/* Description */}
+        {/* Long Description */}
         <p className="text-gray-700 text-base leading-relaxed">
           {doc.details.longDescription}
         </p>
+
+        {/* ----------------------------- */}
+        {/* REQUIREMENTS SECTION */}
+        {/* ----------------------------- */}
+        <h3 className="font-montserrat font-bold text-xl text-blue-900 mt-6 mb-3">
+          Requirements
+        </h3>
+
+        {doc.details.requirements && doc.details.requirements.length > 0 ? (
+          <ul className="list-disc list-inside space-y-1.5 text-gray-700">
+            {doc.details.requirements.map((req, index) => (
+              <li key={index}>{req}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No listed requirements for this document.</p>
+        )}
 
         {/* Uses Section */}
         <h3 className="font-montserrat font-bold text-xl text-blue-900 mt-6 mb-3">
@@ -82,12 +99,11 @@ export default function DocumentDetailPage({ params }) {
           <button className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-base">
             Request Document
           </button>
-          
-          {/* Only show download button if a PDF path exists */}
+
           {doc.details.pdfPath && (
-            <a 
-              href={doc.details.pdfPath} 
-              download 
+            <a
+              href={doc.details.pdfPath}
+              download
               className="bg-gray-100 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300 text-base text-center"
             >
               Download Form
