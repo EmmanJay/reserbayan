@@ -11,11 +11,13 @@ export default function SignUpContainer({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [userType, setUserType] = useState('user');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission here
     console.log('Form submitted');
+    console.log('User type:', userType);
   };
 
   const handleFileChange = (e) => {
@@ -148,6 +150,23 @@ export default function SignUpContainer({ onClose }) {
       {/* Sign Up Form */}
       {activeTab === 'signup' && (
         <form onSubmit={handleSubmit} className="space-y-6 pl-6">
+          {/* User Type Dropdown */}
+          <div className="space-y-3">
+            <label htmlFor="user-type" className={`text-lg font-medium text-gray-700`}>
+              Account Type
+            </label>
+            <select
+              id="user-type"
+              value={userType}
+              onChange={e => setUserType(e.target.value)}
+              className="text-lg py-4 h-14 border border-gray-300 rounded-lg w-full px-3"
+              required
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
