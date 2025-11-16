@@ -31,7 +31,7 @@ public class ReserbayanApplication implements CommandLineRunner {
 			defaultAdmin.setPhoneNumber("1234567890");
 			defaultAdmin.setAddress("Default Address");
 
-			authService.registerAdmin(defaultAdmin);
+			authService.registerAdmin(defaultAdmin, null);
 			System.out.println("Default admin created: admin@reserbayan.com / Admin123!");
 		} catch (Exception e) {
 			System.out.println("Default admin already exists or error: " + e.getMessage());

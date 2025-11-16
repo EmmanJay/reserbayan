@@ -1,15 +1,22 @@
 package com.cagasi.reserbayan.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.repository.AdminRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
+
 
 @Service
 public class AuthService {
@@ -33,7 +40,7 @@ public class AuthService {
         }
     }
 
-    public Admin registerAdmin(Admin admin) {
+    public Admin registerAdmin(Admin admin, MultipartFile proofOfEmployment) throws IOException {
         // Validate password strength
         validatePasswordStrength(admin.getPassword());
         // Check if email already exists in resident table
@@ -61,7 +68,7 @@ public class AuthService {
         return adminRepository.save(admin);
     }
 
-    public Resident registerResident(Resident resident) {
+    public Resident registerResident(Resident resident, MultipartFile validId) throws IOException {
         // Validate password strength
         validatePasswordStrength(resident.getPassword());
         // Check if email already exists in admin table
