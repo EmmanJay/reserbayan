@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Features
+## Features
 
 - Resident & Admin authentication
 - Browse 25+ barangay document types
@@ -15,7 +15,7 @@
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 **Frontend:** Next.js 15 + React 19, Tailwind CSS v4, ShadCN UI, Framer Motion  
 **Backend:** Spring Boot 3.5.7, Spring Data JPA, MySQL  
@@ -23,7 +23,7 @@
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 /frontend # Next.js app
@@ -38,7 +38,7 @@ src/
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Install dependencies
 
