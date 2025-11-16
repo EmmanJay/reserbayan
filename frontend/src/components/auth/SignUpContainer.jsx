@@ -7,7 +7,7 @@ import { X, Mail, Lock, Phone, MapPin, FileText, CheckCircle, Eye, EyeOff } from
 
 export default function SignUpContainer({ onClose }) {
   const [activeTab, setActiveTab] = useState('signup');
-  const [idFile, setIdFile] = useState(null);
+  const [employmentFile, setEmploymentFile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -102,14 +102,28 @@ export default function SignUpContainer({ onClose }) {
         phoneNumber: document.getElementById('phone').value,
         address: document.getElementById('address').value,
       };
+      // Handle signup - Send FormData for both
+      const formData = new FormData();
+      formData.append('userType', userType);
+      formData.append('firstName', document.getElementById('first-name').value);
+      formData.append('lastName', document.getElementById('last-name').value);
+      formData.append('middleName', document.getElementById('middle-name').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('password', document.getElementById('password').value);
+      formData.append('phoneNumber', document.getElementById('phone').value);
+      formData.append('address', document.getElementById('address').value);
+      if (employmentFile) {
+        if (userType === 'admin') {
+          formData.append('proofOfEmployment', employmentFile);
+        } else {
+          formData.append('validId', employmentFile);
+        }
+      }
 
       try {
         const response = await fetch('http://localhost:8080/api/auth/register', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(registerData),
+          body: formData,
         });
 
         const data = await response.json();
@@ -135,7 +149,7 @@ export default function SignUpContainer({ onClose }) {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setIdFile(file);
+    setEmploymentFile(file);
   };
 
   useEffect(() => {
@@ -424,16 +438,16 @@ export default function SignUpContainer({ onClose }) {
             )}
           </div>
 
-          {/* Valid ID Field */}
+          {/* File Upload Field */}
           <div className="space-y-3">
-            <label htmlFor="valid-id" className={`text-lg font-medium flex items-center gap-3 text-gray-700`}>
+            <label htmlFor="file-upload" className={`text-lg font-medium flex items-center gap-3 text-gray-700`}>
               <FileText className="w-5 h-5" />
-              Valid ID Document
-              {idFile && <CheckCircle className="w-5 h-5 text-green-500" />}
+              {userType === 'admin' ? 'Proof of Employment Document' : 'Valid ID Document'}
+              {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
             <div className="relative">
               <input
-                id="valid-id"
+                id="file-upload"
                 type="file"
                 accept="image/*,application/pdf"
                 onChange={handleFileChange}
@@ -442,7 +456,9 @@ export default function SignUpContainer({ onClose }) {
               />
             </div>
             <p className={`text-base ml-1 text-gray-500`}>
-              Upload a valid government-issued ID (PNG, JPG, or PDF)
+              {userType === 'admin'
+                ? 'Upload proof of employment for the barangay you are working with (PNG, JPG, or PDF)'
+                : 'Upload a valid government-issued ID (PNG, JPG, or PDF)'}
             </p>
           </div>
 

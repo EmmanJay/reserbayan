@@ -26,6 +26,7 @@ public class Resident {
    private String phoneNumber;
    private String address;
    private LocalDate birthdate;
+   private String validIdPath;
    @Column(nullable = false, updatable = false)
    private LocalDateTime createdAt = LocalDateTime.now();
    // Relationships
@@ -85,6 +86,12 @@ public class Resident {
    }
    public void setBirthdate(LocalDate birthdate) {
        this.birthdate = birthdate;
+   }
+   public String getValidIdPath() {
+       return validIdPath;
+   }
+   public void setValidIdPath(String validIdPath) {
+       this.validIdPath = validIdPath;
    }
    public LocalDateTime getCreatedAt() {
        return createdAt;

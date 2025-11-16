@@ -45,6 +45,19 @@ public class AuthService {
             throw new RuntimeException("Email already registered as admin");
         }
         admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+
+        if (proofOfEmployment != null && !proofOfEmployment.isEmpty()) {
+            String uploadDir = "uploads/admin/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + proofOfEmployment.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(proofOfEmployment.getInputStream(), filePath);
+            admin.setProofOfEmploymentPath(filePath.toString());
+        }
+
         return adminRepository.save(admin);
     }
 
@@ -60,6 +73,19 @@ public class AuthService {
             throw new RuntimeException("Email already registered as resident");
         }
         resident.setPassword(passwordEncoder.encode(resident.getPassword()));
+
+        if (validId != null && !validId.isEmpty()) {
+            String uploadDir = "uploads/resident/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + validId.getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(validId.getInputStream(), filePath);
+            resident.setValidIdPath(filePath.toString());
+        }
+
         return residentRepository.save(resident);
     }
 

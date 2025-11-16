@@ -6,13 +6,14 @@ import com.cagasi.reserbayan.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
 
     @Autowired
@@ -46,7 +47,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@ModelAttribute RegisterRequest registerRequest) throws IOException {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -60,7 +61,7 @@ public class AuthController {
                 admin.setPhoneNumber(registerRequest.getPhoneNumber());
                 admin.setAddress(registerRequest.getAddress());
 
-                Admin savedAdmin = authService.registerAdmin(admin);
+                Admin savedAdmin = authService.registerAdmin(admin, registerRequest.getProofOfEmployment());
                 response.put("success", true);
                 response.put("user", savedAdmin);
                 return ResponseEntity.ok(response);
@@ -74,7 +75,7 @@ public class AuthController {
                 resident.setPhoneNumber(registerRequest.getPhoneNumber());
                 resident.setAddress(registerRequest.getAddress());
 
-                Resident savedResident = authService.registerResident(resident);
+                Resident savedResident = authService.registerResident(resident, registerRequest.getValidId());
                 response.put("success", true);
                 response.put("user", savedResident);
                 return ResponseEntity.ok(response);
@@ -105,6 +106,8 @@ public class AuthController {
         private String password;
         private String phoneNumber;
         private String address;
+        private MultipartFile validId;
+        private MultipartFile proofOfEmployment;
 
         // getters and setters
         public String getUserType() { return userType; }
@@ -123,5 +126,9 @@ public class AuthController {
         public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
         public String getAddress() { return address; }
         public void setAddress(String address) { this.address = address; }
+        public MultipartFile getValidId() { return validId; }
+        public void setValidId(MultipartFile validId) { this.validId = validId; }
+        public MultipartFile getProofOfEmployment() { return proofOfEmployment; }
+        public void setProofOfEmployment(MultipartFile proofOfEmployment) { this.proofOfEmployment = proofOfEmployment; }
     }
 }
