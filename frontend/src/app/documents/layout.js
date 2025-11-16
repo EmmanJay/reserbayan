@@ -4,10 +4,10 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import documentsData from '@/lib/data.json';
-import { Search, FileText, LayoutGrid } from 'lucide-react'; // Import icons
+import { Search, FileText, LayoutGrid, PanelLeftOpen } from 'lucide-react'; // Import icons
 
 // This component is the new, stateful sidebar
-function DocumentSidebar() {
+function DocumentSidebar({ isOpen, onClose }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -51,20 +51,34 @@ function DocumentSidebar() {
   }, [searchParams, hasAnimated]);
 
   return (
-    // Sidebar container, styled to match Figma
-    <nav
-      className={`w-96 flex-shrink-0 bg-white border-r p-6 space-y-4 hidden lg:block transition-opacity duration-500 ${isVisible && !isFadingOut ? 'opacity-100' : 'opacity-0'}`}
-      style={shouldAnimate ? { animation: 'slideInFromLeft 0.6s ease-out 0.2s both' } : {}}
-    >
+    <>
+      {/* Mobile Backdrop for closing */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      {/* 1. "Back to Grid" Button */}
-      <Link
-        href="/documents" // Link back to your main grid page
-        className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+      <nav
+        className={`bg-white border-r p-6 space-y-4 transition-all duration-300 lg:transition-opacity lg:duration-500 ${
+          isOpen
+            ? 'fixed left-0 top-18 w-80 h-[calc(100vh-4.5rem)] z-50 transform translate-x-0 lg:static lg:z-auto lg:w-96 lg:flex-shrink-0 lg:transform-none lg:top-auto lg:h-auto'
+            : 'hidden lg:block lg:w-96 lg:flex-shrink-0 lg:relative'
+        } ${isVisible && !isFadingOut ? 'opacity-100' : 'opacity-0'}`}
+        style={shouldAnimate ? { animation: 'slideInFromLeft 0.6s ease-out 0.2s both' } : {}}
       >
-        <LayoutGrid className="w-5 h-5" />
-        Back to All Documents
-      </Link>
+
+
+        {/* 1. "Back to Grid" Button */}
+        <Link
+          href="/documents" // Link back to your main grid page
+          className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+          onClick={onClose} // Close mobile sidebar when navigating
+        >
+          <LayoutGrid className="w-5 h-5" />
+          Back to All Documents
+        </Link>
 
       {/* 2. Search Bar */}
       <div className="relative">
@@ -99,6 +113,7 @@ function DocumentSidebar() {
             <li key={doc.id}>
               <Link
                 href={`/documents/${doc.id}`}
+                onClick={onClose} // Close mobile sidebar when navigating
                 // Dynamically change style if this link is active
                 className={`flex items-center gap-3 p-3 rounded-md font-medium transition-colors ${
                   isActive
@@ -114,11 +129,13 @@ function DocumentSidebar() {
         })}
       </ul>
     </nav>
+    </>
   );
 }
 
 // This is the main layout
 export default function DocumentsLayout({ children }) {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const pathname = usePathname();
   const isDetailPage = pathname.startsWith('/documents/') && pathname !== '/documents';
 
@@ -128,10 +145,21 @@ export default function DocumentsLayout({ children }) {
       <div className="flex min-h-screen bg-[#FAFAFA] pt-18">
 
         {/* The new stateful sidebar */}
-        <DocumentSidebar />
+        <DocumentSidebar
+          isOpen={isMobileSidebarOpen}
+          onClose={() => setIsMobileSidebarOpen(false)}
+        />
 
         {/* The 'children' prop is your detailed view page (page.js) */}
         <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className={`lg:hidden fixed top-20 left-4 z-30 p-2 bg-white rounded-md shadow-md border transition-all duration-300 ${isMobileSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          >
+            <PanelLeftOpen className="w-6 h-6" />
+          </button>
+
           {/* We center the content in a max-width container */}
           <div className="max-w-7xl mx-auto">
             {children}
