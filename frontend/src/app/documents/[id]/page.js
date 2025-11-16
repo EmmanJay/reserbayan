@@ -96,9 +96,13 @@ export default function DocumentDetailPage({ params }) {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <button className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-base">
+          <button
+            onClick={() => window.location.href = `/documents/${doc.id}/request`}
+            className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-base"
+          >
             Request Document
           </button>
+
 
           {doc.details.pdfPath && (
             <a

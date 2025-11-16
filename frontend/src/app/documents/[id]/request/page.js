@@ -16,31 +16,42 @@ export default function RequestDocumentPage() {
     phone: '',
     address: '',
     purpose: '',
-    uploadId: null,
   });
-
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (!storedUser) {
+      alert('Please login first');
+      window.dispatchEvent(new CustomEvent('showLogin'));
+      setLoading(false);
+      return;
+    }
+
     setUser(storedUser);
 
-    if (storedUser) {
-      const userType = localStorage.getItem('userType');
-      if (userType === 'resident') {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: `${storedUser.firstName} ${storedUser.middleName || ''} ${storedUser.lastName}`.trim(),
-          email: storedUser.residentEmail,
-          phone: storedUser.phoneNumber,
-          address: storedUser.address,
-        }));
-      }
+    const userType = localStorage.getItem('userType');
+    if (userType === 'resident') {
+      setFormData({
+        fullName: `${storedUser.firstName} ${storedUser.middleName || ''} ${storedUser.lastName}`.trim(),
+        email: storedUser.residentEmail,
+        phone: storedUser.phoneNumber,
+        address: storedUser.address,
+        purpose: '',
+      });
     }
+
+    setLoading(false);
   }, []);
 
   if (!document) {
     return <p className="text-center text-red-600 mt-10">Document not found.</p>;
+  }
+
+  if (loading || !user) {
+    // Hide form for non-logged-in users
+    return null;
   }
 
   const handleChange = (e) => {
@@ -54,9 +65,7 @@ export default function RequestDocumentPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-
-    if (!storedUser) {
+    if (!user) {
       alert('Please login first');
       window.dispatchEvent(new CustomEvent('showLogin'));
       return;
@@ -65,7 +74,7 @@ export default function RequestDocumentPage() {
     const payload = {
       documentId: id,
       documentName: document.name,
-      residentId: storedUser.residentId,
+      residentId: user.residentId,
       details: formData.purpose,
     };
 
