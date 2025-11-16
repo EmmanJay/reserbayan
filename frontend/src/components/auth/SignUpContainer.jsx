@@ -13,6 +13,35 @@ export default function SignUpContainer({ onClose }) {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [userType, setUserType] = useState('user');
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  const validatePassword = (pwd) => {
+    const hasMinLength = pwd.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(pwd);
+    const hasNumber = /\d/.test(pwd);
+    const hasSpecialChar = /[@$!%*?&]/.test(pwd);
+    return hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
+  };
+
+  const handlePasswordChange = (e) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+    setIsPasswordValid(validatePassword(pwd));
+  };
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (emailError) setEmailError(''); // Clear error when user types
+  };
+
+  const handleLoginInputChange = () => {
+    if (loginError) setLoginError(''); // Clear login error when user types
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,7 +72,7 @@ export default function SignUpContainer({ onClose }) {
           localStorage.setItem('userType', data.userType);
           onClose(); // Close the modal
         } else {
-          alert(data.message || 'Login failed');
+          setLoginError(data.message || 'Invalid credentials');
         }
       } catch (error) {
         alert('Network error. Please try again.');
@@ -51,6 +80,28 @@ export default function SignUpContainer({ onClose }) {
         setLoading(false);
       }
     } else {
+      // Handle signup
+      if (!isPasswordValid) {
+        alert('Please ensure your password meets all requirements.');
+        setLoading(false);
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert('Passwords do not match.');
+        setLoading(false);
+        return;
+      }
+
+      const registerData = {
+        userType,
+        firstName: document.getElementById('first-name').value,
+        lastName: document.getElementById('last-name').value,
+        middleName: document.getElementById('middle-name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        phoneNumber: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+      };
       // Handle signup - Send FormData for both
       const formData = new FormData();
       formData.append('userType', userType);
@@ -81,7 +132,12 @@ export default function SignUpContainer({ onClose }) {
           alert('Registration successful!');
           setActiveTab('login');
         } else {
-          alert(data.message || 'Registration failed');
+          // Check if it's an email error
+          if (data.message && (data.message.includes('Email already registered') || data.message.includes('already exists'))) {
+            setEmailError(data.message);
+          } else {
+            alert(data.message || 'Registration failed');
+          }
         }
       } catch (error) {
         alert('Network error. Please try again.');
@@ -169,6 +225,7 @@ export default function SignUpContainer({ onClose }) {
                 type="email"
                 placeholder="Enter your email"
                 className="pl-12 text-lg py-4 h-14"
+                onChange={handleLoginInputChange}
                 required
               />
             </div>
@@ -185,6 +242,7 @@ export default function SignUpContainer({ onClose }) {
                 type={showLoginPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 className="pl-12 pr-12 text-lg py-4 h-14"
+                onChange={handleLoginInputChange}
                 required
               />
               <button
@@ -196,6 +254,12 @@ export default function SignUpContainer({ onClose }) {
               </button>
             </div>
           </div>
+
+          {loginError && (
+            <div className="text-center">
+              <p className="text-sm text-red-600 bg-red-50 p-2 rounded-md">{loginError}</p>
+            </div>
+          )}
 
           <div className="pt-4">
             <Button type="submit" className="w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-semibold rounded-xl h-14 text-xl">
@@ -295,9 +359,14 @@ export default function SignUpContainer({ onClose }) {
               id="email"
               type="email"
               placeholder="Enter your email"
-              className="text-lg py-4 h-14"
+              value={email}
+              onChange={handleEmailChange}
+              className={`text-lg py-4 h-14 ${emailError ? 'border-red-500 focus:border-red-500' : ''}`}
               required
             />
+            {emailError && (
+              <p className="text-sm text-red-600">{emailError}</p>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -310,7 +379,9 @@ export default function SignUpContainer({ onClose }) {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
-                className="pl-12 pr-12 text-lg py-4 h-14"
+                value={password}
+                onChange={handlePasswordChange}
+                className={`pl-12 pr-12 text-lg py-4 h-14 ${password && !isPasswordValid ? 'border-red-500 focus:border-red-500' : ''}`}
                 required
               />
               <button
@@ -321,6 +392,22 @@ export default function SignUpContainer({ onClose }) {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            {password && (
+              <div className="text-sm space-y-1">
+                <p className={`flex items-center gap-2 ${password.length >= 8 ? 'text-green-600' : 'text-red-600'}`}>
+                  {password.length >= 8 ? '✓' : '✗'} At least 8 characters
+                </p>
+                <p className={`flex items-center gap-2 ${/[A-Z]/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
+                  {/[A-Z]/.test(password) ? '✓' : '✗'} One uppercase letter
+                </p>
+                <p className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
+                  {/\d/.test(password) ? '✓' : '✗'} One number
+                </p>
+                <p className={`flex items-center gap-2 ${/[@$!%*?&]/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
+                  {/[@$!%*?&]/.test(password) ? '✓' : '✗'} One special character (@$!%*?&)
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
@@ -333,7 +420,9 @@ export default function SignUpContainer({ onClose }) {
                 id="confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="pl-12 pr-12 text-lg py-4 h-14"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`pl-12 pr-12 text-lg py-4 h-14 ${confirmPassword && password !== confirmPassword ? 'border-red-500 focus:border-red-500' : ''}`}
                 required
               />
               <button
@@ -344,6 +433,9 @@ export default function SignUpContainer({ onClose }) {
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-sm text-red-600">Passwords do not match</p>
+            )}
           </div>
 
           {/* File Upload Field */}
