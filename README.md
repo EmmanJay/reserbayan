@@ -1,6 +1,6 @@
 # ReserBayan
 
-**ReserBayan** is an online Barangay Document Request System for Filipino residents. It streamlines document requests, tracking, and management via a digital platform.
+**ReserBayan** is a digital Barangay Document Request System designed for Filipino residents. It simplifies the process of requesting, tracking, and managing barangay documents by replacing traditional in-person visits with a secure, user-friendly online platform. With ReserBayan, residents can easily browse available documents, submit requests, and monitor their status—all in one seamless digital experience.
 
 ---
 
