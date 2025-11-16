@@ -107,6 +107,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-application.properties
+backend/src/main/resources/application.properties
 
 uploads/
