@@ -1,14 +1,14 @@
 'use client';
 
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleSignUpClick = () => {
     // Dispatch custom event to show signup container
@@ -37,21 +37,21 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          
+
           {/* THIS IS YOUR MAIN HOMEPAGE (HeroSection) */}
-          <Link href="/" className="text-gray-700 hover:text-gray-900 font-semibold">
+          <Link href="/" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             Home
           </Link>
-          
+
           {/* THIS IS YOUR NEW GRID LAYOUT PAGE */}
-          <Link href="/documents" className="text-gray-700 hover:text-gray-900 font-semibold">
-            Documents 
+          <Link href="/documents" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            Documents
           </Link>
-          
-          <Link href="/about" className="text-gray-700 hover:text-gray-900 font-semibold">
+
+          <Link href="/about" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             About
           </Link>
-          <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-semibold">
+          <Link href="/faq" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             FAQ
           </Link>
         </nav>
@@ -86,16 +86,16 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-8 py-4 space-y-4">
-            <Link href="/" className="block text-gray-700 hover:text-gray-900 font-semibold">
+            <Link href="/" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               Home
             </Link>
-            <Link href="/documents" className="block text-gray-700 hover:text-gray-900 font-semibold">
+            <Link href="/documents" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               Documents
             </Link>
-            <Link href="/about" className="block text-gray-700 hover:text-gray-900 font-semibold">
+            <Link href="/about" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               About
             </Link>
-            <Link href="/contacts" className="block text-gray-700 hover:text-gray-900 font-semibold">
+            <Link href="/faq" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               FAQ
             </Link>
             <div className="pt-4 space-y-2">

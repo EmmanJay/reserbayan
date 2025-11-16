@@ -4,6 +4,7 @@ import "./globals.css";
 // Import your components here
 import Navbar from '@/components/home/Navbar';
 import Footer from '@/components/home/Footer';
+import AuthModal from '@/components/auth/AuthModal';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,9 +33,12 @@ export default function RootLayout({ children }) {
         <main>
           {children}
         </main>
-        
+
         {/* Footer goes at the bottom */}
         <Footer />
+
+        {/* Global Auth Modal */}
+        <AuthModal />
       </body>
     </html>
   );

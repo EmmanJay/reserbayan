@@ -109,7 +109,7 @@ export default function DocumentsGridPage() {
               className="flex items-center justify-between bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200 hover:border-blue-500 p-4 sm:p-5 group h-full"
             >
               {/* Left Icon */}
-              <div className="bg-blue-800 text-white rounded-lg p-3 w-14 h-14 flex-shrink-0 flex items-center justify-center shadow-md transition-colors duration-200 ease-in-out group-hover:bg-blue-700">
+              <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-3 w-14 h-14 flex-shrink-0 flex items-center justify-center shadow-md transition-all duration-200 ease-in-out group-hover:bg-gradient-to-r group-hover:from-[#0B1D4E] group-hover:to-[#1E2566]">
                 <FileText className="w-8 h-8" />
               </div>
 
