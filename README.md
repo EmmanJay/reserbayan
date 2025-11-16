@@ -1,9 +1,5 @@
 # ReserBayan
 
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
-[![Java](https://img.shields.io/badge/Java-21-informational)]()
-[![Node.js](https://img.shields.io/badge/Node.js-20-green)]()
-
 **ReserBayan** is an online Barangay Document Request System for Filipino residents. It streamlines document requests, tracking, and management via a digital platform.
 
 ---
@@ -52,9 +48,8 @@ npm install
 
 ### 2. Run Project
 
-# Full stack
-
 ```bash
+# Full stack
 npm run dev
 
 # Frontend only
