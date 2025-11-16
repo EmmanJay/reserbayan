@@ -1,14 +1,10 @@
 # ReserBayan
 
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
-[![Java](https://img.shields.io/badge/Java-21-informational)]()
-[![Node.js](https://img.shields.io/badge/Node.js-20-green)]()
-
-**ReserBayan** is an online Barangay Document Request System for Filipino residents. It streamlines document requests, tracking, and management via a digital platform.
+**ReserBayan** is a digital Barangay Document Request System designed for Filipino residents. It simplifies the process of requesting, tracking, and managing barangay documents by replacing traditional in-person visits with a secure, user-friendly online platform. With ReserBayan, residents can easily browse available documents, submit requests, and monitor their status—all in one seamless digital experience.
 
 ---
 
-## 🚀 Features
+## Features
 
 - Resident & Admin authentication
 - Browse 25+ barangay document types
@@ -19,7 +15,7 @@
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 **Frontend:** Next.js 15 + React 19, Tailwind CSS v4, ShadCN UI, Framer Motion  
 **Backend:** Spring Boot 3.5.7, Spring Data JPA, MySQL  
@@ -27,7 +23,7 @@
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 /frontend # Next.js app
@@ -42,7 +38,7 @@ src/
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Install dependencies
 
@@ -52,9 +48,8 @@ npm install
 
 ### 2. Run Project
 
-# Full stack
-
 ```bash
+# Full stack
 npm run dev
 
 # Frontend only
