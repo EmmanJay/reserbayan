@@ -4,16 +4,40 @@
 import { useState } from "react";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (username === "user" && password === "pass") {
-      setMessage("Login successful! 🎉");
-    } else {
-      setMessage("Invalid username or password. 😞");
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage("Login successful! 🎉");
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("userType", data.userType);
+        // You can redirect or update app state here
+      } else {
+        setMessage(data.message || "Login failed");
+      }
+    } catch (error) {
+      setMessage("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,15 +48,16 @@ export default function Login() {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: "10px" }}>
-          <label htmlFor="username" style={{ display: "block" }}>
-            Username:
+          <label htmlFor="email" style={{ display: "block" }}>
+            Email:
           </label>
           <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             style={{ width: "100%", padding: "8px" }}
+            required
           />
         </div>
         <div style={{ marginBottom: "10px" }}>
@@ -45,13 +70,15 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={{ width: "100%", padding: "8px" }}
+            required
           />
         </div>
         <button
           type="submit"
           style={{ padding: "10px 15px", cursor: "pointer" }}
+          disabled={loading}
         >
-          Submit
+          {loading ? "Logging in..." : "Submit"}
         </button>
       </form>
       {message && (

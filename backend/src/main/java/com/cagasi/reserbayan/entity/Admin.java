@@ -73,7 +73,7 @@ public class Admin {
    public String getPosition() {
        return position;
    }
-   public void setposition(String position) {
+   public void setPosition(String position) {
        this.position = position;
    }
    public LocalDateTime getCreatedAt() {
