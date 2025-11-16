@@ -12,12 +12,80 @@ export default function SignUpContainer({ onClose }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [userType, setUserType] = useState('user');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted');
-    console.log('User type:', userType);
+    setLoading(true);
+
+    if (activeTab === 'login') {
+      // Handle login
+      const loginData = {
+        email: document.getElementById('login-email').value,
+        password: document.getElementById('login-password').value,
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Login successful!');
+          // Store user data
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('userType', data.userType);
+          onClose(); // Close the modal
+        } else {
+          alert(data.message || 'Login failed');
+        }
+      } catch (error) {
+        alert('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Handle signup
+      const registerData = {
+        userType,
+        firstName: document.getElementById('first-name').value,
+        lastName: document.getElementById('last-name').value,
+        middleName: document.getElementById('middle-name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        phoneNumber: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+      };
+
+      try {
+        const response = await fetch('http://localhost:8080/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(registerData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Registration successful!');
+          setActiveTab('login');
+        } else {
+          alert(data.message || 'Registration failed');
+        }
+      } catch (error) {
+        alert('Network error. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleFileChange = (e) => {
@@ -298,8 +366,8 @@ export default function SignUpContainer({ onClose }) {
           </div>
 
           <div className="pt-6">
-            <Button type="submit" className="w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-semibold rounded-xl h-14 text-xl">
-              Create Account
+            <Button type="submit" className="w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-semibold rounded-xl h-14 text-xl" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </div>
 
