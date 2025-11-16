@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { FileText, ClipboardCheck, Clock, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import SignUpContainer from '@/components/auth/SignUpContainer';
 
 function HorizontalImageCarousel({ images }) {
   const carouselRef = useRef(null);
@@ -77,41 +76,7 @@ export default function AboutSection() {
     '/documents/first-time-jobseeker.png',
   ];
 
-  const [showSignUp, setShowSignUp] = useState(false);
 
-  const handleCloseSignUp = () => {
-    setShowSignUp(false);
-  };
-
-  useEffect(() => {
-    const handleShowSignUp = () => {
-      setShowSignUp(true);
-      // Switch to signup tab
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('switchToSignup'));
-      }, 100);
-    };
-
-    const handleShowLogin = () => {
-      setShowSignUp(true);
-      // Switch to login tab
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('switchToLogin'));
-      }, 100);
-    };
-
-    window.addEventListener('showSignUp', handleShowSignUp);
-    window.addEventListener('showLogin', handleShowLogin);
-
-    return () => {
-      window.removeEventListener('showSignUp', handleShowSignUp);
-      window.removeEventListener('showLogin', handleShowLogin);
-    };
-  }, []);
-
-  const handleSignUpClick = () => {
-    setShowSignUp(true);
-  };
 
   const fadeUpProps = {
     initial: { opacity: 0, y: 20 },
@@ -141,17 +106,16 @@ export default function AboutSection() {
       {/* Header Section */}
       <section className="pt-24 pb-16 px-6 md:px-12">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-montserrat font-extrabold leading-tight bg-gradient-to-r from-[#1E2566] via-[#2F87C3] to-[#1E2566] bg-clip-text text-transparent mb-8 animate-fade-in">
+          <h1 className="text-3xl md:text-5xl font-montserrat font-extrabold leading-tight bg-gradient-to-r from-[#1E2566] via-[#2F87C3] to-[#1E2566] bg-clip-text text-transparent mb-8 mt-8 animate-fade-in">
             About ReserBayan
           </h1>
           <motion.p
-            className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto leading-relaxed mb-4"
+            className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto leading-relaxed mb-4"
             {...fadeUpProps}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             Revolutionizing barangay document requests with digital innovation and community-focused solutions.
           </motion.p>
-          <div className="w-24 h-1 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] mx-auto rounded-full"></div>
         </div>
       </section>
 
@@ -345,7 +309,7 @@ export default function AboutSection() {
             
             <motion.div variants={staggerItem}>
               <Button
-                onClick={handleSignUpClick}
+                onClick={() => window.dispatchEvent(new CustomEvent('showSignUp'))}
                 className="bg-white text-[#0B1D4E] hover:bg-gray-100 px-10 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-white hover:border-gray-200"
               >
                 Sign Up
@@ -354,15 +318,6 @@ export default function AboutSection() {
           </motion.div>
         </div>
       </section>
-
-      {/* Sign Up Modal */}
-      {showSignUp && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-md z-50">
-          <div className="flex items-center justify-center min-h-full p-4">
-            <SignUpContainer onClose={handleCloseSignUp} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

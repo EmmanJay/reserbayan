@@ -65,15 +65,12 @@ export default function FaqPage() {
           <h2 className="text-4xl pt-10 md:text-5xl font-extrabold text-blue-900">
             Frequently Asked Questions
           </h2>
-          <p className="mt-4 text-lg text-gray-600 leading-relaxed">
-            Everything you need to know about ReserBayan. Can&apos;t find the answer
-            you&apos;re looking for? Feel free to{' '}
-            <a href="#" className="font-medium text-[#004AAD] hover:underline">
-              chat with our friendly team
-            </a>
-            .
+          <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+            Find quick answers to the most common questions about how ReserBayan works.
+            If you need more information, explore the sections below.
           </p>
         </motion.div>
+
 
         {/* --- FAQ List --- */}
         {loading ? (

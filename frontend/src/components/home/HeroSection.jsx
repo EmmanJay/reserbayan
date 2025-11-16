@@ -7,7 +7,7 @@ import SignUpContainer from '@/components/auth/SignUpContainer';
 
 export default function HeroSection() {
   const [showSignUp, setShowSignUp] = useState(false);
-  
+
   // States for all animations
   const [isLoaded, setIsLoaded] = useState(false); // For the whole section
   const [showImg1, setShowImg1] = useState(false); // For Certificate of Indigency
@@ -19,9 +19,10 @@ export default function HeroSection() {
   };
 
   // This effect now handles the staggered animation
+  // This effect now handles the staggered animation
   useEffect(() => {
     // 1. Animate the whole section wrapper
-    const mainTimer = setTimeout(() => setIsLoaded(true), 100); 
+    const mainTimer = setTimeout(() => setIsLoaded(true), 100);
 
     // 2. Stagger the images, starting after the main wrapper begins
     const timer1 = setTimeout(() => setShowImg1(true), 300); // 1st Image
@@ -62,6 +63,7 @@ export default function HeroSection() {
       window.removeEventListener('showLogin', handleShowLogin);
     };
   }, []);
+
 
   return (
     // APPLYING THE ANIMATION HERE:
