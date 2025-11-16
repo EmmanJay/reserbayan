@@ -16,6 +16,7 @@ public class Admin {
    private String phoneNumber;
    private String address;
    private String position;
+   private String proofOfEmploymentPath;
    @Column(nullable = false, updatable = false)
    private LocalDateTime createdAt = LocalDateTime.now();
    // Relationships
@@ -85,5 +86,11 @@ public class Admin {
    public void setStatusLogs(List<StatusLog> statusLogs) {
        this.statusLogs = statusLogs;
    }
-   
+   public String getProofOfEmploymentPath() {
+       return proofOfEmploymentPath;
+   }
+   public void setProofOfEmploymentPath(String proofOfEmploymentPath) {
+       this.proofOfEmploymentPath = proofOfEmploymentPath;
+   }
+
 }
