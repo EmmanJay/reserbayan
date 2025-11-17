@@ -45,6 +45,7 @@ export default function DocumentsGridPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            suppressHydrationWarning={true}
           />
         </div>
       </motion.div>
@@ -65,6 +66,7 @@ export default function DocumentsGridPage() {
                 ? 'bg-blue-600 text-white'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
+            suppressHydrationWarning={true}
           >
             {category}
           </button>

@@ -61,12 +61,14 @@ export default function Navbar() {
           <button
             onClick={handleLoginClick}
             className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 border border-gray-300 transition-colors"
+            suppressHydrationWarning={true}
           >
             Log In
           </button>
           <button
             onClick={handleSignUpClick}
             className="bg-[#004AAD] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#003A88] transition-colors"
+            suppressHydrationWarning={true}
           >
             Sign Up
           </button>
@@ -102,12 +104,14 @@ export default function Navbar() {
               <button
                 onClick={handleLoginClick}
                 className="block bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 border border-gray-300 transition-colors text-center"
+                suppressHydrationWarning={true}
               >
                 Log In
               </button>
               <button
                 onClick={handleSignUpClick}
                 className="block bg-[#004AAD] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#003A88] transition-colors text-center"
+                suppressHydrationWarning={true}
               >
                 Sign Up
               </button>
