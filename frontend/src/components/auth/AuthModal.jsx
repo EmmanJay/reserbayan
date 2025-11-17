@@ -1,192 +1,56 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import documentsData from '@/lib/data.json';
+import { usePathname } from 'next/navigation';
+import SignUpContainer from './SignUpContainer';
 
-export default function RequestDocumentPage() {
-  const router = useRouter();
-  const { id } = useParams();
-
-  const document = documentsData.find((doc) => doc.id === id);
-
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    address: '',
-    purpose: '',
-    uploadId: null,
-  });
-
-  const [user, setUser] = useState(null);
+export default function AuthModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    setUser(storedUser);
-
-    if (storedUser) {
-      const userType = localStorage.getItem('userType');
-      if (userType === 'resident') {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: `${storedUser.firstName} ${storedUser.middleName || ''} ${storedUser.lastName}`.trim(),
-          email: storedUser.residentEmail,
-          phone: storedUser.phoneNumber,
-          address: storedUser.address,
-        }));
+    const handleShowLogin = () => {
+      if (pathname === '/') {
+        // On home page, let HeroSection handle it
+        return;
       }
-    }
-  }, []);
-
-  if (!document) {
-    return <p className="text-center text-red-600 mt-10">Document not found.</p>;
-  }
-
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData({
-      ...formData,
-      [name]: files ? files[0] : value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-
-    if (!storedUser) {
-      alert('Please login first');
-      window.dispatchEvent(new CustomEvent('showLogin'));
-      return;
-    }
-
-    const payload = {
-      documentId: id,
-      documentName: document.name,
-      residentId: storedUser.residentId,
-      details: formData.purpose,
+      setIsOpen(true);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('switchToLogin'));
+      }, 100);
     };
 
-    const response = await fetch('http://localhost:8080/api/document-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const handleShowSignUp = () => {
+      if (pathname === '/') {
+        // On home page, let HeroSection handle it
+        return;
+      }
+      setIsOpen(true);
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('switchToSignup'));
+      }, 100);
+    };
 
-    if (response.ok) {
-      alert('Request submitted successfully!');
-      router.push(`/homepage/${id}`);
-    } else {
-      const error = await response.text();
-      alert('Error: ' + error);
-    }
+    window.addEventListener('showLogin', handleShowLogin);
+    window.addEventListener('showSignUp', handleShowSignUp);
+
+    return () => {
+      window.removeEventListener('showLogin', handleShowLogin);
+      window.removeEventListener('showSignUp', handleShowSignUp);
+    };
+  }, [pathname]);
+
+  const handleClose = () => {
+    setIsOpen(false);
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="font-montserrat font-extrabold text-4xl text-blue-900 mb-4">
-        Request: {document.name}
-      </h1>
-
-      <p className="text-gray-600 mb-6">
-        Please fill out the form below to request this document.  
-        Fields marked with <span className="text-red-500">*</span> are required.
-      </p>
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5 bg-white p-6 rounded-lg shadow-md border"
-      >
-        {/* Full Name */}
-        <div>
-          <label className="block mb-2 font-medium" htmlFor="fullName">
-            Full Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            name="fullName"
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.fullName}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block mb-2 font-medium" htmlFor="email">
-            Email <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.email}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Phone */}
-        <div>
-          <label className="block mb-2 font-medium" htmlFor="phone">
-            Phone Number <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="phone"
-            type="tel"
-            name="phone"
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.phone}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Address */}
-        <div>
-          <label className="block mb-2 font-medium" htmlFor="address">
-            Address <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="address"
-            type="text"
-            name="address"
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            required
-            value={formData.address}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Purpose */}
-        <div>
-          <label className="block mb-2 font-medium" htmlFor="purpose">
-            Purpose of Request <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="purpose"
-            name="purpose"
-            className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
-            rows="4"
-            required
-            value={formData.purpose}
-            onChange={handleChange}
-          ></textarea>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="bg-blue-600 text-white w-full py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          Submit Request
-        </button>
-      </form>
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-xl max-w-[650px] w-full max-h-[90vh] overflow-y-auto">
+        <SignUpContainer onClose={handleClose} />
+      </div>
     </div>
   );
 }
