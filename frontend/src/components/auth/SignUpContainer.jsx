@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Mail, Lock, Phone, MapPin, FileText, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function SignUpContainer({ onClose }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('signup');
   const [employmentFile, setEmploymentFile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -66,11 +68,14 @@ export default function SignUpContainer({ onClose }) {
         const data = await response.json();
 
         if (data.success) {
-          alert('Login successful!');
           // Store user data
           localStorage.setItem('user', JSON.stringify(data.user));
           localStorage.setItem('userType', data.userType);
+          // Dispatch login event to update navbar
+          window.dispatchEvent(new CustomEvent('userLogin'));
           onClose(); // Close the modal
+          // Redirect to documents page
+          router.push('/documents');
         } else {
           setLoginError(data.message || 'Invalid credentials');
         }

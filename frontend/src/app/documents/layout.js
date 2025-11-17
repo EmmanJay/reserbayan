@@ -14,8 +14,16 @@ function DocumentSidebar({ isOpen, onClose }) {
   const [isVisible, setIsVisible] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [user, setUser] = useState(null);
   const pathname = usePathname(); // Hook to get the current URL
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   // --- Get categories and filter documents ---
   const categories = [
@@ -69,6 +77,13 @@ function DocumentSidebar({ isOpen, onClose }) {
         style={shouldAnimate ? { animation: 'slideInFromLeft 0.6s ease-out 0.2s both' } : {}}
       >
 
+
+        {/* User Welcome Message */}
+        {user && (
+          <div className="px-4 py-3 bg-gray-100 rounded-lg mb-4">
+            <p className="text-sm text-gray-700">Welcome, <span className="font-semibold">{user.firstName} {user.lastName}</span></p>
+          </div>
+        )}
 
         {/* 1. "Back to Grid" Button */}
         <Link

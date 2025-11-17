@@ -30,7 +30,10 @@ export default function Login() {
         // Store user data in localStorage
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("userType", data.userType);
-        // You can redirect or update app state here
+        // Dispatch login event to update navbar
+        window.dispatchEvent(new CustomEvent('userLogin'));
+        // Redirect to documents page
+        window.location.href = '/documents';
       } else {
         setMessage(data.message || "Login failed");
       }

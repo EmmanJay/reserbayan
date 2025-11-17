@@ -2,7 +2,7 @@ import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 
 // Import your components here
-import Navbar from '@/components/home/Navbar';
+import NavbarWrapper from '@/components/home/NavbarWrapper';
 import Footer from '@/components/home/Footer';
 import AuthModal from '@/components/auth/AuthModal';
 
@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         {/* Navbar goes at the top */}
-        <Navbar />
+        <NavbarWrapper />
 
         {/* 'children' will be your homepage or any other page */}
         <main>
