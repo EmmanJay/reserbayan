@@ -86,7 +86,7 @@ export default function RequestDocumentPage() {
 
     if (response.ok) {
       alert('Request submitted successfully!');
-      router.push(`/homepage/${id}`);
+      router.push('/requests');
     } else {
       const error = await response.text();
       alert('Error: ' + error);

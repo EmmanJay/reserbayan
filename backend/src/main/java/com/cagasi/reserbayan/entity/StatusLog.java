@@ -1,4 +1,5 @@
 package com.cagasi.reserbayan.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -9,10 +10,12 @@ public class StatusLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long statusId;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "request_id")
     private DocumentRequest documentRequest;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "admin_id")
 
