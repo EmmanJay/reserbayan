@@ -1,5 +1,6 @@
 package com.cagasi.reserbayan.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -20,8 +21,10 @@ public class DocumentRequest {
     private String documentName;
 
     // Who requested it
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "residentId", nullable = false)
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "resident_id", nullable = false)
+
     private Resident resident;
 
     // Purpose of request
