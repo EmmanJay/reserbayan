@@ -298,12 +298,10 @@ export default function AboutSection() {
             viewport={{ once: true, amount: 0.5 }}
           >
             <motion.div variants={staggerItem}>
-              <Link href="/homepage">
+              <Link href="/documents">
                 <Button className="bg-gradient-to-r from-[#004AAD] to-[#2F87C3] hover:from-[#003A88] hover:to-[#1E2566] text-white px-10 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
                   View Documents
                 </Button>
-                {/* ⭐️⭐️⭐️ THIS IS THE FIX ⭐️⭐️⭐️ */}
-                {/* The extra </Button> tag was removed from here */}
               </Link>
             </motion.div>
             
