@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FileText, ClipboardList, User, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, X, Send, TrendingUp, Calendar, Bell } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
 import documentsData from '@/lib/data.json';
@@ -113,20 +114,35 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="pt-32 px-8 min-h-screen bg-gradient-to-br from-[#FAFAFA] to-[#F5F7FA] pb-16">
+    <motion.div
+      className="pt-32 px-8 min-h-screen bg-gradient-to-br from-[#FAFAFA] to-[#F5F7FA] pb-16"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="max-w-6xl mx-auto">
         {/* Welcome Section */}
-        <div className="mb-12">
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        >
           <h1 className="font-montserrat font-extrabold text-4xl md:text-5xl text-blue-900 mb-4">
             Welcome back, {user.firstName}!
           </h1>
           <p className="text-gray-600 text-lg md:text-xl leading-relaxed">
             Manage your document requests and explore available documents.
           </p>
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
-        <div className="mb-12">
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+        >
           <h2 className="font-montserrat font-bold text-3xl text-gray-800 mb-8">Quick Actions</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
@@ -145,10 +161,15 @@ export default function DashboardPage() {
               <span>Browse Documents</span>
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Recent Activity */}
-        <div className="mb-12">
+        <motion.div
+          className="mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+        >
           <h2 className="font-montserrat font-bold text-3xl text-gray-800 mb-8">Recent Activity</h2>
           {loading ? (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
@@ -206,7 +227,7 @@ export default function DashboardPage() {
               </button>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Request Form Modal */}
         {showRequestModal && (
@@ -318,6 +339,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

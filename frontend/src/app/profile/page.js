@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Phone, MapPin, Calendar, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -34,11 +35,21 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-32">
+    <motion.div
+      className="min-h-screen bg-gray-50 pt-32"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="max-w-5xl mx-auto px-4 pb-12">
 
         {/* Profile Header */}
-        <div className="bg-white shadow-lg rounded-xl overflow-hidden">
+        <motion.div
+          className="bg-white shadow-lg rounded-xl overflow-hidden"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+        >
           <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] p-8">
             <div className="flex items-center space-x-6">
               <div className="w-24 h-24 rounded-full bg-white shadow-md flex justify-center items-center overflow-hidden">
@@ -57,9 +68,14 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
-          {/* Content */}
-          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        </motion.div>
+        {/* Content */}
+        <motion.div
+          className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+        >
 
             {/* Personal Info */}
             <div>
@@ -95,12 +111,10 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+       </motion.div>
+     </div>
+   </motion.div>
+ );
 }
 
 /* Reusable Information Row */
