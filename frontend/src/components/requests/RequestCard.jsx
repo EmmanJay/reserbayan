@@ -48,8 +48,8 @@ function RequestCard({ request, onClick }) {
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300 shadow-sm">
-              <FileText className="w-6 h-6 text-blue-700" aria-hidden="true" />
+            <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md transition-all duration-200 ease-in-out group-hover:bg-gradient-to-r group-hover:from-[#0B1D4E] group-hover:to-[#1E2566]">
+              <FileText className="w-5 h-5" aria-hidden="true" />
             </div>
             <div>
               <h3 className="font-montserrat font-bold text-lg text-blue-900 group-hover:text-blue-800 transition-colors line-clamp-1">
@@ -77,13 +77,6 @@ function RequestCard({ request, onClick }) {
                 year: 'numeric'
               })}
             </span>
-          </div>
-
-          <div className="text-gray-700">
-            <p className="text-sm font-semibold mb-2 text-blue-900">Purpose:</p>
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-3 rounded-lg border border-gray-200/50">
-              <p className="text-sm text-gray-700 line-clamp-2 leading-relaxed">{request.details}</p>
-            </div>
           </div>
         </div>
       </div>

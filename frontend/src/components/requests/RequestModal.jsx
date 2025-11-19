@@ -1,6 +1,6 @@
 import { FileText, Calendar, XCircle } from 'lucide-react';
 
-function RequestModal({ request, user, onClose }) {
+function RequestModal({ request, user, onClose, cancelRequest }) {
   if (!request) return null;
 
   const getStatusIcon = (status) => {
@@ -19,14 +19,26 @@ function RequestModal({ request, user, onClose }) {
     }
   };
 
+  const handleCancelRequest = async () => {
+    if (window.confirm('Are you sure you want to cancel this request?')) {
+      const result = await cancelRequest(request.requestId);
+      if (result.success) {
+        alert('Request cancelled successfully.');
+        onClose(); // Close the modal after cancelling
+      } else {
+        alert('Failed to cancel request: ' + result.error);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-6 h-6 text-blue-600" aria-hidden="true" />
+              <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md">
+                <FileText className="w-5 h-5" aria-hidden="true" />
               </div>
               <h2 id="modal-title" className="font-montserrat font-bold text-2xl text-blue-900">
                 Request Details
@@ -72,10 +84,6 @@ function RequestModal({ request, user, onClose }) {
                     <p className="text-sm font-medium text-gray-500">Document Name</p>
                     <p className="text-gray-900 font-semibold">{request.documentName}</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Document ID</p>
-                    <p className="text-gray-900">{request.documentId}</p>
-                  </div>
                 </div>
               </div>
 
@@ -116,7 +124,6 @@ function RequestModal({ request, user, onClose }) {
               <div>
                 <h3 className="font-bold text-gray-900 mb-4">Additional Information</h3>
                 <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                  <p className="text-sm"><span className="font-medium">Resident ID:</span> {user?.residentId}</p>
                   <p className="text-sm"><span className="font-medium">Submitted Date:</span> {new Date(request.submittedAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
               </div>
@@ -125,6 +132,14 @@ function RequestModal({ request, user, onClose }) {
         </div>
 
         <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+          {request.status?.toLowerCase() === 'pending' && (
+            <button
+              onClick={handleCancelRequest}
+              className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
+            >
+              Cancel Request
+            </button>
+          )}
           <button
             onClick={onClose}
             className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-sm"

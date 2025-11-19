@@ -42,7 +42,6 @@ function RequestsList({ requests, onRequestClick }) {
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" scope="col">Document</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" scope="col">Status</th>
               <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" scope="col">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider" scope="col">Purpose</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -58,8 +57,8 @@ function RequestsList({ requests, onRequestClick }) {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <FileText className="w-4 h-4 text-blue-600" aria-hidden="true" />
+                    <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-2 w-8 h-8 flex-shrink-0 flex items-center justify-center shadow-md">
+                      <FileText className="w-4 h-4" aria-hidden="true" />
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">{request.documentName}</div>
@@ -81,9 +80,6 @@ function RequestsList({ requests, onRequestClick }) {
                     day: 'numeric',
                     year: 'numeric'
                   })}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-700 max-w-xs truncate">{request.details}</div>
                 </td>
               </tr>
             ))}

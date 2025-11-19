@@ -34,5 +34,24 @@ export function useRequests(user) {
     }
   }, [user, fetchRequests]);
 
-  return { requests, loading, refetchRequests: fetchRequests };
+  const cancelRequest = useCallback(async (requestId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/document-requests/${requestId}/cancel`, {
+        method: 'PUT',
+      });
+      if (response.ok) {
+        // Refetch requests after cancelling
+        await fetchRequests();
+        return { success: true };
+      } else {
+        const error = await response.text();
+        return { success: false, error };
+      }
+    } catch (error) {
+      console.error('Error cancelling request:', error);
+      return { success: false, error: 'Network error' };
+    }
+  }, [fetchRequests]);
+
+  return { requests, loading, refetchRequests: fetchRequests, cancelRequest };
 }

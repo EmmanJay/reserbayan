@@ -60,4 +60,20 @@ public class DocumentRequestController {
     public ResponseEntity<?> getAllRequests() {
         return ResponseEntity.ok(requestRepository.findAll());
     }
+
+    // CANCEL a request
+    @PutMapping("/{requestId}/cancel")
+    public ResponseEntity<?> cancelRequest(@PathVariable Long requestId) {
+        DocumentRequest request = requestRepository.findById(requestId).orElse(null);
+        if (request == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (!"Pending".equalsIgnoreCase(request.getStatus())) {
+            return ResponseEntity.badRequest().body("Only pending requests can be cancelled");
+        }
+        request.setStatus("Cancelled");
+        request.setUpdatedAt(LocalDateTime.now());
+        DocumentRequest saved = requestRepository.save(request);
+        return ResponseEntity.ok(saved);
+    }
 }
