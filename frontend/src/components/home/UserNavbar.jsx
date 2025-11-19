@@ -2,36 +2,18 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X, LogOut, User, FileText, Bell, ClipboardList, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, User, FileText, Bell, ClipboardList, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useUser } from '@/contexts/UserContext';
 
 export default function UserNavbar() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const pathname = usePathname();
   const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    // Get user data from localStorage
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
-
-    // Listen for user updates
-    const handleUserUpdate = (e) => {
-      setUser(e.detail);
-    };
-
-    window.addEventListener('userUpdated', handleUserUpdate);
-
-    return () => {
-      window.removeEventListener('userUpdated', handleUserUpdate);
-    };
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -73,6 +55,10 @@ export default function UserNavbar() {
 
         {/* Desktop Navigation (after user logs in) */}
         <nav className="hidden md:flex items-center space-x-8">
+          <Link href="/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            <LayoutDashboard size={18} />
+            Dashboard
+          </Link>
           <Link href="/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             <FileText size={18} />
             Documents
@@ -143,6 +129,10 @@ export default function UserNavbar() {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-8 py-4 space-y-4">
+            <Link href="/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+              <LayoutDashboard size={18} />
+              Dashboard
+            </Link>
             <Link href="/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               <FileText size={18} />
               Documents

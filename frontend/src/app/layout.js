@@ -5,6 +5,7 @@ import "./globals.css";
 import ClientLayout from '@/components/ClientLayout';
 import Footer from '@/components/home/Footer';
 import AuthModal from '@/components/auth/AuthModal';
+import { UserProvider } from '@/contexts/UserContext';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,18 +27,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ClientLayout>
-          {/* 'children' will be your homepage or any other page */}
-          <main>
-            {children}
-          </main>
-        </ClientLayout>
+        <UserProvider>
+          <ClientLayout>
+            {/* 'children' will be your homepage or any other page */}
+            <main>
+              {children}
+            </main>
+          </ClientLayout>
 
-        {/* Footer goes at the bottom */}
-        <Footer />
+          {/* Footer goes at the bottom */}
+          <Footer />
 
-        {/* Global Auth Modal */}
-        <AuthModal />
+          {/* Global Auth Modal */}
+          <AuthModal />
+        </UserProvider>
       </body>
     </html>
   );
