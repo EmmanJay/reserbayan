@@ -104,15 +104,7 @@ export default function DocumentDetailPage({ params }) {
           </button>
 
 
-          {doc.details.pdfPath && (
-            <a
-              href={doc.details.pdfPath}
-              download
-              className="bg-gray-100 text-gray-800 font-semibold py-3 px-8 rounded-lg hover:bg-gray-200 transition-colors border border-gray-300 text-base text-center"
-            >
-              Download Form
-            </a>
-          )}
+          
         </div>
       </div>
     </motion.div>

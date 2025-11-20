@@ -74,8 +74,8 @@ export default function SignUpContainer({ onClose }) {
           // Dispatch login event to update navbar
           window.dispatchEvent(new CustomEvent('userLogin'));
           onClose(); // Close the modal
-          // Redirect to dashboard page
-          router.push('/dashboard');
+          // Redirect to dashboard page with full reload to ensure user context loads
+          window.location.href = '/dashboard';
         } else {
           setLoginError(data.message || 'Invalid credentials');
         }
