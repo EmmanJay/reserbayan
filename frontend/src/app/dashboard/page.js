@@ -218,7 +218,7 @@ export default function DashboardPage() {
                 <FileText className="w-12 h-12 text-gray-500" />
               </div>
               <h3 className="text-2xl font-bold text-gray-700 mb-4">No Recent Activity</h3>
-              <p className="text-gray-500 mb-8 text-lg">You haven't submitted any requests yet. Get started by requesting your first document!</p>
+              <p className="text-gray-500 mb-8 text-lg">You havent submitted any requests yet. Get started by requesting your first document!</p>
               <button
                 onClick={() => setShowRequestModal(true)}
                 className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
