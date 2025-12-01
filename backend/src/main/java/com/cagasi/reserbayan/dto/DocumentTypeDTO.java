@@ -3,6 +3,7 @@ package com.cagasi.reserbayan.dto;
 import java.util.List;
 
 public class DocumentTypeDTO {
+    private Long typeId;
     private String id;
     private String name;
     private String shortDescription;
@@ -68,6 +69,14 @@ public class DocumentTypeDTO {
     }
 
     // Getters and Setters
+    public Long getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(Long typeId) {
+        this.typeId = typeId;
+    }
+
     public String getId() {
         return id;
     }
