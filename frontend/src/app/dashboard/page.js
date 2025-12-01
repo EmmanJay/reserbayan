@@ -7,11 +7,12 @@ import { FileText, ClipboardList, User, Plus, ArrowRight, Clock, CheckCircle, XC
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
-import documentsData from '@/lib/data.json';
+import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 
 export default function DashboardPage() {
   const { user } = useUser();
   const { requests, loading, refetchRequests } = useRequests(user);
+  const { documentsData } = useDocumentTypes();
   const router = useRouter();
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState('');

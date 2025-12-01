@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import documentsData from '@/lib/data.json';
+import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 import { Search, FileText, LayoutGrid, PanelLeftOpen } from 'lucide-react'; // Import icons
 
 // This component is the new, stateful sidebar
 function DocumentSidebar({ isOpen, onClose }) {
+  const { documentsData } = useDocumentTypes();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -28,14 +29,14 @@ function DocumentSidebar({ isOpen, onClose }) {
   // --- Get categories and filter documents ---
   const categories = [
     'All',
-    ...new Set(documentsData.map((doc) => doc.details.category)),
+    ...new Set(documentsData.map((doc) => doc.details?.category).filter(Boolean)),
   ];
 
   const filteredDocuments = documentsData.filter((doc) => {
     const matchesCategory =
-      selectedCategory === 'All' || doc.details.category === selectedCategory;
+      selectedCategory === 'All' || doc.details?.category === selectedCategory;
     const matchesSearch =
-      doc.name.toLowerCase().includes(searchQuery.toLowerCase());
+      doc.name?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
