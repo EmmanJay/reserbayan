@@ -13,7 +13,6 @@ export default function SignUpContainer({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [userType, setUserType] = useState('user');
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -98,7 +97,7 @@ export default function SignUpContainer({ onClose }) {
       }
 
       const registerData = {
-        userType,
+        userType: 'user',
         firstName: document.getElementById('first-name').value,
         lastName: document.getElementById('last-name').value,
         middleName: document.getElementById('middle-name').value,
@@ -109,7 +108,7 @@ export default function SignUpContainer({ onClose }) {
       };
       // Handle signup - Send FormData for both
       const formData = new FormData();
-      formData.append('userType', userType);
+      formData.append('userType', 'user');
       formData.append('firstName', document.getElementById('first-name').value);
       formData.append('lastName', document.getElementById('last-name').value);
       formData.append('middleName', document.getElementById('middle-name').value);
@@ -118,11 +117,7 @@ export default function SignUpContainer({ onClose }) {
       formData.append('phoneNumber', document.getElementById('phone').value);
       formData.append('address', document.getElementById('address').value);
       if (employmentFile) {
-        if (userType === 'admin') {
-          formData.append('proofOfEmployment', employmentFile);
-        } else {
-          formData.append('validId', employmentFile);
-        }
+        formData.append('validId', employmentFile);
       }
 
       try {
@@ -290,22 +285,6 @@ export default function SignUpContainer({ onClose }) {
       {/* Sign Up Form */}
       {activeTab === 'signup' && (
         <form onSubmit={handleSubmit} className="space-y-6 pl-6">
-          {/* User Type Dropdown */}
-          <div className="space-y-3">
-            <label htmlFor="user-type" className={`text-lg font-medium text-gray-700`}>
-              Account Type
-            </label>
-            <select
-              id="user-type"
-              value={userType}
-              onChange={e => setUserType(e.target.value)}
-              className="text-lg py-4 h-14 border border-gray-300 rounded-lg w-full px-3"
-              required
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
 
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-4">
@@ -447,7 +426,7 @@ export default function SignUpContainer({ onClose }) {
           <div className="space-y-3">
             <label htmlFor="file-upload" className={`text-lg font-medium flex items-center gap-3 text-gray-700`}>
               <FileText className="w-5 h-5" />
-              {userType === 'admin' ? 'Proof of Employment Document' : 'Valid ID Document'}
+Valid ID Document
               {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
             <div className="relative">
@@ -461,9 +440,7 @@ export default function SignUpContainer({ onClose }) {
               />
             </div>
             <p className={`text-base ml-1 text-gray-500`}>
-              {userType === 'admin'
-                ? 'Upload proof of employment for the barangay you are working with (PNG, JPG, or PDF)'
-                : 'Upload a valid government-issued ID (PNG, JPG, or PDF)'}
+Upload a valid government-issued ID (PNG, JPG, or PDF)
             </p>
           </div>
 
