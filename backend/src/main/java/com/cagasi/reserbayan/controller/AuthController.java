@@ -21,26 +21,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        Map<String, Object> authResult = authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
+        if (authResult != null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("token", authResult.get("token"));
+            response.put("role", authResult.get("role"));
+            response.put("user", authResult.get("user"));
+            return ResponseEntity.ok(response);
+        }
+
         Map<String, Object> response = new HashMap<>();
-
-        // Try admin login first
-        Admin admin = authService.authenticateAdmin(loginRequest.getEmail(), loginRequest.getPassword());
-        if (admin != null) {
-            response.put("success", true);
-            response.put("user", admin);
-            response.put("userType", "admin");
-            return ResponseEntity.ok(response);
-        }
-
-        // Try resident login
-        Resident resident = authService.authenticateResident(loginRequest.getEmail(), loginRequest.getPassword());
-        if (resident != null) {
-            response.put("success", true);
-            response.put("user", resident);
-            response.put("userType", "resident");
-            return ResponseEntity.ok(response);
-        }
-
         response.put("success", false);
         response.put("message", "Invalid credentials");
         return ResponseEntity.badRequest().body(response);
@@ -88,15 +79,15 @@ public class AuthController {
     }
 
     public static class LoginRequest {
-        private String email;
+        private String identifier;
         private String password;
 
-        public String getEmail() {
-            return email;
+        public String getIdentifier() {
+            return identifier;
         }
 
-        public void setEmail(String email) {
-            this.email = email;
+        public void setIdentifier(String identifier) {
+            this.identifier = identifier;
         }
 
         public String getPassword() {

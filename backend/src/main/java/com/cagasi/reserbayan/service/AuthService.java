@@ -12,8 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cagasi.reserbayan.config.JwtUtil;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.entity.Role;
+import com.cagasi.reserbayan.entity.Status;
 import com.cagasi.reserbayan.repository.AdminRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 
@@ -29,6 +32,9 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
         "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
@@ -96,9 +102,12 @@ public class AuthService {
         return residentRepository.save(resident);
     }
 
-    public Admin authenticateAdmin(String email, String password) {
-        Admin admin = adminRepository.findByResidentEmail(email).orElse(null);
-        if (admin != null && passwordEncoder.matches(password, admin.getPassword())) {
+    public Admin authenticateAdmin(String identifier, String password) {
+        Admin admin = adminRepository.findByResidentEmail(identifier).orElse(null);
+        if (admin == null) {
+            admin = adminRepository.findByUsername(identifier).orElse(null);
+        }
+        if (admin != null && admin.getStatus() == Status.ACTIVE && passwordEncoder.matches(password, admin.getPassword())) {
             return admin;
         }
         return null;
@@ -109,6 +118,43 @@ public class AuthService {
         if (resident != null && passwordEncoder.matches(password, resident.getPassword())) {
             return resident;
         }
+        return null;
+    }
+
+    public java.util.Map<String, Object> authenticate(String identifier, String password) {
+        // Check SuperAdmin first
+        Admin superAdmin = authenticateAdmin(identifier, password);
+        if (superAdmin != null && superAdmin.getRole() == Role.SUPER_ADMIN) {
+            String token = jwtUtil.generateToken(identifier, "SUPER_ADMIN");
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("token", token);
+            response.put("role", "SUPER_ADMIN");
+            response.put("user", superAdmin);
+            return response;
+        }
+
+        // Check Admin
+        Admin admin = authenticateAdmin(identifier, password);
+        if (admin != null && admin.getRole() == Role.ADMIN) {
+            String token = jwtUtil.generateToken(identifier, "ADMIN");
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("token", token);
+            response.put("role", "ADMIN");
+            response.put("user", admin);
+            return response;
+        }
+
+        // Check Resident
+        Resident resident = authenticateResident(identifier, password);
+        if (resident != null) {
+            String token = jwtUtil.generateToken(identifier, "RESIDENT");
+            java.util.Map<String, Object> response = new java.util.HashMap<>();
+            response.put("token", token);
+            response.put("role", "RESIDENT");
+            response.put("user", resident);
+            return response;
+        }
+
         return null;
     }
 }

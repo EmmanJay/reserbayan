@@ -52,7 +52,7 @@ export default function SignUpContainer({ onClose }) {
     if (activeTab === 'login') {
       // Handle login
       const loginData = {
-        email: document.getElementById('login-email').value,
+        identifier: document.getElementById('login-identifier').value,
         password: document.getElementById('login-password').value,
       };
 
@@ -69,13 +69,20 @@ export default function SignUpContainer({ onClose }) {
 
         if (data.success) {
           // Store user data
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('role', data.role);
           localStorage.setItem('user', JSON.stringify(data.user));
-          localStorage.setItem('userType', data.userType);
           // Dispatch login event to update navbar
           window.dispatchEvent(new CustomEvent('userLogin'));
           onClose(); // Close the modal
-          // Redirect to dashboard page with full reload to ensure user context loads
-          window.location.href = '/dashboard';
+          // Redirect based on role
+          if (data.role === 'SUPER_ADMIN') {
+            window.location.href = '/superadmin/dashboard';
+          } else if (data.role === 'ADMIN') {
+            window.location.href = '/admin/dashboard';
+          } else {
+            window.location.href = '/dashboard';
+          }
         } else {
           setLoginError(data.message || 'Invalid credentials');
         }
@@ -220,15 +227,15 @@ export default function SignUpContainer({ onClose }) {
       {activeTab === 'login' && (
         <form onSubmit={handleSubmit} className="space-y-8 pl-4">
           <div className="space-y-3">
-            <label htmlFor="login-email" className={`text-lg font-medium text-gray-700`}>
-              Email Address
+            <label htmlFor="login-identifier" className={`text-lg font-medium text-gray-700`}>
+              Email or Username
             </label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
               <Input
-                id="login-email"
-                type="email"
-                placeholder="Enter your email"
+                id="login-identifier"
+                type="text"
+                placeholder="Enter your email or username"
                 className="pl-12 text-lg py-4 h-14"
                 onChange={handleLoginInputChange}
                 required
