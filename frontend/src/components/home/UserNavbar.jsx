@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X, LogOut, User, FileText, Bell, ClipboardList, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, User, FileText, Bell, ClipboardList, ChevronDown, LayoutDashboard, Users, AlertCircle, Settings } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
@@ -65,19 +65,19 @@ export default function UserNavbar() {
             <>
               <Link href="/superadmin/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
                 <LayoutDashboard size={18} />
-                SuperAdmin Dashboard
+                Dashboard
               </Link>
               <Link href="/superadmin/admins" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/admins' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/admins' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <User size={18} />
-                Admin Management
+                <FileText size={18} />
+                Documents
               </Link>
               <Link href="/superadmin/residents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/residents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/residents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <User size={18} />
-                Resident Management
+                <Bell size={18} />
+                Notifications
               </Link>
               <Link href="/superadmin/requests" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
                 <ClipboardList size={18} />
-                Request Management
+                Management
               </Link>
             </>
           ) : (
