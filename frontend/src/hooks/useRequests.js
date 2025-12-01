@@ -7,9 +7,20 @@ export function useRequests(user) {
   const fetchRequests = useCallback(async () => {
     if (!user?.residentId) return;
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log('Fetching requests for residentId:', user.residentId);
-      const response = await fetch(`http://localhost:8080/api/document-requests/resident/${user.residentId}`);
+      const response = await fetch(`http://localhost:8080/api/document-requests/resident/${user.residentId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched requests:', data);
@@ -35,9 +46,17 @@ export function useRequests(user) {
   }, [user, fetchRequests]);
 
   const cancelRequest = useCallback(async (requestId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return { success: false, error: 'No token found' };
+    }
+
     try {
       const response = await fetch(`http://localhost:8080/api/document-requests/${requestId}/cancel`, {
         method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       if (response.ok) {
         // Refetch requests after cancelling

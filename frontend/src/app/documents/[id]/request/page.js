@@ -78,9 +78,19 @@ export default function RequestDocumentPage() {
       details: formData.purpose,
     };
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login first');
+      window.dispatchEvent(new CustomEvent('showLogin'));
+      return;
+    }
+
     const response = await fetch('http://localhost:8080/api/document-requests', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
       body: JSON.stringify(payload),
     });
 

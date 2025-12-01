@@ -14,8 +14,12 @@ export default function UserNavbar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const pathname = usePathname();
   const dropdownRef = useRef(null);
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
+    const role = localStorage.getItem('role');
+    setRole(role);
+
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
@@ -29,6 +33,8 @@ export default function UserNavbar() {
   const performLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('userType');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
     // Dispatch custom event to update navbar wrapper
     window.dispatchEvent(new CustomEvent('userLogout'));
     window.location.href = '/';
@@ -55,22 +61,45 @@ export default function UserNavbar() {
 
         {/* Desktop Navigation (after user logs in) */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link href="/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-            <LayoutDashboard size={18} />
-            Dashboard
-          </Link>
-          <Link href="/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-            <FileText size={18} />
-            Documents
-          </Link>
-          <Link href="/notifications" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-            <Bell size={18} />
-            Notifications
-          </Link>
-          <Link href="/requests" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-            <ClipboardList size={18} />
-            Requests
-          </Link>
+          {role === 'SUPER_ADMIN' ? (
+            <>
+              <Link href="/superadmin/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <LayoutDashboard size={18} />
+                SuperAdmin Dashboard
+              </Link>
+              <Link href="/superadmin/admins" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/admins' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/admins' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <User size={18} />
+                Admin Management
+              </Link>
+              <Link href="/superadmin/residents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/residents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/residents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <User size={18} />
+                Resident Management
+              </Link>
+              <Link href="/superadmin/requests" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <ClipboardList size={18} />
+                Request Management
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <LayoutDashboard size={18} />
+                Dashboard
+              </Link>
+              <Link href="/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <FileText size={18} />
+                Documents
+              </Link>
+              <Link href="/notifications" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <Bell size={18} />
+                Notifications
+              </Link>
+              <Link href="/requests" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                <ClipboardList size={18} />
+                Requests
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Desktop Profile Dropdown */}
@@ -129,22 +158,45 @@ export default function UserNavbar() {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-8 py-4 space-y-4">
-            <Link href="/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-              <LayoutDashboard size={18} />
-              Dashboard
-            </Link>
-            <Link href="/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-              <FileText size={18} />
-              Documents
-            </Link>
-            <Link href="/notifications" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-              <Bell size={18} />
-              Notifications
-            </Link>
-            <Link href="/requests" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-              <ClipboardList size={18} />
-              Requests
-            </Link>
+            {role === 'SUPER_ADMIN' ? (
+              <>
+                <Link href="/superadmin/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <LayoutDashboard size={18} />
+                  SuperAdmin Dashboard
+                </Link>
+                <Link href="/superadmin/admins" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/admins' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/admins' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <User size={18} />
+                  Admin Management
+                </Link>
+                <Link href="/superadmin/residents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/residents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/residents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <User size={18} />
+                  Resident Management
+                </Link>
+                <Link href="/superadmin/requests" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <ClipboardList size={18} />
+                  Request Management
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <LayoutDashboard size={18} />
+                  Dashboard
+                </Link>
+                <Link href="/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <FileText size={18} />
+                  Documents
+                </Link>
+                <Link href="/notifications" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <Bell size={18} />
+                  Notifications
+                </Link>
+                <Link href="/requests" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+                  <ClipboardList size={18} />
+                  Requests
+                </Link>
+              </>
+            )}
             {/* Mobile Profile Dropdown */}
             {user && (
               <div ref={dropdownRef} className="space-y-2">

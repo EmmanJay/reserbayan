@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +24,13 @@ public class Admin {
    private String middleName;
    @Column(unique = true)
    private String residentEmail;
+   @Column(unique = true)
+   private String username;
    private String password;
+   @Enumerated(EnumType.STRING)
+   private Role role;
+   @Enumerated(EnumType.STRING)
+   private Status status;
    private String phoneNumber;
    private String address;
    private String position;
@@ -64,11 +72,29 @@ public class Admin {
    public void setResidentEmail(String residentEmail) {
        this.residentEmail = residentEmail;
    }
+   public String getUsername() {
+       return username;
+   }
+   public void setUsername(String username) {
+       this.username = username;
+   }
    public String getPassword() {
        return password;
    }
    public void setPassword(String password) {
        this.password = password;
+   }
+   public Role getRole() {
+       return role;
+   }
+   public void setRole(Role role) {
+       this.role = role;
+   }
+   public Status getStatus() {
+       return status;
+   }
+   public void setStatus(Status status) {
+       this.status = status;
    }
    public String getPhoneNumber() {
        return phoneNumber;
