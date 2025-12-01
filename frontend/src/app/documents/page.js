@@ -2,25 +2,47 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import documentsData from '@/lib/data.json';
 import { ArrowRightCircle, FileText, Search } from 'lucide-react';
 import { motion } from 'framer-motion'; // 👈 1. Import motion
+import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 
 export default function DocumentsGridPage() {
+  const { documentsData, loading, error } = useDocumentTypes();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = [
     'All',
-    ...new Set(documentsData.map((doc) => doc.details.category)),
+    ...new Set(documentsData.map((doc) => doc.details?.category).filter(Boolean)),
   ];
 
   const filteredDocuments = documentsData.filter((doc) => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      doc.shortDescription.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || doc.details.category === selectedCategory;
+    const matchesSearch = doc.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doc.shortDescription?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'All' || doc.details?.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) {
+    return (
+      <div className="pt-24 px-8 min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading documents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="pt-24 px-8 min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error loading documents: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

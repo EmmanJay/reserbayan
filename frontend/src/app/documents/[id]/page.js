@@ -1,26 +1,34 @@
 'use client';
 
 import Image from 'next/image';
-import documentsData from '@/lib/data.json';
 import { notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
-
-// Function to get the specific document data
-function getDocumentData(id) {
-  const document = documentsData.find((doc) => doc.id === id);
-  if (!document) {
-    notFound(); // Will show a 404 page if no doc is found
-  }
-  return document;
-}
+import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 
 export default function DocumentDetailPage({ params }) {
+  const { documentsData, loading, error } = useDocumentTypes();
   const resolvedParams = use(params);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
-  const doc = getDocumentData(resolvedParams.id);
+
+  const doc = documentsData.find((doc) => doc.id === resolvedParams.id);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading document...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !doc) {
+    notFound(); // Will show a 404 page if no doc is found or error
+  }
 
   return (
     <motion.div

@@ -9,9 +9,24 @@ public class DocumentType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long typeId;
+
+    @Column(unique = true)
+    private String documentId;
+
     private String documentName;
+    private String shortDescription;
     private String description;
+    private String imagePath;
+    private String category;
+    @Lob
+    private String longDescription;
+    private String processingTime;
     private int processingDays;
+    private String pdfPath;
+    @Lob
+    private String requirements; // JSON string
+    @Lob
+    private String uses; // JSON string
     private boolean isActive;
     private String department;
 
@@ -64,6 +79,78 @@ public class DocumentType {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(String documentId) {
+        this.documentId = documentId;
+    }
+
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getLongDescription() {
+        return longDescription;
+    }
+
+    public void setLongDescription(String longDescription) {
+        this.longDescription = longDescription;
+    }
+
+    public String getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(String processingTime) {
+        this.processingTime = processingTime;
+    }
+
+    public String getPdfPath() {
+        return pdfPath;
+    }
+
+    public void setPdfPath(String pdfPath) {
+        this.pdfPath = pdfPath;
+    }
+
+    public String getRequirements() {
+        return requirements;
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
+
+    public String getUses() {
+        return uses;
+    }
+
+    public void setUses(String uses) {
+        this.uses = uses;
     }
 
 }

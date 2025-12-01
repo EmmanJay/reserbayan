@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import documentsData from '@/lib/data.json';
+import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 
 export default function RequestDocumentPage() {
   const router = useRouter();
   const { id } = useParams();
+  const { documentsData, loading: docsLoading, error: docsError } = useDocumentTypes();
 
   const document = documentsData.find((doc) => doc.id === id);
 
@@ -45,7 +46,18 @@ export default function RequestDocumentPage() {
     setLoading(false);
   }, []);
 
-  if (!document) {
+  if (docsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading document...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (docsError || !document) {
     return <p className="text-center text-red-600 mt-10">Document not found.</p>;
   }
 
