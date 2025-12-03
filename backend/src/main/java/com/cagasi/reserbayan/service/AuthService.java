@@ -20,7 +20,6 @@ import com.cagasi.reserbayan.entity.Status;
 import com.cagasi.reserbayan.repository.AdminRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 
-
 @Service
 public class AuthService {
 
@@ -37,12 +36,12 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     private static final Pattern PASSWORD_PATTERN = Pattern.compile(
-        "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
-    );
+            "^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9\\s])[A-Za-z0-9\\S]{8,}$");
 
     private void validatePasswordStrength(String password) {
         if (!PASSWORD_PATTERN.matcher(password).matches()) {
-            throw new RuntimeException("Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character (@$!%*?&)");
+            throw new RuntimeException(
+                    "Password must be at least 8 characters long and contain at least one uppercase letter, one number, and one special character");
         }
     }
 
@@ -107,7 +106,8 @@ public class AuthService {
         if (admin == null) {
             admin = adminRepository.findByUsername(identifier).orElse(null);
         }
-        if (admin != null && admin.getStatus() == Status.ACTIVE && passwordEncoder.matches(password, admin.getPassword())) {
+        if (admin != null && admin.getStatus() == Status.ACTIVE
+                && passwordEncoder.matches(password, admin.getPassword())) {
             return admin;
         }
         return null;
