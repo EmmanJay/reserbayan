@@ -25,7 +25,7 @@ export default function SignUpContainer({ onClose }) {
     const hasMinLength = pwd.length >= 8;
     const hasUpperCase = /[A-Z]/.test(pwd);
     const hasNumber = /\d/.test(pwd);
-    const hasSpecialChar = /[@$!%*?&]/.test(pwd);
+    const hasSpecialChar = /[^A-Za-z0-9\s]/.test(pwd);
     return hasMinLength && hasUpperCase && hasNumber && hasSpecialChar;
   };
 
@@ -394,8 +394,8 @@ export default function SignUpContainer({ onClose }) {
                 <p className={`flex items-center gap-2 ${/\d/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
                   {/\d/.test(password) ? '✓' : '✗'} One number
                 </p>
-                <p className={`flex items-center gap-2 ${/[@$!%*?&]/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
-                  {/[@$!%*?&]/.test(password) ? '✓' : '✗'} One special character (@$!%*?&)
+                <p className={`flex items-center gap-2 ${/[^A-Za-z0-9\s]/.test(password) ? 'text-green-600' : 'text-red-600'}`}>
+                  {/[^A-Za-z0-9\s]/.test(password) ? '✓' : '✗'} One special character
                 </p>
               </div>
             )}
@@ -413,6 +413,7 @@ export default function SignUpContainer({ onClose }) {
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                onPaste={(e) => e.preventDefault()}
                 className={`pl-12 pr-12 text-lg py-4 h-14 ${confirmPassword && password !== confirmPassword ? 'border-red-500 focus:border-red-500' : ''}`}
                 required
               />
