@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +30,8 @@ public class Resident {
    private String address;
    private LocalDate birthdate;
    private String validIdPath;
+   @Enumerated(EnumType.STRING)
+   private ResidentStatus status = ResidentStatus.PENDING;
    @Column(nullable = false, updatable = false)
    private LocalDateTime createdAt = LocalDateTime.now();
    // Relationships
@@ -94,6 +98,12 @@ public class Resident {
    }
    public void setValidIdPath(String validIdPath) {
        this.validIdPath = validIdPath;
+   }
+   public ResidentStatus getStatus() {
+       return status;
+   }
+   public void setStatus(ResidentStatus status) {
+       this.status = status;
    }
    public LocalDateTime getCreatedAt() {
        return createdAt;

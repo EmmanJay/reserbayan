@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { X, Mail, Lock, Phone, MapPin, FileText, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import NotificationModal from '@/components/NotificationModal';
 
 export default function SignUpContainer({ onClose }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function SignUpContainer({ onClose }) {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [notificationModal, setNotificationModal] = useState(null);
 
   const validatePassword = (pwd) => {
     const hasMinLength = pwd.length >= 8;
@@ -86,19 +88,31 @@ export default function SignUpContainer({ onClose }) {
           setLoginError(data.message || 'Invalid credentials');
         }
       } catch (error) {
-        alert('Network error. Please try again.');
+        setNotificationModal({
+          type: 'error',
+          title: 'Network Error',
+          message: 'Please try again.'
+        });
       } finally {
         setLoading(false);
       }
     } else {
       // Handle signup
       if (!isPasswordValid) {
-        alert('Please ensure your password meets all requirements.');
+        setNotificationModal({
+          type: 'warning',
+          title: 'Invalid Password',
+          message: 'Please ensure your password meets all requirements.'
+        });
         setLoading(false);
         return;
       }
       if (password !== confirmPassword) {
-        alert('Passwords do not match.');
+        setNotificationModal({
+          type: 'warning',
+          title: 'Password Mismatch',
+          message: 'Passwords do not match.'
+        });
         setLoading(false);
         return;
       }
@@ -136,18 +150,32 @@ export default function SignUpContainer({ onClose }) {
         const data = await response.json();
 
         if (data.success) {
-          alert('Registration successful!');
+          setNotificationModal({
+            type: 'success',
+            title: 'Registration Successful',
+            message: 'Your account is pending approval. You can browse documents but cannot request them until approved.',
+            autoClose: true,
+            autoCloseDelay: 5000
+          });
           setActiveTab('login');
         } else {
           // Check if it's an email error
           if (data.message && (data.message.includes('Email already registered') || data.message.includes('already exists'))) {
             setEmailError(data.message);
           } else {
-            alert(data.message || 'Registration failed');
+            setNotificationModal({
+              type: 'error',
+              title: 'Registration Failed',
+              message: data.message || 'Registration failed'
+            });
           }
         }
       } catch (error) {
-        alert('Network error. Please try again.');
+        setNotificationModal({
+          type: 'error',
+          title: 'Network Error',
+          message: 'Please try again.'
+        });
       } finally {
         setLoading(false);
       }
@@ -472,6 +500,16 @@ Upload a valid government-issued ID (PNG, JPG, or PDF)
           </div>
         </form>
       )}
+
+      <NotificationModal
+        isOpen={!!notificationModal}
+        onClose={() => setNotificationModal(null)}
+        type={notificationModal?.type}
+        title={notificationModal?.title}
+        message={notificationModal?.message}
+        autoClose={notificationModal?.autoClose}
+        autoCloseDelay={notificationModal?.autoCloseDelay}
+      />
     </div>
   );
 }

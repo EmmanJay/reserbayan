@@ -1,6 +1,7 @@
 package com.cagasi.reserbayan.controller;
 
 import com.cagasi.reserbayan.entity.*;
+import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,9 @@ public class SuperAdminController {
     // Resident Management
     @GetMapping("/residents")
     public ResponseEntity<?> getAllResidents() {
-        List<Resident> residents = residentRepository.findAll();
+        List<Resident> residents = residentRepository.findAll().stream()
+            .filter(r -> r.getStatus() == ResidentStatus.APPROVED)
+            .toList();
         return ResponseEntity.ok(residents);
     }
 
@@ -86,6 +89,37 @@ public class SuperAdminController {
         resident.setPassword(request.get("password"));
         residentRepository.save(resident);
         return ResponseEntity.ok().build();
+    }
+
+    // Resident Requests Management
+    @GetMapping("/resident-requests")
+    public ResponseEntity<?> getResidentRequests() {
+        List<Resident> requests = residentRepository.findAll().stream()
+            .filter(r -> r.getStatus() == ResidentStatus.PENDING)
+            .toList();
+        return ResponseEntity.ok(requests);
+    }
+
+    @PutMapping("/resident-requests/{id}/approve")
+    public ResponseEntity<?> approveResidentRequest(@PathVariable Long id) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null || resident.getStatus() != ResidentStatus.PENDING) {
+            return ResponseEntity.notFound().build();
+        }
+        resident.setStatus(ResidentStatus.APPROVED);
+        residentRepository.save(resident);
+        return ResponseEntity.ok(resident);
+    }
+
+    @PutMapping("/resident-requests/{id}/reject")
+    public ResponseEntity<?> rejectResidentRequest(@PathVariable Long id) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null || resident.getStatus() != ResidentStatus.PENDING) {
+            return ResponseEntity.notFound().build();
+        }
+        resident.setStatus(ResidentStatus.REJECTED);
+        residentRepository.save(resident);
+        return ResponseEntity.ok(resident);
     }
 
     // Admin Management
