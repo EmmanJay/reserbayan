@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Shield, Eye, Settings, Trash2, Key, Plus } from 'lucide-react';
+import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle } from 'lucide-react';
+import NotificationModal from '@/components/NotificationModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -13,12 +15,18 @@ export default function SuperAdminManagementPage() {
   const [loading, setLoading] = useState(true);
   const [residents, setResidents] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [residentRequests, setResidentRequests] = useState([]);
   const [residentsLoading, setResidentsLoading] = useState(true);
   const [adminsLoading, setAdminsLoading] = useState(true);
+  const [residentRequestsLoading, setResidentRequestsLoading] = useState(true);
   const [manageModal, setManageModal] = useState(null);
   const [manageType, setManageType] = useState(null); // 'resident' or 'admin'
   const [addAdminModal, setAddAdminModal] = useState(false);
   const [newAdminUsername, setNewAdminUsername] = useState('');
+  const [viewInfoModal, setViewInfoModal] = useState(null);
+  const [expandedImage, setExpandedImage] = useState(null);
+  const [notificationModal, setNotificationModal] = useState(null);
+  const [confirmationModal, setConfirmationModal] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -36,6 +44,7 @@ export default function SuperAdminManagementPage() {
 
     fetchResidents();
     fetchAdmins();
+    fetchResidentRequests();
   }, [router]);
 
   const fetchResidents = async () => {
@@ -74,41 +83,74 @@ export default function SuperAdminManagementPage() {
     }
   };
 
+  const fetchResidentRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/superadmin/resident-requests', {
+        headers: token ? {
+          'Authorization': `Bearer ${token}`,
+        } : {},
+      });
+      if (!response.ok) throw new Error('Failed to fetch resident requests');
+      const data = await response.json();
+      setResidentRequests(data.slice(0, 10)); // Show only first 10
+    } catch (err) {
+      console.error('Error fetching resident requests:', err);
+    } finally {
+      setResidentRequestsLoading(false);
+    }
+  };
+
   const handleManage = (type, item) => {
     setManageType(type);
     setManageModal(item);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!manageModal) return;
 
-    const endpoint = manageType === 'resident' ? 'residents' : 'admins';
-    const confirmMessage = `Are you sure you want to delete this ${manageType}? This action cannot be undone.`;
+    setConfirmationModal({
+      type: 'delete',
+      title: 'Confirm Deletion',
+      message: `Are you sure you want to delete this ${manageType}? This action cannot be undone.`,
+      confirmText: 'Delete',
+      onConfirm: async () => {
+        const endpoint = manageType === 'resident' ? 'residents' : 'admins';
 
-    if (!confirm(confirmMessage)) return;
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${manageModal.residentId}`, {
+            method: 'DELETE',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to delete');
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${manageModal.residentId}`, {
-        method: 'DELETE',
-        headers: token ? {
-          'Authorization': `Bearer ${token}`,
-        } : {},
-      });
-      if (!response.ok) throw new Error('Failed to delete');
+          // Remove from local state
+          if (manageType === 'resident') {
+            setResidents(residents.filter(r => r.residentId !== manageModal.residentId));
+          } else {
+            setAdmins(admins.filter(a => a.residentId !== manageModal.residentId));
+          }
 
-      // Remove from local state
-      if (manageType === 'resident') {
-        setResidents(residents.filter(r => r.residentId !== manageModal.residentId));
-      } else {
-        setAdmins(admins.filter(a => a.residentId !== manageModal.residentId));
+          setNotificationModal({
+            type: 'success',
+            title: 'Deletion Successful',
+            message: `${manageType.charAt(0).toUpperCase() + manageType.slice(1)} deleted successfully`,
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+          setManageModal(null);
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Deletion Failed',
+            message: 'Error deleting: ' + err.message
+          });
+        }
       }
-
-      alert(`${manageType.charAt(0).toUpperCase() + manageType.slice(1)} deleted successfully`);
-      setManageModal(null);
-    } catch (err) {
-      alert('Error deleting: ' + err.message);
-    }
+    });
   };
 
   const handlePasswordReset = async () => {
@@ -131,10 +173,20 @@ export default function SuperAdminManagementPage() {
       });
       if (!response.ok) throw new Error('Failed to reset password');
 
-      alert('Password reset successfully');
+      setNotificationModal({
+        type: 'success',
+        title: 'Password Reset Successful',
+        message: 'Password has been reset successfully',
+        autoClose: true,
+        autoCloseDelay: 3000
+      });
       setManageModal(null);
     } catch (err) {
-      alert('Error resetting password: ' + err.message);
+      setNotificationModal({
+        type: 'error',
+        title: 'Password Reset Failed',
+        message: 'Error resetting password: ' + err.message
+      });
     }
   };
 
@@ -174,12 +226,103 @@ export default function SuperAdminManagementPage() {
       // Refresh the admins list
       await fetchAdmins();
 
-      alert('Administrator added successfully with default password: Admin123');
+      setNotificationModal({
+        type: 'success',
+        title: 'Administrator Added',
+        message: 'Administrator added successfully with default password: Admin123',
+        autoClose: true,
+        autoCloseDelay: 4000
+      });
       setAddAdminModal(false);
       setNewAdminUsername('');
     } catch (err) {
-      alert('Error adding administrator: ' + err.message);
+      setNotificationModal({
+        type: 'error',
+        title: 'Failed to Add Administrator',
+        message: 'Error adding administrator: ' + err.message
+      });
     }
+  };
+
+  const handleViewInfo = (request) => {
+    setViewInfoModal(request);
+  };
+
+  const handleAccept = (request) => {
+    setConfirmationModal({
+      type: 'approve',
+      title: 'Confirm Approval',
+      message: `Are you sure you want to approve ${request.firstName} ${request.lastName}? This will grant them full access to request documents.`,
+      confirmText: 'Approve',
+      confirmButtonClass: 'bg-green-600 hover:bg-green-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/resident-requests/${request.residentId}/approve`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to approve');
+
+          // Remove from resident requests and refresh
+          setResidentRequests(residentRequests.filter(r => r.residentId !== request.residentId));
+          await fetchResidents(); // Refresh approved residents
+          setNotificationModal({
+            type: 'success',
+            title: 'Resident Approved',
+            message: 'Resident has been approved successfully',
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Approval Failed',
+            message: 'Error approving resident: ' + err.message
+          });
+        }
+      }
+    });
+  };
+
+  const handleReject = (request) => {
+    setConfirmationModal({
+      type: 'reject',
+      title: 'Confirm Rejection',
+      message: `Are you sure you want to reject ${request.firstName} ${request.lastName}? This will permanently deny their access to the system.`,
+      confirmText: 'Reject',
+      confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/resident-requests/${request.residentId}/reject`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to reject');
+
+          // Remove from resident requests
+          setResidentRequests(residentRequests.filter(r => r.residentId !== request.residentId));
+          setNotificationModal({
+            type: 'success',
+            title: 'Resident Rejected',
+            message: 'Resident has been rejected successfully',
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Rejection Failed',
+            message: 'Error rejecting resident: ' + err.message
+          });
+        }
+      }
+    });
   };
 
   if (!user || loading) {
@@ -221,70 +364,152 @@ export default function SuperAdminManagementPage() {
         <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mx-auto mt-4"></div>
       </motion.div>
 
-      {/* Main Content - Flex Layout */}
+      {/* Main Content */}
       <div className="flex gap-8">
-        {/* Residents Section */}
-        <motion.div
-          className="flex-1"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Residents</h2>
+        {/* Left Side - Residents and Resident Requests */}
+        <div className="flex-1 space-y-8">
+          {/* Residents Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                <h2 className="text-xl font-semibold text-gray-900">Residents</h2>
+              </div>
+              <Link
+                href="/superadmin/management/residents"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+              >
+                <Eye size={16} />
+                View All
+              </Link>
             </div>
-            <Link
-              href="/superadmin/management/residents"
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-            >
-              <Eye size={16} />
-              View All
-            </Link>
-          </div>
 
-          {residentsLoading ? (
-            <div className="text-center py-6">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-600">Loading residents...</p>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              {residents.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-sm text-gray-500">No residents found</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {residents.map((resident) => (
-                    <div key={resident.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Users className="w-4 h-4 text-gray-600" />
+            {residentsLoading ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-600">Loading residents...</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                {residents.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-gray-500">No residents found</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {residents.slice(0, 4).map((resident) => (
+                      <div key={resident.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {resident.firstName} {resident.middleName} {resident.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">{resident.residentEmail}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">
-                            {resident.firstName} {resident.middleName} {resident.lastName}
-                          </p>
-                          <p className="text-xs text-gray-500">{resident.residentEmail}</p>
+                        <button
+                          onClick={() => handleManage('resident', resident)}
+                          className="text-gray-600 hover:text-gray-800 p-1"
+                        >
+                          <Settings size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Resident Requests Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25, ease: "easeOut" }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-orange-600" />
+                <h2 className="text-xl font-semibold text-gray-900">Resident Requests</h2>
+              </div>
+              <Link
+                href="/superadmin/management/resident-requests"
+                className="text-orange-600 hover:text-orange-700 text-sm font-medium flex items-center gap-1"
+              >
+                <Eye size={16} />
+                View All
+              </Link>
+            </div>
+
+            {residentRequestsLoading ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600 mx-auto"></div>
+                <p className="mt-2 text-sm text-gray-600">Loading resident requests...</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                {residentRequests.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-gray-500">No resident requests found</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {residentRequests.slice(0, 4).map((request) => (
+                      <div key={request.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">
+                              {request.firstName} {request.middleName} {request.lastName}
+                            </p>
+                            <p className="text-xs text-gray-500">{request.residentEmail}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleViewInfo(request)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                            title="View Information"
+                          >
+                            <Eye size={16} />
+                            <span>View</span>
+                          </button>
+                          <button
+                            onClick={() => handleAccept(request)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors font-medium"
+                            title="Approve"
+                          >
+                            <CheckCircle size={16} />
+                            <span>Approve</span>
+                          </button>
+                          <button
+                            onClick={() => handleReject(request)}
+                            className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                            title="Reject"
+                          >
+                            <XCircle size={16} />
+                            <span>Reject</span>
+                          </button>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleManage('resident', resident)}
-                        className="text-gray-600 hover:text-gray-800 p-1"
-                      >
-                        <Settings size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </div>
 
-        {/* Admins Section */}
+        {/* Right Side - Admins Section */}
         <motion.div
           className="flex-1"
           initial={{ opacity: 0, y: 30 }}
@@ -327,7 +552,7 @@ export default function SuperAdminManagementPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {admins.map((admin) => (
+                  {admins.slice(0, 8).map((admin) => (
                     <div key={admin.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
@@ -494,6 +719,140 @@ export default function SuperAdminManagementPage() {
           </motion.div>
         </div>
       )}
+
+      {/* View Info Modal */}
+      {viewInfoModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Users className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Resident Information</h3>
+                  <p className="text-sm text-gray-600">
+                    {viewInfoModal.firstName} {viewInfoModal.middleName} {viewInfoModal.lastName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewInfoModal.firstName} {viewInfoModal.middleName} {viewInfoModal.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.residentEmail}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.phoneNumber}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Address</label>
+                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.address}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Birthdate</label>
+                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.birthdate}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Valid ID</label>
+                  {viewInfoModal.validIdPath ? (
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <img
+                        src={`http://localhost:8080/${viewInfoModal.validIdPath.replace(/\\/g, '/')}`}
+                        alt="Valid ID"
+                        className="w-full h-auto max-h-64 object-contain rounded cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setExpandedImage(`http://localhost:8080/${viewInfoModal.validIdPath.replace(/\\/g, '/')}`)}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'block';
+                        }}
+                      />
+                      <div className="hidden text-center text-gray-500 py-4">
+                        <div className="text-4xl mb-2">📄</div>
+                        <p>Unable to load image</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2 text-center">Click image to expand</p>
+                    </div>
+                  ) : (
+                    <div className="border border-gray-200 rounded-lg p-4 text-center text-gray-500">
+                      No ID uploaded
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setViewInfoModal(null)}
+                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Expanded Image Modal */}
+      {expandedImage && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={() => setExpandedImage(null)}
+              className="absolute -top-12 right-0 text-gray-700 hover:text-gray-900 text-2xl font-bold z-60 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+            >
+              ✕
+            </button>
+            <img
+              src={expandedImage}
+              alt="Expanded ID"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={() => setExpandedImage(null)}
+              style={{ cursor: 'zoom-out' }}
+            />
+            <p className="text-gray-700 text-center mt-4 text-sm opacity-75 bg-white px-3 py-1 rounded-full shadow-sm">
+              Click image or ✕ to close
+            </p>
+          </div>
+        </div>
+      )}
+
+      <NotificationModal
+        isOpen={!!notificationModal}
+        onClose={() => setNotificationModal(null)}
+        type={notificationModal?.type}
+        title={notificationModal?.title}
+        message={notificationModal?.message}
+        autoClose={notificationModal?.autoClose}
+        autoCloseDelay={notificationModal?.autoCloseDelay}
+      />
+
+      <ConfirmationModal
+        isOpen={!!confirmationModal}
+        onClose={() => setConfirmationModal(null)}
+        onConfirm={confirmationModal?.onConfirm}
+        type={confirmationModal?.type}
+        title={confirmationModal?.title}
+        message={confirmationModal?.message}
+        confirmText={confirmationModal?.confirmText}
+        cancelText={confirmationModal?.cancelText}
+        confirmButtonClass={confirmationModal?.confirmButtonClass}
+      />
     </motion.div>
   );
 }

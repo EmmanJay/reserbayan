@@ -3,15 +3,19 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { use } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
+import { useUser } from '@/contexts/UserContext';
+import PendingRestrictionModal from '@/components/PendingRestrictionModal';
 
 export default function DocumentDetailPage({ params }) {
   const { documentsData, loading, error } = useDocumentTypes();
+  const { user } = useUser();
   const resolvedParams = use(params);
   const searchParams = useSearchParams();
   const from = searchParams.get('from');
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
   const doc = documentsData.find((doc) => doc.id === resolvedParams.id);
 
@@ -105,7 +109,13 @@ export default function DocumentDetailPage({ params }) {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <button
-            onClick={() => window.location.href = `/documents/${doc.id}/request`}
+            onClick={() => {
+              if (user && user.status === 'PENDING') {
+                setShowPendingModal(true);
+              } else {
+                window.location.href = `/documents/${doc.id}/request`;
+              }
+            }}
             className="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors shadow-lg text-base"
           >
             Request Document
@@ -115,6 +125,12 @@ export default function DocumentDetailPage({ params }) {
           
         </div>
       </div>
+
+      {/* Pending Restriction Modal */}
+      <PendingRestrictionModal
+        isOpen={showPendingModal}
+        onClose={() => setShowPendingModal(false)}
+      />
     </motion.div>
   );
 }

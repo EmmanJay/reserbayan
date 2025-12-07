@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
+import PendingRestrictionModal from '@/components/PendingRestrictionModal';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -20,6 +21,7 @@ export default function DashboardPage() {
     purpose: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [showPendingModal, setShowPendingModal] = useState(false);
 
   const recentRequests = useMemo(() => {
     return requests
@@ -147,7 +149,13 @@ export default function DashboardPage() {
           <h2 className="font-montserrat font-bold text-3xl text-gray-800 mb-8">Quick Actions</h2>
           <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => setShowRequestModal(true)}
+              onClick={() => {
+                if (user.status === 'PENDING') {
+                  setShowPendingModal(true);
+                  return;
+                }
+                setShowRequestModal(true);
+              }}
               className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center space-x-3"
             >
               <Plus className="w-6 h-6" />
@@ -221,7 +229,13 @@ export default function DashboardPage() {
               <h3 className="text-2xl font-bold text-gray-700 mb-4">No Recent Activity</h3>
               <p className="text-gray-500 mb-8 text-lg">You havent submitted any requests yet. Get started by requesting your first document!</p>
               <button
-                onClick={() => setShowRequestModal(true)}
+                onClick={() => {
+                  if (user.status === 'PENDING') {
+                    setShowPendingModal(true);
+                    return;
+                  }
+                  setShowRequestModal(true);
+                }}
                 className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 Request Your First Document
@@ -339,6 +353,12 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Pending Restriction Modal */}
+        <PendingRestrictionModal
+          isOpen={showPendingModal}
+          onClose={() => setShowPendingModal(false)}
+        />
       </div>
     </motion.div>
   );

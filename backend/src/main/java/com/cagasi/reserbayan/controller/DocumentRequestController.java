@@ -3,6 +3,7 @@ package com.cagasi.reserbayan.controller;
 import com.cagasi.reserbayan.dto.DocumentRequestDTO;
 import com.cagasi.reserbayan.entity.DocumentRequest;
 import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.DocumentRequestRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 
@@ -32,6 +33,10 @@ public class DocumentRequestController {
 
         if (resident == null) {
             return ResponseEntity.badRequest().body("Resident not found");
+        }
+
+        if (resident.getStatus() != ResidentStatus.APPROVED) {
+            return ResponseEntity.badRequest().body("Your account has not been confirmed yet. Please wait for approval.");
         }
 
         DocumentRequest request = new DocumentRequest();

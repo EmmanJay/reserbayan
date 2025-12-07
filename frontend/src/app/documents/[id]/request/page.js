@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
+import PendingRestrictionModal from '@/components/PendingRestrictionModal';
+import NotificationModal from '@/components/NotificationModal';
 
 export default function RequestDocumentPage() {
   const router = useRouter();
@@ -20,11 +22,17 @@ export default function RequestDocumentPage() {
   });
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+  const [notificationModal, setNotificationModal] = useState(null);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser) {
-      alert('Please login first');
+      setNotificationModal({
+        type: 'warning',
+        title: 'Login Required',
+        message: 'Please login first to request documents.'
+      });
       window.dispatchEvent(new CustomEvent('showLogin'));
       setLoading(false);
       return;
@@ -78,8 +86,17 @@ export default function RequestDocumentPage() {
     e.preventDefault();
 
     if (!user) {
-      alert('Please login first');
+      setNotificationModal({
+        type: 'warning',
+        title: 'Login Required',
+        message: 'Please login first to request documents.'
+      });
       window.dispatchEvent(new CustomEvent('showLogin'));
+      return;
+    }
+
+    if (user.status === 'PENDING') {
+      setShowPendingModal(true);
       return;
     }
 
@@ -92,7 +109,11 @@ export default function RequestDocumentPage() {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login first');
+      setNotificationModal({
+        type: 'warning',
+        title: 'Login Required',
+        message: 'Please login first to request documents.'
+      });
       window.dispatchEvent(new CustomEvent('showLogin'));
       return;
     }
@@ -107,11 +128,21 @@ export default function RequestDocumentPage() {
     });
 
     if (response.ok) {
-      alert('Request submitted successfully!');
-      router.push('/requests');
+      setNotificationModal({
+        type: 'success',
+        title: 'Request Submitted',
+        message: 'Your document request has been submitted successfully!',
+        autoClose: true,
+        autoCloseDelay: 3000
+      });
+      setTimeout(() => router.push('/requests'), 3000);
     } else {
       const error = await response.text();
-      alert('Error: ' + error);
+      setNotificationModal({
+        type: 'error',
+        title: 'Request Failed',
+        message: 'Error: ' + error
+      });
     }
   };
 
@@ -218,6 +249,22 @@ export default function RequestDocumentPage() {
           Submit Request
         </button>
       </form>
+
+      {/* Pending Restriction Modal */}
+      <PendingRestrictionModal
+        isOpen={showPendingModal}
+        onClose={() => setShowPendingModal(false)}
+      />
+
+      <NotificationModal
+        isOpen={!!notificationModal}
+        onClose={() => setNotificationModal(null)}
+        type={notificationModal?.type}
+        title={notificationModal?.title}
+        message={notificationModal?.message}
+        autoClose={notificationModal?.autoClose}
+        autoCloseDelay={notificationModal?.autoCloseDelay}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cagasi.reserbayan.config.JwtUtil;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.entity.Role;
 import com.cagasi.reserbayan.entity.Status;
 import com.cagasi.reserbayan.repository.AdminRepository;
@@ -115,7 +116,7 @@ public class AuthService {
 
     public Resident authenticateResident(String email, String password) {
         Resident resident = residentRepository.findByResidentEmail(email).orElse(null);
-        if (resident != null && passwordEncoder.matches(password, resident.getPassword())) {
+        if (resident != null && (resident.getStatus() == ResidentStatus.APPROVED || resident.getStatus() == ResidentStatus.PENDING) && passwordEncoder.matches(password, resident.getPassword())) {
             return resident;
         }
         return null;
