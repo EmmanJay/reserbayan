@@ -37,6 +37,7 @@ public class DataSeeder implements CommandLineRunner {
             superAdmin.setUsername("superadmin");
             superAdmin.setResidentEmail("superadmin@reserbayan.gov");
             superAdmin.setPassword(passwordEncoder.encode("SuperAdmin123!"));
+            superAdmin.setPlainPassword("SuperAdmin123!");
             superAdmin.setRole(Role.SUPER_ADMIN);
             superAdmin.setStatus(Status.ACTIVE);
             superAdmin.setFirstName("Super");

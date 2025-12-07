@@ -4,6 +4,9 @@ import com.cagasi.reserbayan.entity.*;
 import com.cagasi.reserbayan.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -29,6 +32,9 @@ public class SuperAdminController {
     @Autowired
     private StatusLogRepository statusLogRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     // Summary & Analytics
     @GetMapping("/summary")
     public ResponseEntity<?> getSummary() {
@@ -53,17 +59,146 @@ public class SuperAdminController {
         return ResponseEntity.ok(residents);
     }
 
+    @GetMapping("/residents/{id}")
+    public ResponseEntity<?> getResidentById(@PathVariable Long id) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(resident);
+    }
+
+    @DeleteMapping("/residents/{id}")
+    public ResponseEntity<?> deleteResident(@PathVariable Long id) {
+        if (!residentRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        residentRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/residents/{id}/password")
+    public ResponseEntity<?> resetResidentPassword(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null) {
+            return ResponseEntity.notFound().build();
+        }
+        resident.setPassword(request.get("password"));
+        residentRepository.save(resident);
+        return ResponseEntity.ok().build();
+    }
+
     // Admin Management
     @GetMapping("/admins")
     public ResponseEntity<?> getAllAdmins() {
         List<Admin> admins = adminRepository.findAll();
+        for (Admin admin : admins) {
+            if (admin.getPlainPassword() == null) {
+                if (admin.getRole() == Role.SUPER_ADMIN) {
+                    admin.setPlainPassword("SuperAdmin123!");
+                } else {
+                    admin.setPlainPassword("Admin123");
+                }
+            }
+            // Encode password if not already encoded
+            if (admin.getPassword() != null && !admin.getPassword().startsWith("$2a")) {
+                admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+                adminRepository.save(admin);
+            }
+        }
         return ResponseEntity.ok(admins);
+    }
+
+    @GetMapping("/admins/{id}")
+    public ResponseEntity<?> getAdminById(@PathVariable Long id) {
+        Admin admin = adminRepository.findById(id).orElse(null);
+        if (admin == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(admin);
     }
 
     @PostMapping("/admins")
     public ResponseEntity<?> addAdmin(@RequestBody Admin admin) {
+        admin.setPlainPassword(admin.getPassword());
+        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
         Admin saved = adminRepository.save(admin);
         return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping("/admins/{id}")
+    public ResponseEntity<?> updateAdmin(@PathVariable Long id, @RequestBody Admin admin) {
+        Admin existing = adminRepository.findById(id).orElse(null);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+        existing.setFirstName(admin.getFirstName());
+        existing.setLastName(admin.getLastName());
+        existing.setMiddleName(admin.getMiddleName());
+        existing.setResidentEmail(admin.getResidentEmail());
+        existing.setUsername(admin.getUsername());
+        existing.setPhoneNumber(admin.getPhoneNumber());
+        existing.setAddress(admin.getAddress());
+        existing.setPosition(admin.getPosition());
+        existing.setProofOfEmploymentPath(admin.getProofOfEmploymentPath());
+        // Update password if changed
+        if (admin.getPassword() != null && !admin.getPassword().equals(existing.getPlainPassword())) {
+            existing.setPlainPassword(admin.getPassword());
+            existing.setPassword(passwordEncoder.encode(admin.getPassword()));
+        }
+        Admin saved = adminRepository.save(existing);
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/admins/{id}")
+    public ResponseEntity<?> deleteAdmin(@PathVariable Long id) {
+        if (!adminRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        adminRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/admins/{id}/password")
+    public ResponseEntity<?> resetAdminPassword(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Admin admin = adminRepository.findById(id).orElse(null);
+        if (admin == null) {
+            return ResponseEntity.notFound().build();
+        }
+        admin.setPassword(request.get("password"));
+        adminRepository.save(admin);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verify-password")
+    public ResponseEntity<?> verifySuperAdminPassword(@RequestBody Map<String, String> request) {
+        String password = request.get("password");
+        if (password == null || password.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("valid", false, "message", "Password is required"));
+        }
+
+        // Get the current authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("valid", false, "message", "Not authenticated"));
+        }
+
+        String username = authentication.getName();
+
+        // Find the admin by username or email
+        Admin currentAdmin = adminRepository.findByUsername(username).orElse(null);
+        if (currentAdmin == null) {
+            currentAdmin = adminRepository.findByResidentEmail(username).orElse(null);
+        }
+
+        if (currentAdmin == null || currentAdmin.getRole() != Role.SUPER_ADMIN) {
+            return ResponseEntity.status(403).body(Map.of("valid", false, "message", "Super admin access required"));
+        }
+
+        // Verify the password using the password encoder
+        boolean isValid = passwordEncoder.matches(password, currentAdmin.getPassword());
+
+        return ResponseEntity.ok(Map.of("valid", isValid));
     }
 
     // Document Types Management

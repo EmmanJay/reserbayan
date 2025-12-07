@@ -3,6 +3,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,7 +27,10 @@ public class Admin {
    private String residentEmail;
    @Column(unique = true)
    private String username;
+   @JsonIgnore
    private String password;
+   @JsonProperty("password")
+   private String plainPassword;
    @Enumerated(EnumType.STRING)
    private Role role;
    @Enumerated(EnumType.STRING)
@@ -83,6 +87,12 @@ public class Admin {
    }
    public void setPassword(String password) {
        this.password = password;
+   }
+   public String getPlainPassword() {
+       return plainPassword;
+   }
+   public void setPlainPassword(String plainPassword) {
+       this.plainPassword = plainPassword;
    }
    public Role getRole() {
        return role;
