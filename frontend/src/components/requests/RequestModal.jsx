@@ -32,8 +32,13 @@ function RequestModal({ request, user, onClose, cancelRequest }) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      {/* Backdrop overlay with blur */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
+
+      {/* Modal container */}
+      <div className="relative mx-auto p-2 sm:p-4 max-w-4xl h-full flex items-center justify-center">
+        <div className="bg-white rounded-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -146,6 +151,7 @@ function RequestModal({ request, user, onClose, cancelRequest }) {
           >
             Close
           </button>
+        </div>
         </div>
       </div>
     </div>

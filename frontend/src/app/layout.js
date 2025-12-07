@@ -3,7 +3,6 @@ import "./globals.css";
 
 // Import your components here
 import ClientLayout from '@/components/ClientLayout';
-import Footer from '@/components/home/Footer';
 import AuthModal from '@/components/auth/AuthModal';
 import { UserProvider } from '@/contexts/UserContext';
 
@@ -34,9 +33,6 @@ export default function RootLayout({ children }) {
               {children}
             </main>
           </ClientLayout>
-
-          {/* Footer goes at the bottom */}
-          <Footer />
 
           {/* Global Auth Modal */}
           <AuthModal />
