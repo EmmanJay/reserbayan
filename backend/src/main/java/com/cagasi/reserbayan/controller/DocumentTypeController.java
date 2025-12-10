@@ -107,8 +107,8 @@ public class DocumentTypeController {
             Path filePath = uploadDir.resolve(filename);
             Files.copy(file.getInputStream(), filePath);
 
-            // Return the file path (relative to serve static files)
-            String fileUrl = "/uploads/" + filename;
+            // Return the full URL for the uploaded file
+            String fileUrl = "http://localhost:8080/uploads/" + filename;
             return ResponseEntity.ok(fileUrl);
 
         } catch (IOException e) {
