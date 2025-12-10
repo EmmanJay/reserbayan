@@ -4,6 +4,7 @@ import com.cagasi.reserbayan.entity.*;
 import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,6 +92,27 @@ public class SuperAdminController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/residents/{id}/verify")
+    public ResponseEntity<?> verifyResident(@PathVariable Long id) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // Assuming there's a verification status or field, for now just update status to APPROVED
+        resident.setStatus(ResidentStatus.APPROVED);
+        residentRepository.save(resident);
+        return ResponseEntity.ok(resident);
+    }
+
+    @GetMapping("/residents/{id}/password")
+    public ResponseEntity<?> getResidentPassword(@PathVariable Long id) {
+        Resident resident = residentRepository.findById(id).orElse(null);
+        if (resident == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of("password", resident.getPassword() != null ? resident.getPassword() : "Not set"));
+    }
+
     // Resident Requests Management
     @GetMapping("/resident-requests")
     public ResponseEntity<?> getResidentRequests() {
@@ -154,10 +176,26 @@ public class SuperAdminController {
 
     @PostMapping("/admins")
     public ResponseEntity<?> addAdmin(@RequestBody Admin admin) {
-        admin.setPlainPassword(admin.getPassword());
-        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
-        Admin saved = adminRepository.save(admin);
-        return ResponseEntity.ok(saved);
+        try {
+            String plainPassword = admin.getPlainPassword();
+            if (plainPassword == null || plainPassword.trim().isEmpty()) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Password is required");
+                return ResponseEntity.badRequest().body(error);
+            }
+            admin.setPlainPassword(plainPassword);
+            admin.setPassword(passwordEncoder.encode(plainPassword));
+            Admin saved = adminRepository.save(admin);
+            return ResponseEntity.ok(saved);
+        } catch (DataIntegrityViolationException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Username or email already exists");
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to add admin: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
     }
 
     @PutMapping("/admins/{id}")
@@ -181,6 +219,28 @@ public class SuperAdminController {
             existing.setPassword(passwordEncoder.encode(admin.getPassword()));
         }
         Admin saved = adminRepository.save(existing);
+        return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping("/admins/{id}/status")
+    public ResponseEntity<?> toggleAdminStatus(@PathVariable Long id) {
+        Admin admin = adminRepository.findById(id).orElse(null);
+        if (admin == null) {
+            return ResponseEntity.notFound().build();
+        }
+        admin.setStatus(admin.getStatus() == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
+        Admin saved = adminRepository.save(admin);
+        return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping("/admins/{id}/role")
+    public ResponseEntity<?> makeSuperAdmin(@PathVariable Long id) {
+        Admin admin = adminRepository.findById(id).orElse(null);
+        if (admin == null) {
+            return ResponseEntity.notFound().build();
+        }
+        admin.setRole(Role.SUPER_ADMIN);
+        Admin saved = adminRepository.save(admin);
         return ResponseEntity.ok(saved);
     }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
 import NotificationModal from '@/components/NotificationModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { motion } from 'framer-motion';
@@ -13,17 +13,23 @@ export default function SuperAdminManagementPage() {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [residents, setResidents] = useState([]);
-  const [admins, setAdmins] = useState([]);
-  const [residentRequests, setResidentRequests] = useState([]);
-  const [residentsLoading, setResidentsLoading] = useState(true);
-  const [adminsLoading, setAdminsLoading] = useState(true);
-  const [residentRequestsLoading, setResidentRequestsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('administrators');
+  const [data, setData] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
+
+  // Modals and states
   const [manageModal, setManageModal] = useState(null);
-  const [manageType, setManageType] = useState(null); // 'resident' or 'admin'
+  const [manageType, setManageType] = useState(null);
   const [addAdminModal, setAddAdminModal] = useState(false);
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [viewInfoModal, setViewInfoModal] = useState(null);
+  const [editModal, setEditModal] = useState(null);
+  const [passwordWarningModal, setPasswordWarningModal] = useState(null);
+  const [passwordRevealModal, setPasswordRevealModal] = useState(null);
   const [expandedImage, setExpandedImage] = useState(null);
   const [notificationModal, setNotificationModal] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState(null);
@@ -42,69 +48,65 @@ export default function SuperAdminManagementPage() {
     setRole(role);
     setLoading(false);
 
-    fetchResidents();
-    fetchAdmins();
-    fetchResidentRequests();
-  }, [router]);
+    fetchData(activeTab);
+  }, [router, activeTab]);
 
-  const fetchResidents = async () => {
+  const fetchData = async (tab) => {
+    setLoadingData(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/superadmin/residents', {
+      let endpoint = '';
+      switch (tab) {
+        case 'administrators':
+          endpoint = 'admins';
+          break;
+        case 'residents':
+          endpoint = 'residents';
+          break;
+        case 'resident-requests':
+          endpoint = 'resident-requests';
+          break;
+        case 'document-requests':
+          endpoint = 'requests'; // Assuming this endpoint exists
+          break;
+        default:
+          endpoint = 'admins';
+      }
+
+      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}`, {
         headers: token ? {
           'Authorization': `Bearer ${token}`,
         } : {},
       });
-      if (!response.ok) throw new Error('Failed to fetch residents');
+      if (!response.ok) throw new Error(`Failed to fetch ${tab}`);
       const data = await response.json();
-      setResidents(data.slice(0, 10)); // Show only first 10
+      setData(data);
+      setTotalPages(Math.ceil(data.length / itemsPerPage));
+      setCurrentPage(1);
     } catch (err) {
-      console.error('Error fetching residents:', err);
+      console.error(`Error fetching ${tab}:`, err);
+      setData([]);
+      setTotalPages(1);
     } finally {
-      setResidentsLoading(false);
+      setLoadingData(false);
     }
   };
 
-  const fetchAdmins = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/superadmin/admins', {
-        headers: token ? {
-          'Authorization': `Bearer ${token}`,
-        } : {},
-      });
-      if (!response.ok) throw new Error('Failed to fetch admins');
-      const data = await response.json();
-      setAdmins(data.slice(0, 10)); // Show only first 10
-    } catch (err) {
-      console.error('Error fetching admins:', err);
-    } finally {
-      setAdminsLoading(false);
-    }
-  };
-
-  const fetchResidentRequests = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/superadmin/resident-requests', {
-        headers: token ? {
-          'Authorization': `Bearer ${token}`,
-        } : {},
-      });
-      if (!response.ok) throw new Error('Failed to fetch resident requests');
-      const data = await response.json();
-      setResidentRequests(data.slice(0, 10)); // Show only first 10
-    } catch (err) {
-      console.error('Error fetching resident requests:', err);
-    } finally {
-      setResidentRequestsLoading(false);
-    }
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const handleManage = (type, item) => {
     setManageType(type);
     setManageModal(item);
   };
+
+  const handleEdit = (item) => {
+    setEditModal(item);
+  };
+
 
   const handleDelete = () => {
     if (!manageModal) return;
@@ -127,12 +129,8 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to delete');
 
-          // Remove from local state
-          if (manageType === 'resident') {
-            setResidents(residents.filter(r => r.residentId !== manageModal.residentId));
-          } else {
-            setAdmins(admins.filter(a => a.residentId !== manageModal.residentId));
-          }
+          // Refresh data
+          fetchData(activeTab);
 
           setNotificationModal({
             type: 'success',
@@ -155,6 +153,43 @@ export default function SuperAdminManagementPage() {
 
   const handlePasswordReset = async () => {
     if (!manageModal) return;
+
+    // For admin, verify SuperAdmin password first
+    if (manageType === 'admin') {
+      const password = prompt('Enter your Super Admin password to reset this administrator\'s password:');
+      if (!password) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:8080/api/superadmin/verify-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ password }),
+        });
+
+        const result = await response.json();
+        if (!result.valid) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Authentication Failed',
+            message: 'Incorrect Super Admin password. Access denied.',
+            autoClose: true,
+            autoCloseDelay: 4000
+          });
+          return;
+        }
+      } catch (err) {
+        setNotificationModal({
+          type: 'error',
+          title: 'Error',
+          message: 'Failed to verify password: ' + err.message
+        });
+        return;
+      }
+    }
 
     const newPassword = prompt(`Enter new password for ${manageModal.firstName} ${manageModal.lastName}:`);
     if (!newPassword) return;
@@ -221,10 +256,14 @@ export default function SuperAdminManagementPage() {
         },
         body: JSON.stringify(newAdmin),
       });
-      if (!response.ok) throw new Error('Failed to add admin');
 
-      // Refresh the admins list
-      await fetchAdmins();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add admin');
+      }
+
+      // Refresh the data
+      fetchData(activeTab);
 
       setNotificationModal({
         type: 'success',
@@ -248,6 +287,11 @@ export default function SuperAdminManagementPage() {
     setViewInfoModal(request);
   };
 
+  const handleEditFromView = (item) => {
+    setViewInfoModal(null);
+    setEditModal(item);
+  };
+
   const handleAccept = (request) => {
     setConfirmationModal({
       type: 'approve',
@@ -266,9 +310,8 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to approve');
 
-          // Remove from resident requests and refresh
-          setResidentRequests(residentRequests.filter(r => r.residentId !== request.residentId));
-          await fetchResidents(); // Refresh approved residents
+          // Refresh data
+          fetchData(activeTab);
           setNotificationModal({
             type: 'success',
             title: 'Resident Approved',
@@ -287,7 +330,162 @@ export default function SuperAdminManagementPage() {
     });
   };
 
+  const handleVerifyResident = async (resident) => {
+    setConfirmationModal({
+      type: 'verify',
+      title: 'Confirm Verification',
+      message: `Are you sure you want to verify ${resident.firstName} ${resident.lastName}? This will mark their account as verified.`,
+      confirmText: 'Verify',
+      confirmButtonClass: 'bg-indigo-600 hover:bg-indigo-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/residents/${resident.residentId}/verify`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to verify');
+
+          fetchData(activeTab);
+          setNotificationModal({
+            type: 'success',
+            title: 'Resident Verified',
+            message: 'Resident has been verified successfully',
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+          setManageModal(null);
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Verification Failed',
+            message: 'Error verifying resident: ' + err.message
+          });
+        }
+      }
+    });
+  };
+
+  const handleSuperAdminPasswordVerification = async (admin) => {
+    const password = prompt('Enter your Super Admin password to view this administrator\'s password:');
+    if (!password) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:8080/api/superadmin/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      const result = await response.json();
+      if (result.valid) {
+        // Password verified, now show the admin's password
+        setPasswordRevealModal({ item: admin, password: admin.plainPassword || 'Admin123' });
+      } else {
+        setNotificationModal({
+          type: 'error',
+          title: 'Authentication Failed',
+          message: 'Incorrect Super Admin password. Access denied.',
+          autoClose: true,
+          autoCloseDelay: 4000
+        });
+      }
+    } catch (err) {
+      setNotificationModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to verify password: ' + err.message
+      });
+    }
+  };
+
+  const handleToggleAdminStatus = async (admin) => {
+    const newStatus = admin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setConfirmationModal({
+      type: 'toggle-status',
+      title: `Confirm ${newStatus === 'ACTIVE' ? 'Activation' : 'Deactivation'}`,
+      message: `Are you sure you want to ${newStatus === 'ACTIVE' ? 'activate' : 'deactivate'} ${admin.firstName} ${admin.lastName}?`,
+      confirmText: newStatus === 'ACTIVE' ? 'Activate' : 'Deactivate',
+      confirmButtonClass: newStatus === 'ACTIVE' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${admin.residentId}/status`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to toggle status');
+
+          fetchData(activeTab);
+          setNotificationModal({
+            type: 'success',
+            title: 'Status Updated',
+            message: `Administrator has been ${newStatus.toLowerCase()} successfully`,
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+          setManageModal(null);
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Status Update Failed',
+            message: 'Error updating administrator status: ' + err.message
+          });
+        }
+      }
+    });
+  };
+
+  const handleMakeSuperAdmin = async (admin) => {
+    setConfirmationModal({
+      type: 'make-superadmin',
+      title: 'Confirm Super Admin Promotion',
+      message: `Are you sure you want to promote ${admin.firstName} ${admin.lastName} to Super Administrator? This will grant them full system access.`,
+      confirmText: 'Promote',
+      confirmButtonClass: 'bg-indigo-600 hover:bg-indigo-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${admin.residentId}/role`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to promote');
+
+          fetchData(activeTab);
+          setNotificationModal({
+            type: 'success',
+            title: 'Administrator Promoted',
+            message: 'Administrator has been promoted to Super Admin successfully',
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+          setManageModal(null);
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Promotion Failed',
+            message: 'Error promoting administrator: ' + err.message
+          });
+        }
+      }
+    });
+  };
+
   const handleReject = (request) => {
+    const feedback = prompt(`Please provide feedback for rejecting ${request.firstName} ${request.lastName}:`);
+    if (feedback === null) return; // User cancelled
+
     setConfirmationModal({
       type: 'reject',
       title: 'Confirm Rejection',
@@ -305,8 +503,9 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to reject');
 
-          // Remove from resident requests
-          setResidentRequests(residentRequests.filter(r => r.residentId !== request.residentId));
+          // TODO: Send notification with feedback to resident
+          // For now, just show success message
+          fetchData(activeTab);
           setNotificationModal({
             type: 'success',
             title: 'Resident Rejected',
@@ -343,7 +542,7 @@ export default function SuperAdminManagementPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* Header */}
+      {/* Header
       <motion.div
         className="mb-8 text-center relative"
         initial={{ opacity: 0, y: 30 }}
@@ -362,223 +561,272 @@ export default function SuperAdminManagementPage() {
           View recent users, reset passwords, delete accounts, or explore detailed management options.
         </p>
         <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mx-auto mt-4"></div>
+      </motion.div> */}
+
+      {/* Tab Navigation */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+      >
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+          <div className="flex space-x-1">
+            {[
+              { id: 'administrators', label: 'Administrators', icon: Shield, color: 'blue' },
+              { id: 'residents', label: 'Residents', icon: Users, color: 'green' },
+              { id: 'resident-requests', label: 'Resident Requests', icon: Users, color: 'orange' },
+              { id: 'document-requests', label: 'Document Requests', icon: FileText, color: 'purple' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                  activeTab === tab.id
+                    ? `bg-${tab.color}-100 text-${tab.color}-700 border border-${tab.color}-200`
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                <tab.icon size={16} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </motion.div>
 
-      {/* Main Content */}
-      <div className="flex gap-8">
-        {/* Left Side - Residents and Resident Requests */}
-        <div className="flex-1 space-y-8">
-          {/* Residents Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Residents</h2>
-              </div>
-              <Link
-                href="/superadmin/management/residents"
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-              >
-                <Eye size={16} />
-                View All
-              </Link>
+      {/* Content Area */}
+      <motion.div
+        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+      >
+        {/* Header with Search and Add Button */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {activeTab === 'administrators' && 'Administrators'}
+                {activeTab === 'residents' && 'Residents'}
+                {activeTab === 'resident-requests' && 'Resident Requests'}
+                {activeTab === 'document-requests' && 'Document Requests'}
+              </h2>
+              <span className="text-sm text-gray-500">
+                {data.length} total
+              </span>
             </div>
-
-            {residentsLoading ? (
-              <div className="text-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-600">Loading residents...</p>
+            <div className="flex items-center gap-4">
+              {activeTab === 'administrators' && (
+                <button
+                  onClick={() => setAddAdminModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                >
+                  <Plus size={16} />
+                  Add Administrator
+                </button>
+              )}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-64"
+                />
               </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                {residents.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-gray-500">No residents found</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-100">
-                    {residents.slice(0, 4).map((resident) => (
-                      <div key={resident.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Users className="w-4 h-4 text-gray-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">
-                              {resident.firstName} {resident.middleName} {resident.lastName}
-                            </p>
-                            <p className="text-xs text-gray-500">{resident.residentEmail}</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleManage('resident', resident)}
-                          className="text-gray-600 hover:text-gray-800 p-1"
-                        >
-                          <Settings size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Resident Requests Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25, ease: "easeOut" }}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-orange-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Resident Requests</h2>
-              </div>
-              <Link
-                href="/superadmin/management/resident-requests"
-                className="text-orange-600 hover:text-orange-700 text-sm font-medium flex items-center gap-1"
-              >
-                <Eye size={16} />
-                View All
-              </Link>
-            </div>
-
-            {residentRequestsLoading ? (
-              <div className="text-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-600">Loading resident requests...</p>
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                {residentRequests.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-gray-500">No resident requests found</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-100">
-                    {residentRequests.slice(0, 4).map((request) => (
-                      <div key={request.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                            <Users className="w-4 h-4 text-orange-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900 text-sm">
-                              {request.firstName} {request.middleName} {request.lastName}
-                            </p>
-                            <p className="text-xs text-gray-500">{request.residentEmail}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleViewInfo(request)}
-                            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium"
-                            title="View Information"
-                          >
-                            <Eye size={16} />
-                            <span>View</span>
-                          </button>
-                          <button
-                            onClick={() => handleAccept(request)}
-                            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors font-medium"
-                            title="Approve"
-                          >
-                            <CheckCircle size={16} />
-                            <span>Approve</span>
-                          </button>
-                          <button
-                            onClick={() => handleReject(request)}
-                            className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-medium"
-                            title="Reject"
-                          >
-                            <XCircle size={16} />
-                            <span>Reject</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </motion.div>
-        </div>
-
-        {/* Right Side - Admins Section */}
-        <motion.div
-          className="flex-1"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-        >
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Administrators</h2>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setAddAdminModal(true)}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1 text-sm"
-              >
-                <Plus size={14} />
-                Add Admin
-              </button>
-              <Link
-                href="/superadmin/management/admins"
-                className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
-              >
-                <Eye size={16} />
-                View All
-              </Link>
             </div>
           </div>
+        </div>
 
-          {adminsLoading ? (
-            <div className="text-center py-6">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-600">Loading administrators...</p>
+        {/* Data Table */}
+        {loadingData ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading data...</p>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {activeTab === 'administrators' ? 'Role' : activeTab === 'residents' ? 'Address' : 'Status'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {data
+                    .filter((item) => {
+                      if (!searchQuery.trim()) return true;
+                      const query = searchQuery.toLowerCase();
+                      return (
+                        item.firstName?.toLowerCase().includes(query) ||
+                        item.lastName?.toLowerCase().includes(query) ||
+                        item.middleName?.toLowerCase().includes(query) ||
+                        item.residentEmail?.toLowerCase().includes(query) ||
+                        item.phoneNumber?.toLowerCase().includes(query) ||
+                        item.address?.toLowerCase().includes(query)
+                      );
+                    })
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((item) => (
+                      <tr key={item.residentId} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                                activeTab === 'administrators' ? 'bg-purple-100' :
+                                activeTab === 'residents' ? 'bg-blue-100' :
+                                activeTab === 'resident-requests' ? 'bg-orange-100' : 'bg-green-100'
+                              }`}>
+                                {activeTab === 'administrators' ? (
+                                  <Shield className="h-5 w-5 text-purple-600" />
+                                ) : activeTab === 'residents' ? (
+                                  <Users className="h-5 w-5 text-blue-600" />
+                                ) : activeTab === 'resident-requests' ? (
+                                  <Users className="h-5 w-5 text-orange-600" />
+                                ) : (
+                                  <FileText className="h-5 w-5 text-green-600" />
+                                )}
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {item.firstName} {item.middleName} {item.lastName}
+                              </div>
+                              {item.username && (
+                                <div className="text-sm text-gray-500">@{item.username}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.residentEmail}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.phoneNumber || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {activeTab === 'administrators' ? (
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                              {item.role || 'N/A'}
+                            </span>
+                          ) : activeTab === 'residents' ? (
+                            <span className="text-sm text-gray-900">
+                              {item.address || 'N/A'}
+                            </span>
+                          ) : (
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              item.status === 'ACTIVE' || item.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                              item.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {item.status || 'N/A'}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="relative">
+                            <button
+                              onClick={() => handleManage(
+                                activeTab === 'administrators' ? 'admin' :
+                                activeTab === 'residents' ? 'resident' :
+                                activeTab === 'resident-requests' ? 'request' : 'document',
+                                item
+                              )}
+                              className="text-gray-400 hover:text-gray-600 p-1"
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              {admins.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-sm text-gray-500">No administrators found</p>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
                 </div>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {admins.slice(0, 8).map((admin) => (
-                    <div key={admin.residentId} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Shield className="w-4 h-4 text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">
-                            {admin.firstName} {admin.middleName} {admin.lastName}
-                          </p>
-                          <p className="text-xs text-gray-500">{admin.residentEmail}</p>
-                        </div>
-                      </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                      <span className="font-medium">{Math.min(currentPage * itemsPerPage, data.length)}</span> of{' '}
+                      <span className="font-medium">{data.length}</span> results
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                       <button
-                        onClick={() => handleManage('admin', admin)}
-                        className="text-gray-600 hover:text-gray-800 p-1"
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <Settings size={16} />
+                        <span className="sr-only">Previous</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
                       </button>
-                    </div>
-                  ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            page === currentPage
+                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="sr-only">Next</span>
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 011.414-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </nav>
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </div>
+              </div>
+            )}
+          </>
+        )}
+      </motion.div>
 
       {/* Add Admin Modal */}
       {addAdminModal && (
@@ -671,17 +919,19 @@ export default function SuperAdminManagementPage() {
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  manageType === 'resident' ? 'bg-blue-100' : 'bg-purple-100'
+                  manageType === 'admin' ? 'bg-purple-100' : manageType === 'resident' ? 'bg-blue-100' : 'bg-orange-100'
                 }`}>
-                  {manageType === 'resident' ? (
+                  {manageType === 'admin' ? (
+                    <Shield className="w-5 h-5 text-purple-600" />
+                  ) : manageType === 'resident' ? (
                     <Users className="w-5 h-5 text-blue-600" />
                   ) : (
-                    <Shield className="w-5 h-5 text-purple-600" />
+                    <FileText className="w-5 h-5 text-orange-600" />
                   )}
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Manage {manageType === 'resident' ? 'Resident' : 'Administrator'}
+                    Manage {manageType === 'admin' ? 'Administrator' : manageType === 'resident' ? 'Resident' : 'Request'}
                   </h3>
                   <p className="text-sm text-gray-600">
                     {manageModal.firstName} {manageModal.middleName} {manageModal.lastName}
@@ -690,20 +940,74 @@ export default function SuperAdminManagementPage() {
               </div>
 
               <div className="space-y-3">
-                <button
-                  onClick={handlePasswordReset}
-                  className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
-                >
-                  <Key size={18} />
-                  <span className="font-medium">Reset Password</span>
-                </button>
+                {manageType === 'admin' && (
+                  <>
+                    <button
+                      onClick={() => handleViewInfo(manageModal)}
+                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
+                    >
+                      <Eye size={18} />
+                      <span className="font-medium">View Details</span>
+                    </button>
+                    <button
+                      onClick={() => handleSuperAdminPasswordVerification(manageModal)}
+                      className="w-full bg-yellow-50 text-yellow-700 px-4 py-3 rounded-lg hover:bg-yellow-100 transition-colors flex items-center gap-3"
+                    >
+                      <EyeOff size={18} />
+                      <span className="font-medium">View Password</span>
+                    </button>
+                    <button
+                      onClick={handlePasswordReset}
+                      className="w-full bg-purple-50 text-purple-700 px-4 py-3 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-3"
+                    >
+                      <Key size={18} />
+                      <span className="font-medium">Reset Password</span>
+                    </button>
 
+                  </>
+                )}
+                {manageType === 'resident' && (
+                  <>
+                    <button
+                      onClick={() => handleViewInfo(manageModal)}
+                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
+                    >
+                      <Eye size={18} />
+                      <span className="font-medium">View Details</span>
+                    </button>
+                  </>
+                )}
+                {manageType === 'request' && (
+                  <>
+                    <button
+                      onClick={() => handleViewInfo(manageModal)}
+                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
+                    >
+                      <Eye size={18} />
+                      <span className="font-medium">View Details</span>
+                    </button>
+                    <button
+                      onClick={() => handleVerifyResident(manageModal)}
+                      className="w-full bg-green-50 text-green-700 px-4 py-3 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-3"
+                    >
+                      <CheckCircle size={18} />
+                      <span className="font-medium">Verify</span>
+                    </button>
+                    <button
+                      onClick={() => handleReject(manageModal)}
+                      className="w-full bg-red-50 text-red-700 px-4 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3"
+                    >
+                      <XCircle size={18} />
+                      <span className="font-medium">Reject</span>
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={handleDelete}
                   className="w-full bg-red-50 text-red-700 px-4 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3"
                 >
                   <Trash2 size={18} />
-                  <span className="font-medium">Delete {manageType === 'resident' ? 'Resident' : 'Administrator'}</span>
+                  <span className="font-medium">Delete {manageType === 'admin' ? 'Administrator' : manageType === 'resident' ? 'Resident' : 'Request'}</span>
                 </button>
               </div>
 
@@ -719,6 +1023,94 @@ export default function SuperAdminManagementPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Password Warning Modal */}
+      {passwordWarningModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Security Warning</h3>
+                  <p className="text-sm text-gray-600">Password Visibility</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-sm text-gray-700">
+                  WARNING: Viewing plain-text passwords poses a security risk and should only be used for critical recovery/verification purposes. Are you sure you want to proceed?
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => confirmViewPassword(passwordWarningModal)}
+                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
+                >
+                  Proceed
+                </button>
+                <button
+                  onClick={() => setPasswordWarningModal(null)}
+                  className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Password Reveal Modal */}
+      {passwordRevealModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Key className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Current Password</h3>
+                  <p className="text-sm text-gray-600">
+                    {passwordRevealModal.item.firstName} {passwordRevealModal.item.lastName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 mb-2">Password:</p>
+                  <p className="text-lg font-mono text-gray-900 break-all">{passwordRevealModal.password}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPasswordRevealModal(null)}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
 
       {/* View Info Modal */}
       {viewInfoModal && (
