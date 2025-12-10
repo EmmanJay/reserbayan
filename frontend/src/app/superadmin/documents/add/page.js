@@ -8,7 +8,6 @@ import Link from 'next/link';
 export default function AddDocumentPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    id: '',
     name: '',
     shortDescription: '',
     imagePath: '',
@@ -21,6 +20,7 @@ export default function AddDocumentPage() {
       uses: []
     }
   });
+  const [generatedId, setGeneratedId] = useState('');
   const [loading, setLoading] = useState(false);
   const [requirementsText, setRequirementsText] = useState('');
   const [usesText, setUsesText] = useState('');
@@ -69,6 +69,7 @@ export default function AddDocumentPage() {
 
       const submitData = {
         ...formData,
+        id: generatedId,
         imagePath,
         details: {
           ...formData.details,
@@ -113,6 +114,15 @@ export default function AddDocumentPage() {
         ...prev,
         [name]: value
       }));
+      if (name === 'name') {
+        const slug = value
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+        setGeneratedId(slug);
+      }
     }
   };
 
@@ -124,33 +134,23 @@ export default function AddDocumentPage() {
           <Link
             href="/superadmin/documents"
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Add Document Type</h1>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Info */}
-            <div className="md:col-span-2">
-              <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-            </div>
-
-            <div>
+          />
+          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Auto-generated ID preview */}
+          <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Document ID *
+                Document ID (auto-generated)
               </label>
               <input
                 type="text"
-                name="id"
-                value={formData.id}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., barangay-clearance"
+                value={generatedId}
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg"
+                placeholder="Generated from name"
               />
+              <p className="mt-1 text-xs text-gray-500">Based on the Name field.</p>
             </div>
 
             <div>
