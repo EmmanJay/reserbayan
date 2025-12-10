@@ -44,7 +44,14 @@ export default function ViewAllResidentRequestsPage() {
         } : {},
       });
       if (!response.ok) throw new Error('Failed to fetch resident requests');
+      
       const data = await response.json();
+      
+      // --- DEBUGGING LOG ---
+      console.log("Fetched Resident Requests:", data); 
+      // check your browser console (F12) to see if 'birthDate' exists in these objects
+      // ---------------------
+
       setResidentRequests(data);
       if (data.length > 0) {
         setSelectedRequest(data[0]);
@@ -69,6 +76,32 @@ export default function ViewAllResidentRequestsPage() {
       request.address?.toLowerCase().includes(query)
     );
   });
+
+  // HELPER: Format Date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Not provided';
+    try {
+      let date;
+      if (dateString.includes('T')) {
+        // Full datetime string
+        date = new Date(dateString);
+      } else {
+        // Date only string (yyyy-MM-dd)
+        const [year, month, day] = dateString.split('-').map(Number);
+        date = new Date(year, month - 1, day);
+      }
+      // Check if date is valid
+      if (isNaN(date.getTime())) return dateString;
+
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   const handleViewInfo = (request) => {
     setViewInfoModal(request);
@@ -294,7 +327,10 @@ export default function ViewAllResidentRequestsPage() {
 
                     <div>
                       <p className="text-sm text-gray-500">Birthdate</p>
-                      <p className="font-medium text-gray-900">{selectedRequest.birthdate || 'Not provided'}</p>
+                      <p className="font-medium text-gray-900">
+                        {/* Display Birthdate Here - Checks for 'birthDate' or 'birthdate' */}
+                        {formatDate(selectedRequest.birthDate || selectedRequest.birthdate)}
+                      </p>
                     </div>
                   </div>
 
@@ -388,7 +424,10 @@ export default function ViewAllResidentRequestsPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Birthdate</label>
-                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.birthdate}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                        {/* Display Birthdate Here - Checks for 'birthDate' or 'birthdate' */}
+                        {formatDate(viewInfoModal.birthDate || viewInfoModal.birthdate)}
+                    </p>
                   </div>
                 </div>
                 <div>
