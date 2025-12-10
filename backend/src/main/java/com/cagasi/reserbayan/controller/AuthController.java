@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import com.cagasi.reserbayan.dto.ResidentDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
@@ -28,7 +31,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Map<String, Object> authResult = authService.authenticate(loginRequest.getIdentifier(), loginRequest.getPassword());
+        Map<String, Object> authResult = authService.authenticate(loginRequest.getIdentifier(),
+                loginRequest.getPassword());
         if (authResult != null) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -68,6 +72,7 @@ public class AuthController {
                 resident.setFirstName(registerRequest.getFirstName());
                 resident.setLastName(registerRequest.getLastName());
                 resident.setMiddleName(registerRequest.getMiddleName());
+                resident.setBirthdate(LocalDate.parse(registerRequest.getBirthDate()));
                 resident.setResidentEmail(registerRequest.getEmail());
                 resident.setPassword(registerRequest.getPassword());
                 resident.setPhoneNumber(registerRequest.getPhoneNumber());
@@ -111,6 +116,7 @@ public class AuthController {
         private String firstName;
         private String lastName;
         private String middleName;
+        private String birthDate;
         private String email;
         private String password;
         private String phoneNumber;
@@ -149,6 +155,14 @@ public class AuthController {
 
         public void setMiddleName(String middleName) {
             this.middleName = middleName;
+        }
+
+        public String getBirthDate() {
+            return birthDate;
+        }
+
+        public void setBirthDate(String birthDate) {
+            this.birthDate = birthDate;
         }
 
         public String getEmail() {
