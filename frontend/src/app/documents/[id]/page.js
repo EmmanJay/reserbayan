@@ -47,7 +47,7 @@ export default function DocumentDetailPage({ params }) {
       <div className="w-full lg:w-2/5 flex-shrink-0">
         <div className="bg-white border rounded-lg shadow-lg">
           <Image
-            src={doc.imagePath}
+            src={doc.imagePath.startsWith('/uploads/') ? `http://localhost:8080${doc.imagePath}` : doc.imagePath}
             alt={`${doc.name} preview`}
             width={510}
             height={660}
