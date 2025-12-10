@@ -11,7 +11,6 @@ export default function EditDocumentPage() {
   const id = params.id;
 
   const [formData, setFormData] = useState({
-    id: '',
     name: '',
     shortDescription: '',
     imagePath: '',
@@ -24,6 +23,7 @@ export default function EditDocumentPage() {
       uses: []
     }
   });
+  const [generatedId, setGeneratedId] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [requirementsText, setRequirementsText] = useState('');
@@ -64,7 +64,6 @@ export default function EditDocumentPage() {
       const data = await response.json();
 
       setFormData({
-        id: data.id || '',
         name: data.name || '',
         shortDescription: data.shortDescription || '',
         imagePath: data.imagePath || '',
@@ -77,6 +76,13 @@ export default function EditDocumentPage() {
           uses: data.details?.uses || []
         }
       });
+      const initialSlug = (data.name || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+      setGeneratedId(initialSlug);
 
       setRequirementsText((data.details?.requirements || []).join('\n'));
       setUsesText((data.details?.uses || []).join('\n'));
@@ -113,6 +119,7 @@ export default function EditDocumentPage() {
 
       const submitData = {
         ...formData,
+        id: generatedId,
         imagePath,
         details: {
           ...formData.details,
@@ -157,6 +164,15 @@ export default function EditDocumentPage() {
         ...prev,
         [name]: value
       }));
+      if (name === 'name') {
+        const slug = value
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-');
+        setGeneratedId(slug);
+      }
     }
   };
 
@@ -193,19 +209,19 @@ export default function EditDocumentPage() {
               <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
             </div>
 
+            {/* Auto-generated ID preview */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Document ID *
+                Document ID (auto-generated)
               </label>
               <input
                 type="text"
-                name="id"
-                value={formData.id}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., barangay-clearance"
+                value={generatedId}
+                disabled
+                className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg"
+                placeholder="Generated from name"
               />
+              <p className="mt-1 text-xs text-gray-500">Based on the Name field.</p>
             </div>
 
             <div>
