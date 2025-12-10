@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cagasi.reserbayan.config.JwtUtil;
+import com.cagasi.reserbayan.dto.ResidentDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.entity.ResidentStatus;
@@ -157,5 +158,31 @@ public class AuthService {
         }
 
         return null;
+    }
+
+    public Resident updateProfile(Long residentId, ResidentDTO residentDTO) {
+        Resident resident = residentRepository.findById(residentId)
+                .orElseThrow(() -> new RuntimeException("Resident not found"));
+
+        // Check if email is being changed and if it's already taken
+        if (!resident.getResidentEmail().equals(residentDTO.getResidentEmail())) {
+            if (adminRepository.findByResidentEmail(residentDTO.getResidentEmail()).isPresent()) {
+                throw new RuntimeException("Email already registered as admin");
+            }
+            if (residentRepository.findByResidentEmail(residentDTO.getResidentEmail()).isPresent()) {
+                throw new RuntimeException("Email already registered as resident");
+            }
+        }
+
+        // Update fields
+        resident.setFirstName(residentDTO.getFirstName());
+        resident.setLastName(residentDTO.getLastName());
+        resident.setMiddleName(residentDTO.getMiddleName());
+        resident.setResidentEmail(residentDTO.getResidentEmail());
+        resident.setPhoneNumber(residentDTO.getPhoneNumber());
+        resident.setAddress(residentDTO.getAddress());
+        resident.setBirthdate(residentDTO.getBirthdate());
+
+        return residentRepository.save(resident);
     }
 }

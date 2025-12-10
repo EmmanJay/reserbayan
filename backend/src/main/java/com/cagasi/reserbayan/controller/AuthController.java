@@ -1,16 +1,23 @@
 package com.cagasi.reserbayan.controller;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.cagasi.reserbayan.dto.ResidentDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -190,6 +197,24 @@ public class AuthController {
 
         public void setProofOfEmployment(MultipartFile proofOfEmployment) {
             this.proofOfEmployment = proofOfEmployment;
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody ResidentDTO residentDTO) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Get resident ID from JWT token or session, but for now assume it's in the DTO
+            // In a real app, you'd extract from security context
+            Resident updatedResident = authService.updateProfile(residentDTO.getResidentId(), residentDTO);
+            response.put("success", true);
+            response.put("user", updatedResident);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Profile update failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
