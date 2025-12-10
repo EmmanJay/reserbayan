@@ -1,6 +1,6 @@
 import { FileText, Calendar, XCircle } from 'lucide-react';
 
-function RequestModal({ request, user, onClose, cancelRequest }) {
+function RequestModal({ request, user, onClose, cancelRequest, approveRequest, rejectRequest }) {
   if (!request) return null;
 
   const getStatusIcon = (status) => {
@@ -27,6 +27,46 @@ function RequestModal({ request, user, onClose, cancelRequest }) {
         onClose(); // Close the modal after cancelling
       } else {
         alert('Failed to cancel request: ' + result.error);
+      }
+    }
+  };
+
+  const handleApproveRequest = async () => {
+    if (window.confirm('Are you sure you want to approve this request?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8080/api/document-requests/${request.requestId}/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          alert('Request approved successfully.');
+          onClose(); // Close the modal after approving
+        } else {
+          alert('Failed to approve request.');
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
+      }
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    if (window.confirm('Are you sure you want to reject this request?')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8080/api/document-requests/${request.requestId}/reject`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          alert('Request rejected successfully.');
+          onClose(); // Close the modal after rejecting
+        } else {
+          alert('Failed to reject request.');
+        }
+      } catch (err) {
+        alert('Network error: ' + err.message);
       }
     }
   };
@@ -137,7 +177,24 @@ function RequestModal({ request, user, onClose, cancelRequest }) {
         </div>
 
         <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-          {request.status?.toLowerCase() === 'pending' && (
+          {user === null && request.status?.toLowerCase() === 'pending' ? (
+            // Admin view - show approve/reject buttons
+            <>
+              <button
+                onClick={handleRejectRequest}
+                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
+              >
+                Reject Request
+              </button>
+              <button
+                onClick={handleApproveRequest}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+              >
+                Approve Request
+              </button>
+            </>
+          ) : request.status?.toLowerCase() === 'pending' && (
+            // User view - show cancel button
             <button
               onClick={handleCancelRequest}
               className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"

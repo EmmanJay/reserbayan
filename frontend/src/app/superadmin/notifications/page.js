@@ -63,7 +63,10 @@ export default function SuperAdminNotificationsPage() {
           <RequestModal
             request={selectedRequest}
             user={null}
-            onClose={closeModal}
+            onClose={() => {
+              closeModal();
+              fetchAllRequests(); // Refresh the list after modal closes
+            }}
             cancelRequest={async () => ({ success: false, error: 'Not supported in admin view' })}
           />
         )}
