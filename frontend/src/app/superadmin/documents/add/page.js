@@ -14,7 +14,8 @@ export default function AddDocumentPage() {
     details: {
       category: '',
       longDescription: '',
-      processingTime: '',
+      processingTimeValue: '',
+      processingTimeUnit: 'days',
       pdfPath: '',
       requirements: [],
       uses: []
@@ -67,12 +68,18 @@ export default function AddDocumentPage() {
       const requirements = requirementsText.split('\n').filter(item => item.trim());
       const uses = usesText.split('\n').filter(item => item.trim());
 
+      // Combine processing time value and unit
+      const processingTime = formData.details.processingTimeValue && formData.details.processingTimeUnit
+        ? `${formData.details.processingTimeValue} ${formData.details.processingTimeUnit}`
+        : '';
+
       const submitData = {
         ...formData,
         id: generatedId,
         imagePath,
         details: {
           ...formData.details,
+          processingTime,
           pdfPath,
           requirements,
           uses
@@ -198,16 +205,22 @@ export default function AddDocumentPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
+                Category *
               </label>
-              <input
-                type="text"
+              <select
                 name="details.category"
                 value={formData.details.category}
                 onChange={handleChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Certificate"
-              />
+              >
+                <option value="">Select a category</option>
+                <option value="Financial Assistance">Financial Assistance</option>
+                <option value="Residency">Residency</option>
+                <option value="Clearance">Clearance</option>
+                <option value="Permits & Tax">Permits & Tax</option>
+                <option value="Infrastructure & Zoning">Infrastructure & Zoning</option>
+              </select>
             </div>
 
             {/* Details */}
@@ -231,16 +244,45 @@ export default function AddDocumentPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Processing Time
+                Processing Time *
               </label>
-              <input
-                type="text"
-                name="details.processingTime"
-                value={formData.details.processingTime}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., 3-5 working days"
-              />
+              <div className="flex gap-2">
+                <select
+                  name="details.processingTimeUnit"
+                  value={formData.details.processingTimeUnit}
+                  onChange={(e) => {
+                    handleChange(e);
+                    // Reset value when unit changes
+                    setFormData(prev => ({
+                      ...prev,
+                      details: {
+                        ...prev.details,
+                        processingTimeValue: ''
+                      }
+                    }));
+                  }}
+                  required
+                  className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="days">days</option>
+                  <option value="hours">hours</option>
+                </select>
+                <select
+                  name="details.processingTimeValue"
+                  value={formData.details.processingTimeValue}
+                  onChange={handleChange}
+                  required
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 max-h-40 overflow-y-auto"
+                >
+                  <option value="">Select duration</option>
+                  {Array.from(
+                    { length: formData.details.processingTimeUnit === 'days' ? 12 : 23 },
+                    (_, i) => i + 1
+                  ).map(num => (
+                    <option key={num} value={num}>{num}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
