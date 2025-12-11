@@ -7,12 +7,14 @@ import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
 import RequestCard from '@/components/requests/RequestCard';
-import RequestModal from '@/components/requests/RequestModal';
+import RequestModal from '@/components/requests/RequestModal'; // Ensure this points to your new/updated modal
 import RequestsList from '@/components/requests/RequestsList';
 
 export default function RequestsPage() {
-   const { user } = useUser();
-   const { requests, loading, cancelRequest } = useRequests(user);
+  const { user } = useUser();
+  // Ensure your hook exposes refetchRequests if you need it for the modal callbacks
+  const { requests, loading, cancelRequest, refetchRequests } = useRequests(user);
+  
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,12 +31,14 @@ export default function RequestsPage() {
     setSelectedRequest(null);
   }, []);
 
+  // UPDATED: Added 'cancelled' to the categories list
   const categories = useMemo(() => [
     { key: 'all', label: 'All Requests', count: requests.length },
     { key: 'pending', label: 'Pending', count: requests.filter(r => r.status?.toLowerCase() === 'pending').length },
     { key: 'approved', label: 'Approved', count: requests.filter(r => r.status?.toLowerCase() === 'approved').length },
     { key: 'completed', label: 'Completed', count: requests.filter(r => r.status?.toLowerCase() === 'completed').length },
     { key: 'rejected', label: 'Rejected', count: requests.filter(r => r.status?.toLowerCase() === 'rejected').length },
+    { key: 'cancelled', label: 'Cancelled', count: requests.filter(r => r.status?.toLowerCase() === 'cancelled').length },
   ], [requests]);
 
   const filteredRequests = useMemo(() => {
@@ -238,9 +242,17 @@ export default function RequestsPage() {
           )}
         </motion.div>
 
-        {/* Detailed View Modal */}
+        {/* Detailed View Modal - Updated to pass onUpdateRequest/onReRequest if your modal supports it */}
         {selectedRequest && (
-          <RequestModal request={selectedRequest} user={user} onClose={handleCloseModal} cancelRequest={cancelRequest} />
+          <RequestModal 
+            request={selectedRequest} 
+            user={user} 
+            onClose={handleCloseModal} 
+            cancelRequest={cancelRequest}
+            // Add these if you updated your useRequests hook to export refetchRequests
+            onUpdateRequest={refetchRequests}
+            onReRequest={refetchRequests}
+          />
         )}
       </div>
     </motion.div>

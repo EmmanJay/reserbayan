@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
-export default function NotificationModal({ isOpen, onClose, type = 'info', title, message, autoClose = false, autoCloseDelay = 3000 }) {
+export default function NotificationModal({ 
+  isOpen, 
+  onClose, 
+  type = 'info', 
+  title, 
+  message, 
+  autoClose = false, 
+  autoCloseDelay = 3000 
+}) {
+
   useEffect(() => {
     if (autoClose && isOpen) {
       const timer = setTimeout(() => {
@@ -14,59 +23,91 @@ export default function NotificationModal({ isOpen, onClose, type = 'info', titl
     }
   }, [isOpen, autoClose, autoCloseDelay, onClose]);
 
+  // Configuration object for styles based on type
+  const modalStyles = {
+    success: {
+      icon: CheckCircle,
+      iconColor: 'text-green-600',
+      iconBg: 'bg-green-100',
+      buttonBg: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+      defaultTitle: 'Success'
+    },
+    error: {
+      icon: XCircle,
+      iconColor: 'text-red-600',
+      iconBg: 'bg-red-100',
+      buttonBg: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+      defaultTitle: 'Error'
+    },
+    warning: {
+      icon: AlertTriangle,
+      iconColor: 'text-amber-600',
+      iconBg: 'bg-amber-100',
+      buttonBg: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
+      defaultTitle: 'Warning'
+    },
+    info: {
+      icon: Info,
+      iconColor: 'text-blue-600',
+      iconBg: 'bg-blue-100',
+      buttonBg: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+      defaultTitle: 'Information'
+    }
+  };
+
+  const currentStyle = modalStyles[type] || modalStyles.info;
+  const IconComponent = currentStyle.icon;
+
   if (!isOpen) return null;
 
-  const getIcon = () => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="w-8 h-8 text-green-600" />;
-      case 'error':
-        return <XCircle className="w-8 h-8 text-red-600" />;
-      case 'warning':
-        return <AlertCircle className="w-8 h-8 text-yellow-600" />;
-      default:
-        return <Info className="w-8 h-8 text-blue-600" />;
-    }
-  };
-
-  const getBgColor = () => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-50 border-green-200';
-      case 'error':
-        return 'bg-red-50 border-red-200';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-200';
-      default:
-        return 'bg-blue-50 border-blue-200';
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+      {/* Backdrop */}
       <motion.div
-        className={`bg-white rounded-lg shadow-xl max-w-md w-full mx-4 border ${getBgColor()}`}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+      />
+
+      {/* Modal Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-auto overflow-hidden ring-1 ring-black/5"
       >
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            {getIcon()}
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              <p className="text-sm text-gray-600 mt-1">{message}</p>
-            </div>
+        {/* Close Icon (Top Right) */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="p-6 text-center">
+          {/* Animated Icon Wrapper */}
+          <div className={`mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 ${currentStyle.iconBg}`}>
+            <IconComponent className={`h-8 w-8 ${currentStyle.iconColor}`} />
           </div>
 
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
-            >
-              OK
-            </button>
-          </div>
+          {/* Text Content */}
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            {title || currentStyle.defaultTitle}
+          </h3>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+            {message}
+          </p>
+
+          {/* Action Button */}
+          <button
+            onClick={onClose}
+            className={`w-full py-3 px-4 rounded-xl text-white font-semibold shadow-md transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentStyle.buttonBg}`}
+          >
+            Okay, got it
+          </button>
         </div>
       </motion.div>
     </div>

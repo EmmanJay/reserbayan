@@ -3,6 +3,8 @@ package com.cagasi.reserbayan.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "document_requests")
@@ -24,7 +26,6 @@ public class DocumentRequest {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "resident_id", nullable = false)
-
     private Resident resident;
 
     // Purpose of request
@@ -37,6 +38,10 @@ public class DocumentRequest {
 
     private LocalDateTime submittedAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
+
+    // --- NEW: Relationship to Attachments ---
+    @OneToMany(mappedBy = "documentRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequestAttachment> attachments = new ArrayList<>();
 
     // --- Getters and Setters ---
 
@@ -102,5 +107,13 @@ public class DocumentRequest {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<RequestAttachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<RequestAttachment> attachments) {
+        this.attachments = attachments;
     }
 }
