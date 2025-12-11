@@ -6,6 +6,7 @@ import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, 
 import NotificationModal from '@/components/NotificationModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { motion } from 'framer-motion';
+
 import Link from 'next/link';
 
 export default function SuperAdminManagementPage() {
@@ -19,15 +20,15 @@ export default function SuperAdminManagementPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [buttonRect, setButtonRect] = useState(null);
   const itemsPerPage = 10;
 
   // Modals and states
-  const [manageModal, setManageModal] = useState(null);
-  const [manageType, setManageType] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [addAdminModal, setAddAdminModal] = useState(false);
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [viewInfoModal, setViewInfoModal] = useState(null);
-  const [editModal, setEditModal] = useState(null);
   const [passwordWarningModal, setPasswordWarningModal] = useState(null);
   const [passwordRevealModal, setPasswordRevealModal] = useState(null);
   const [expandedImage, setExpandedImage] = useState(null);
@@ -50,6 +51,23 @@ export default function SuperAdminManagementPage() {
 
     fetchData(activeTab);
   }, [router, activeTab]);
+
+  // Close dropdown when clicking anywhere on the screen
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId) {
+        setOpenDropdownId(null);
+      }
+    };
+
+    if (openDropdownId) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openDropdownId]);
 
   const fetchData = async (tab) => {
     setLoadingData(true);
@@ -96,32 +114,66 @@ export default function SuperAdminManagementPage() {
     setActiveTab(tab);
     setSearchQuery('');
     setCurrentPage(1);
+    setOpenDropdownId(null); // Close any open dropdown when switching tabs
   };
 
-  const handleManage = (type, item) => {
-    setManageType(type);
-    setManageModal(item);
+  const handleManage = (type, item, event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (openDropdownId === item.residentId) {
+      setOpenDropdownId(null);
+    } else {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const dropdownWidth = 192; // min-w-48 = 192px
+      const viewportWidth = window.innerWidth;
+
+      // Check if there's enough space on the right
+      const spaceOnRight = viewportWidth - rect.right;
+      let leftPosition;
+
+      if (spaceOnRight >= dropdownWidth) {
+        // Enough space on the right, position normally
+        leftPosition = rect.left + window.scrollX;
+      } else {
+        // Not enough space on the right, position to the left
+        leftPosition = rect.right - dropdownWidth + window.scrollX;
+      }
+
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: Math.max(8, leftPosition) // Ensure minimum 8px from left edge
+      });
+      setOpenDropdownId(item.residentId);
+    }
   };
 
-  const handleEdit = (item) => {
-    setEditModal(item);
+  const handleDropdownClick = (e, itemId) => {
+    e.stopPropagation();
+    if (openDropdownId === itemId) {
+        setOpenDropdownId(null);
+        setButtonRect(null); // Clear the rect on close
+    } else {
+        setOpenDropdownId(itemId);
+        // Save the button's exact position data
+        setButtonRect(e.currentTarget.getBoundingClientRect());
+    }
   };
 
-
-  const handleDelete = () => {
-    if (!manageModal) return;
+  const handleDelete = (item) => {
+    const entityType = activeTab === 'administrators' ? 'administrator' : activeTab === 'residents' ? 'resident' : 'request';
 
     setConfirmationModal({
       type: 'delete',
       title: 'Confirm Deletion',
-      message: `Are you sure you want to delete this ${manageType}? This action cannot be undone.`,
+      message: `Are you sure you want to delete this ${entityType}? This action cannot be undone.`,
       confirmText: 'Delete',
       onConfirm: async () => {
-        const endpoint = manageType === 'resident' ? 'residents' : 'admins';
+        const endpoint = activeTab === 'administrators' ? 'admins' : activeTab === 'residents' ? 'residents' : 'resident-requests';
 
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${manageModal.residentId}`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}`, {
             method: 'DELETE',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -135,11 +187,10 @@ export default function SuperAdminManagementPage() {
           setNotificationModal({
             type: 'success',
             title: 'Deletion Successful',
-            message: `${manageType.charAt(0).toUpperCase() + manageType.slice(1)} deleted successfully`,
+            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} deleted successfully`,
             autoClose: true,
             autoCloseDelay: 3000
           });
-          setManageModal(null);
         } catch (err) {
           setNotificationModal({
             type: 'error',
@@ -151,11 +202,9 @@ export default function SuperAdminManagementPage() {
     });
   };
 
-  const handlePasswordReset = async () => {
-    if (!manageModal) return;
-
+  const handlePasswordReset = async (item) => {
     // For admin, verify SuperAdmin password first
-    if (manageType === 'admin') {
+    if (activeTab === 'administrators') {
       const password = prompt('Enter your Super Admin password to reset this administrator\'s password:');
       if (!password) return;
 
@@ -191,14 +240,14 @@ export default function SuperAdminManagementPage() {
       }
     }
 
-    const newPassword = prompt(`Enter new password for ${manageModal.firstName} ${manageModal.lastName}:`);
+    const newPassword = prompt(`Enter new password for ${item.firstName} ${item.lastName}:`);
     if (!newPassword) return;
 
-    const endpoint = manageType === 'resident' ? 'residents' : 'admins';
+    const endpoint = activeTab === 'administrators' ? 'admins' : 'residents';
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${manageModal.residentId}/password`, {
+      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +264,6 @@ export default function SuperAdminManagementPage() {
         autoClose: true,
         autoCloseDelay: 3000
       });
-      setManageModal(null);
     } catch (err) {
       setNotificationModal({
         type: 'error',
@@ -292,17 +340,20 @@ export default function SuperAdminManagementPage() {
     setEditModal(item);
   };
 
-  const handleAccept = (request) => {
+  const handleAccept = (item) => {
+    const entityType = activeTab === 'resident-requests' ? 'resident' : 'document request';
+    const endpoint = activeTab === 'resident-requests' ? 'resident-requests' : 'requests';
+
     setConfirmationModal({
       type: 'approve',
       title: 'Confirm Approval',
-      message: `Are you sure you want to approve ${request.firstName} ${request.lastName}? This will grant them full access to request documents.`,
+      message: `Are you sure you want to approve ${item.firstName} ${item.lastName}? This will grant them full access to request documents.`,
       confirmText: 'Approve',
       confirmButtonClass: 'bg-green-600 hover:bg-green-700',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/resident-requests/${request.residentId}/approve`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/approve`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -314,8 +365,8 @@ export default function SuperAdminManagementPage() {
           fetchData(activeTab);
           setNotificationModal({
             type: 'success',
-            title: 'Resident Approved',
-            message: 'Resident has been approved successfully',
+            title: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} Approved`,
+            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been approved successfully`,
             autoClose: true,
             autoCloseDelay: 3000
           });
@@ -323,52 +374,15 @@ export default function SuperAdminManagementPage() {
           setNotificationModal({
             type: 'error',
             title: 'Approval Failed',
-            message: 'Error approving resident: ' + err.message
+            message: 'Error approving: ' + err.message
           });
         }
       }
     });
   };
 
-  const handleVerifyResident = async (resident) => {
-    setConfirmationModal({
-      type: 'verify',
-      title: 'Confirm Verification',
-      message: `Are you sure you want to verify ${resident.firstName} ${resident.lastName}? This will mark their account as verified.`,
-      confirmText: 'Verify',
-      confirmButtonClass: 'bg-indigo-600 hover:bg-indigo-700',
-      onConfirm: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/residents/${resident.residentId}/verify`, {
-            method: 'PUT',
-            headers: token ? {
-              'Authorization': `Bearer ${token}`,
-            } : {},
-          });
-          if (!response.ok) throw new Error('Failed to verify');
 
-          fetchData(activeTab);
-          setNotificationModal({
-            type: 'success',
-            title: 'Resident Verified',
-            message: 'Resident has been verified successfully',
-            autoClose: true,
-            autoCloseDelay: 3000
-          });
-          setManageModal(null);
-        } catch (err) {
-          setNotificationModal({
-            type: 'error',
-            title: 'Verification Failed',
-            message: 'Error verifying resident: ' + err.message
-          });
-        }
-      }
-    });
-  };
-
-  const handleSuperAdminPasswordVerification = async (admin) => {
+  const handleSuperAdminPasswordVerification = async (item) => {
     const password = prompt('Enter your Super Admin password to view this administrator\'s password:');
     if (!password) return;
 
@@ -386,7 +400,7 @@ export default function SuperAdminManagementPage() {
       const result = await response.json();
       if (result.valid) {
         // Password verified, now show the admin's password
-        setPasswordRevealModal({ item: admin, password: admin.plainPassword || 'Admin123' });
+        setPasswordRevealModal({ item: item, password: item.plainPassword || 'Admin123' });
       } else {
         setNotificationModal({
           type: 'error',
@@ -405,18 +419,18 @@ export default function SuperAdminManagementPage() {
     }
   };
 
-  const handleToggleAdminStatus = async (admin) => {
-    const newStatus = admin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+  const handleToggleAdminStatus = async (item) => {
+    const newStatus = item.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     setConfirmationModal({
       type: 'toggle-status',
       title: `Confirm ${newStatus === 'ACTIVE' ? 'Activation' : 'Deactivation'}`,
-      message: `Are you sure you want to ${newStatus === 'ACTIVE' ? 'activate' : 'deactivate'} ${admin.firstName} ${admin.lastName}?`,
+      message: `Are you sure you want to ${newStatus === 'ACTIVE' ? 'activate' : 'deactivate'} ${item.firstName} ${item.lastName}?`,
       confirmText: newStatus === 'ACTIVE' ? 'Activate' : 'Deactivate',
       confirmButtonClass: newStatus === 'ACTIVE' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${admin.residentId}/status`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${item.residentId}/status`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -432,7 +446,6 @@ export default function SuperAdminManagementPage() {
             autoClose: true,
             autoCloseDelay: 3000
           });
-          setManageModal(null);
         } catch (err) {
           setNotificationModal({
             type: 'error',
@@ -444,17 +457,17 @@ export default function SuperAdminManagementPage() {
     });
   };
 
-  const handleMakeSuperAdmin = async (admin) => {
+  const handleMakeSuperAdmin = async (item) => {
     setConfirmationModal({
       type: 'make-superadmin',
       title: 'Confirm Super Admin Promotion',
-      message: `Are you sure you want to promote ${admin.firstName} ${admin.lastName} to Super Administrator? This will grant them full system access.`,
+      message: `Are you sure you want to promote ${item.firstName} ${item.lastName} to Super Administrator? This will grant them full system access.`,
       confirmText: 'Promote',
       confirmButtonClass: 'bg-indigo-600 hover:bg-indigo-700',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${admin.residentId}/role`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/admins/${item.residentId}/role`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -470,7 +483,7 @@ export default function SuperAdminManagementPage() {
             autoClose: true,
             autoCloseDelay: 3000
           });
-          setManageModal(null);
+          setOpenDropdownId(null);
         } catch (err) {
           setNotificationModal({
             type: 'error',
@@ -482,20 +495,23 @@ export default function SuperAdminManagementPage() {
     });
   };
 
-  const handleReject = (request) => {
-    const feedback = prompt(`Please provide feedback for rejecting ${request.firstName} ${request.lastName}:`);
+  const handleReject = (item) => {
+    const feedback = prompt(`Please provide feedback for rejecting ${item.firstName} ${item.lastName}:`);
     if (feedback === null) return; // User cancelled
+
+    const entityType = activeTab === 'resident-requests' ? 'resident' : 'document request';
+    const endpoint = activeTab === 'resident-requests' ? 'resident-requests' : 'requests';
 
     setConfirmationModal({
       type: 'reject',
       title: 'Confirm Rejection',
-      message: `Are you sure you want to reject ${request.firstName} ${request.lastName}? This will permanently deny their access to the system.`,
+      message: `Are you sure you want to reject ${item.firstName} ${item.lastName}? This will permanently deny their access to the system.`,
       confirmText: 'Reject',
       confirmButtonClass: 'bg-red-600 hover:bg-red-700',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/resident-requests/${request.residentId}/reject`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/reject`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -508,16 +524,17 @@ export default function SuperAdminManagementPage() {
           fetchData(activeTab);
           setNotificationModal({
             type: 'success',
-            title: 'Resident Rejected',
-            message: 'Resident has been rejected successfully',
+            title: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} Rejected`,
+            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been rejected successfully`,
             autoClose: true,
             autoCloseDelay: 3000
           });
+          setOpenDropdownId(null);
         } catch (err) {
           setNotificationModal({
             type: 'error',
             title: 'Rejection Failed',
-            message: 'Error rejecting resident: ' + err.message
+            message: 'Error rejecting: ' + err.message
           });
         }
       }
@@ -739,11 +756,12 @@ export default function SuperAdminManagementPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="relative">
                             <button
-                              onClick={() => handleManage(
+                              onClick={(e) => handleManage(
                                 activeTab === 'administrators' ? 'admin' :
                                 activeTab === 'residents' ? 'resident' :
                                 activeTab === 'resident-requests' ? 'request' : 'document',
-                                item
+                                item,
+                                e
                               )}
                               className="text-gray-400 hover:text-gray-600 p-1"
                             >
@@ -756,6 +774,139 @@ export default function SuperAdminManagementPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Floating Dropdown */}
+            {openDropdownId && (
+            
+                <div
+                  className="absolute bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-48 z-20"
+                  style={{
+                    top: dropdownPosition.top,
+                    left: dropdownPosition.left,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {(() => {
+                    const item = data.find(d => d.residentId === openDropdownId);
+                    if (!item) return null;
+
+                    return (
+                      <div className="space-y-1">
+                        {activeTab === 'administrators' && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInfo(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Eye size={16} />
+                              View Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSuperAdminPasswordVerification(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <EyeOff size={16} />
+                              View Password
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePasswordReset(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Key size={16} />
+                              Reset Password
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMakeSuperAdmin(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Crown size={16} />
+                              Make Super Admin
+                            </button>
+                          </>
+                        )}
+                        {activeTab === 'residents' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewInfo(item);
+                              setOpenDropdownId(null);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                          >
+                            <Eye size={16} />
+                            View Details
+                          </button>
+                        )}
+                        {(activeTab === 'resident-requests' || activeTab === 'document-requests') && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInfo(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Eye size={16} />
+                              View Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAccept(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <CheckCircle size={16} />
+                              Approve
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReject(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <XCircle size={16} />
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item);
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded flex items-center gap-2"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                      </div>
+                    );
+                  })()}
+                </div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -907,122 +1058,6 @@ export default function SuperAdminManagementPage() {
         </div>
       )}
 
-      {/* Management Modal */}
-      {manageModal && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
-          <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  manageType === 'admin' ? 'bg-purple-100' : manageType === 'resident' ? 'bg-blue-100' : 'bg-orange-100'
-                }`}>
-                  {manageType === 'admin' ? (
-                    <Shield className="w-5 h-5 text-purple-600" />
-                  ) : manageType === 'resident' ? (
-                    <Users className="w-5 h-5 text-blue-600" />
-                  ) : (
-                    <FileText className="w-5 h-5 text-orange-600" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Manage {manageType === 'admin' ? 'Administrator' : manageType === 'resident' ? 'Resident' : 'Request'}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {manageModal.firstName} {manageModal.middleName} {manageModal.lastName}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {manageType === 'admin' && (
-                  <>
-                    <button
-                      onClick={() => handleViewInfo(manageModal)}
-                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
-                    >
-                      <Eye size={18} />
-                      <span className="font-medium">View Details</span>
-                    </button>
-                    <button
-                      onClick={() => handleSuperAdminPasswordVerification(manageModal)}
-                      className="w-full bg-yellow-50 text-yellow-700 px-4 py-3 rounded-lg hover:bg-yellow-100 transition-colors flex items-center gap-3"
-                    >
-                      <EyeOff size={18} />
-                      <span className="font-medium">View Password</span>
-                    </button>
-                    <button
-                      onClick={handlePasswordReset}
-                      className="w-full bg-purple-50 text-purple-700 px-4 py-3 rounded-lg hover:bg-purple-100 transition-colors flex items-center gap-3"
-                    >
-                      <Key size={18} />
-                      <span className="font-medium">Reset Password</span>
-                    </button>
-
-                  </>
-                )}
-                {manageType === 'resident' && (
-                  <>
-                    <button
-                      onClick={() => handleViewInfo(manageModal)}
-                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
-                    >
-                      <Eye size={18} />
-                      <span className="font-medium">View Details</span>
-                    </button>
-                  </>
-                )}
-                {manageType === 'request' && (
-                  <>
-                    <button
-                      onClick={() => handleViewInfo(manageModal)}
-                      className="w-full bg-blue-50 text-blue-700 px-4 py-3 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-3"
-                    >
-                      <Eye size={18} />
-                      <span className="font-medium">View Details</span>
-                    </button>
-                    <button
-                      onClick={() => handleVerifyResident(manageModal)}
-                      className="w-full bg-green-50 text-green-700 px-4 py-3 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-3"
-                    >
-                      <CheckCircle size={18} />
-                      <span className="font-medium">Verify</span>
-                    </button>
-                    <button
-                      onClick={() => handleReject(manageModal)}
-                      className="w-full bg-red-50 text-red-700 px-4 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3"
-                    >
-                      <XCircle size={18} />
-                      <span className="font-medium">Reject</span>
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={handleDelete}
-                  className="w-full bg-red-50 text-red-700 px-4 py-3 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-3"
-                >
-                  <Trash2 size={18} />
-                  <span className="font-medium">Delete {manageType === 'admin' ? 'Administrator' : manageType === 'resident' ? 'Resident' : 'Request'}</span>
-                </button>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setManageModal(null)}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
 
       {/* Password Warning Modal */}
       {passwordWarningModal && (
