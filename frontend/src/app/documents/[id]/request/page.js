@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Upload, X, File } from 'lucide-react'; // Added icons
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 import PendingRestrictionModal from '@/components/PendingRestrictionModal';
 import NotificationModal from '@/components/NotificationModal';
@@ -20,6 +21,10 @@ export default function RequestDocumentPage() {
     address: '',
     purpose: '',
   });
+  
+  // New state for files
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -70,16 +75,28 @@ export default function RequestDocumentPage() {
   }
 
   if (loading || !user) {
-    // Hide form for non-logged-in users
     return null;
   }
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: files ? files[0] : value,
+      [name]: value,
     });
+  };
+
+  // Handle File Selection
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // Add new files to existing ones
+      setSelectedFiles(prev => [...prev, ...Array.from(e.target.files)]);
+    }
+  };
+
+  // Remove a selected file
+  const removeFile = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
@@ -100,12 +117,22 @@ export default function RequestDocumentPage() {
       return;
     }
 
-    const payload = {
+    // --- PREPARE FORM DATA FOR UPLOAD ---
+    const dataPayload = {
       documentId: id,
       documentName: document.name,
       residentId: user.residentId,
       details: formData.purpose,
     };
+
+    const formDataToSend = new FormData();
+    // 1. Append the JSON data as a string
+    formDataToSend.append('data', JSON.stringify(dataPayload));
+    
+    // 2. Append each file
+    selectedFiles.forEach(file => {
+        formDataToSend.append('files', file);
+    });
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -114,17 +141,17 @@ export default function RequestDocumentPage() {
         title: 'Login Required',
         message: 'Please login first to request documents.'
       });
-      window.dispatchEvent(new CustomEvent('showLogin'));
       return;
     }
 
+    // NOTE: Do NOT set 'Content-Type': 'application/json' here.
+    // The browser automatically sets it to multipart/form-data with the boundary.
     const response = await fetch('http://localhost:8080/api/document-requests', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
+      body: formDataToSend,
     });
 
     if (response.ok) {
@@ -239,6 +266,54 @@ export default function RequestDocumentPage() {
             value={formData.purpose}
             onChange={handleChange}
           ></textarea>
+        </div>
+
+        {/* --- UPLOAD REQUIREMENTS SECTION --- */}
+        <div>
+          <label className="block mb-2 font-medium">
+            Upload Requirements (Optional)
+          </label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+             <div className="flex flex-col items-center justify-center">
+                <input
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <label 
+                   htmlFor="file-upload" 
+                   className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors"
+                >
+                   <Upload className="w-8 h-8" />
+                   <span className="text-sm font-medium">Click to upload files</span>
+                   <span className="text-xs text-gray-400">Supported: Images, PDF</span>
+                </label>
+             </div>
+          </div>
+
+          {/* Selected Files List */}
+          {selectedFiles.length > 0 && (
+            <div className="mt-3 space-y-2">
+               {selectedFiles.map((file, index) => (
+                 <div key={index} className="flex items-center justify-between bg-blue-50 p-2 rounded-md border border-blue-100">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                       <File className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                       <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                       <span className="text-xs text-gray-400">({(file.size / 1024).toFixed(0)} KB)</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                       <X className="w-4 h-4" />
+                    </button>
+                 </div>
+               ))}
+            </div>
+          )}
         </div>
 
         {/* Submit Button */}

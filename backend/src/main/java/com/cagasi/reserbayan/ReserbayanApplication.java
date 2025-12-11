@@ -15,7 +15,7 @@ public class ReserbayanApplication implements CommandLineRunner {
 	private AuthService authService;
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReserbayanApplication.class, args); 
+		SpringApplication.run(ReserbayanApplication.class, args);
 	}
 
 	@Override
