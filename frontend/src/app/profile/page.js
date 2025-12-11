@@ -29,8 +29,15 @@ export default function ProfilePage() {
       middleName: parsedUser.middleName || '',
       residentEmail: parsedUser.residentEmail || '',
       phoneNumber: parsedUser.phoneNumber || '',
-      address: parsedUser.address || '',
-      birthdate: parsedUser.birthdate ? parsedUser.birthdate.split('T')[0] : ''
+      birthdate: parsedUser.birthdate ? parsedUser.birthdate.split('T')[0] : '',
+      // Include address fields for API compatibility
+      addressLine1: parsedUser.addressLine1 || '',
+      sitio: parsedUser.sitio || '',
+      barangay: parsedUser.barangay || '',
+      city: parsedUser.city || '',
+      province: parsedUser.province || '',
+      region: parsedUser.region || '',
+      gender: parsedUser.gender || ''
     });
     setLoading(false);
   }, [router]);
@@ -72,8 +79,15 @@ export default function ProfilePage() {
       middleName: user.middleName || '',
       residentEmail: user.residentEmail || '',
       phoneNumber: user.phoneNumber || '',
-      address: user.address || '',
-      birthdate: user.birthdate ? user.birthdate.split('T')[0] : ''
+      birthdate: user.birthdate ? user.birthdate.split('T')[0] : '',
+      // Include address fields for API compatibility
+      addressLine1: user.addressLine1 || '',
+      sitio: user.sitio || '',
+      barangay: user.barangay || '',
+      city: user.city || '',
+      province: user.province || '',
+      region: user.region || '',
+      gender: user.gender || ''
     });
     setEditing(false);
   };
@@ -81,6 +95,19 @@ export default function ProfilePage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const formatAddress = (userData) => {
+    if (!userData) return 'Not provided';
+    
+    const parts = [];
+    if (userData.addressLine1) parts.push(userData.addressLine1);
+    if (userData.sitio) parts.push(userData.sitio);
+    if (userData.barangay) parts.push(userData.barangay);
+    if (userData.city) parts.push(userData.city);
+    if (userData.province) parts.push(userData.province);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Not provided';
   };
 
   if (loading) {
@@ -229,12 +256,11 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    <input
+                      type="text"
+                      value={formatAddress(user)}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -253,7 +279,7 @@ export default function ProfilePage() {
                   <InfoItem icon={<User />} label="Full Name" value={`${user.firstName} ${user.middleName || ''} ${user.lastName}`} />
                   <InfoItem icon={<Mail />} label="Email" value={user.residentEmail || 'Not provided'} />
                   <InfoItem icon={<Phone />} label="Phone Number" value={user.phoneNumber || 'Not provided'} />
-                  <InfoItem icon={<MapPin />} label="Address" value={user.address || 'Not provided'} />
+                  <InfoItem icon={<MapPin />} label="Address" value={formatAddress(user)} />
                   <InfoItem icon={<Calendar />} label="Date of Birth" value={user.birthdate ? new Date(user.birthdate).toLocaleDateString() : 'Not provided'} />
                 </>
               )}
