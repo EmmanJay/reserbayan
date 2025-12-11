@@ -110,7 +110,15 @@ export default function DocumentDetailPage({ params }) {
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <button
             onClick={() => {
-              if (user && user.status === 'PENDING') {
+              // Check if user is logged in
+              if (!user) {
+                // Show signup modal with transparent background and blur
+                window.dispatchEvent(new CustomEvent('showSignUp'));
+                return;
+              }
+              
+              // Check if user is pending
+              if (user.status === 'PENDING') {
                 setShowPendingModal(true);
               } else {
                 window.location.href = `/documents/${doc.id}/request`;
