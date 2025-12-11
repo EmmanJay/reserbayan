@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cagasi.reserbayan.config.JwtUtil;
+import com.cagasi.reserbayan.dto.RegisterRequest; // Make sure to import this!
 import com.cagasi.reserbayan.dto.ResidentDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
@@ -47,14 +48,12 @@ public class AuthService {
         }
     }
 
+    // ... registerAdmin remains the same ...
     public Admin registerAdmin(Admin admin, MultipartFile proofOfEmployment) throws IOException {
-        // Validate password strength
         validatePasswordStrength(admin.getPassword());
-        // Check if email already exists in resident table
         if (residentRepository.findByResidentEmail(admin.getResidentEmail()).isPresent()) {
             throw new RuntimeException("Email already registered as resident");
         }
-        // Check if email already exists in admin table
         if (adminRepository.findByResidentEmail(admin.getResidentEmail()).isPresent()) {
             throw new RuntimeException("Email already registered as admin");
         }
@@ -75,19 +74,42 @@ public class AuthService {
         return adminRepository.save(admin);
     }
 
-    public Resident registerResident(Resident resident, MultipartFile validId) throws IOException {
-        // Validate password strength
-        validatePasswordStrength(resident.getPassword());
-        // Check if email already exists in admin table
-        if (adminRepository.findByResidentEmail(resident.getResidentEmail()).isPresent()) {
+    // --- UPDATED METHOD: Uses RegisterRequest DTO ---
+    public Resident registerResident(RegisterRequest request, MultipartFile validId) throws IOException {
+
+        // 1. Validate Password
+        validatePasswordStrength(request.getPassword());
+
+        // 2. Check if email exists
+        if (adminRepository.findByResidentEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered as admin");
         }
-        // Check if email already exists in resident table
-        if (residentRepository.findByResidentEmail(resident.getResidentEmail()).isPresent()) {
+        if (residentRepository.findByResidentEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered as resident");
         }
-        resident.setPassword(passwordEncoder.encode(resident.getPassword()));
 
+        // 3. Create Entity and Map Fields Manually
+        Resident resident = new Resident();
+        resident.setFirstName(request.getFirstName());
+        resident.setLastName(request.getLastName());
+        resident.setMiddleName(request.getMiddleName());
+        resident.setResidentEmail(request.getEmail());
+        resident.setPhoneNumber(request.getPhoneNumber());
+        resident.setBirthdate(request.getBirthDate());
+
+        // Map New Fields
+        resident.setGender(request.getGender());
+        resident.setRegion(request.getRegion());
+        resident.setProvince(request.getProvince());
+        resident.setCity(request.getCity());
+        resident.setBarangay(request.getBarangay());
+        resident.setSitio(request.getSitio());
+        resident.setAddressLine1(request.getAddressLine1());
+
+        // Encode Password
+        resident.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // 4. Handle File Upload
         if (validId != null && !validId.isEmpty()) {
             String uploadDir = "uploads/resident/";
             Path uploadPath = Paths.get(uploadDir);
@@ -103,6 +125,7 @@ public class AuthService {
         return residentRepository.save(resident);
     }
 
+    // ... authenticate methods remain the same ...
     public Admin authenticateAdmin(String identifier, String password) {
         Admin admin = adminRepository.findByResidentEmail(identifier).orElse(null);
         if (admin == null) {
@@ -117,14 +140,16 @@ public class AuthService {
 
     public Resident authenticateResident(String email, String password) {
         Resident resident = residentRepository.findByResidentEmail(email).orElse(null);
-        if (resident != null && (resident.getStatus() == ResidentStatus.APPROVED || resident.getStatus() == ResidentStatus.PENDING) && passwordEncoder.matches(password, resident.getPassword())) {
+        if (resident != null
+                && (resident.getStatus() == ResidentStatus.APPROVED || resident.getStatus() == ResidentStatus.PENDING)
+                && passwordEncoder.matches(password, resident.getPassword())) {
             return resident;
         }
         return null;
     }
 
     public java.util.Map<String, Object> authenticate(String identifier, String password) {
-        // Check SuperAdmin first
+        // ... (Keep existing authentication logic)
         Admin superAdmin = authenticateAdmin(identifier, password);
         if (superAdmin != null && superAdmin.getRole() == Role.SUPER_ADMIN) {
             String token = jwtUtil.generateToken(identifier, "SUPER_ADMIN");
@@ -135,7 +160,6 @@ public class AuthService {
             return response;
         }
 
-        // Check Admin
         Admin admin = authenticateAdmin(identifier, password);
         if (admin != null && admin.getRole() == Role.ADMIN) {
             String token = jwtUtil.generateToken(identifier, "ADMIN");
@@ -146,7 +170,6 @@ public class AuthService {
             return response;
         }
 
-        // Check Resident
         Resident resident = authenticateResident(identifier, password);
         if (resident != null) {
             String token = jwtUtil.generateToken(identifier, "RESIDENT");
@@ -160,11 +183,11 @@ public class AuthService {
         return null;
     }
 
+    // --- UPDATED METHOD: Maps new fields from ResidentDTO ---
     public Resident updateProfile(Long residentId, ResidentDTO residentDTO) {
         Resident resident = residentRepository.findById(residentId)
                 .orElseThrow(() -> new RuntimeException("Resident not found"));
 
-        // Check if email is being changed and if it's already taken
         if (!resident.getResidentEmail().equals(residentDTO.getResidentEmail())) {
             if (adminRepository.findByResidentEmail(residentDTO.getResidentEmail()).isPresent()) {
                 throw new RuntimeException("Email already registered as admin");
@@ -180,8 +203,17 @@ public class AuthService {
         resident.setMiddleName(residentDTO.getMiddleName());
         resident.setResidentEmail(residentDTO.getResidentEmail());
         resident.setPhoneNumber(residentDTO.getPhoneNumber());
-        resident.setAddress(residentDTO.getAddress());
         resident.setBirthdate(residentDTO.getBirthdate());
+
+        // --- NEW UPDATES ---
+        resident.setGender(residentDTO.getGender());
+        resident.setRegion(residentDTO.getRegion());
+        resident.setProvince(residentDTO.getProvince());
+        resident.setCity(residentDTO.getCity());
+        resident.setBarangay(residentDTO.getBarangay());
+        resident.setSitio(residentDTO.getSitio());
+        resident.setAddressLine1(residentDTO.getAddressLine1());
+        // -------------------
 
         return residentRepository.save(resident);
     }

@@ -1,60 +1,42 @@
 package com.cagasi.reserbayan.dto;
 
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 
-public class ResidentDTO {
-    private Long residentId;
+public class RegisterRequest {
+
+    // Discriminator to check if "admin" or "resident"
+    private String userType;
+
     private String firstName;
     private String lastName;
     private String middleName;
-    private String residentEmail;
+    private String email;
+    private String password;
     private String phoneNumber;
-    private LocalDate birthdate;
+    private LocalDate birthDate; // Spring automatically parses 'YYYY-MM-DD'
 
-    // --- NEW FIELDS START ---
+    // Address Fields
     private String gender;
     private String region;
     private String province;
     private String city;
     private String barangay;
     private String sitio;
-    private String addressLine1; // Replaces the old 'address' field
-    // --- NEW FIELDS END ---
+    private String addressLine1;
 
-    // Constructors
-    public ResidentDTO() {
+    // File handling
+    private MultipartFile validId; // For Residents
+    private MultipartFile proofOfEmployment; // For Admins
+
+    // --- GETTERS AND SETTERS ---
+
+    public String getUserType() {
+        return userType;
     }
 
-    public ResidentDTO(Long residentId, String firstName, String lastName, String middleName,
-            String residentEmail, String phoneNumber, LocalDate birthdate,
-            String gender, String region, String province, String city,
-            String barangay, String sitio, String addressLine1) {
-        this.residentId = residentId;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.middleName = middleName;
-        this.residentEmail = residentEmail;
-        this.phoneNumber = phoneNumber;
-        this.birthdate = birthdate;
-
-        // New fields
-        this.gender = gender;
-        this.region = region;
-        this.province = province;
-        this.city = city;
-        this.barangay = barangay;
-        this.sitio = sitio;
-        this.addressLine1 = addressLine1;
-    }
-
-    // Getters and Setters
-
-    public Long getResidentId() {
-        return residentId;
-    }
-
-    public void setResidentId(Long residentId) {
-        this.residentId = residentId;
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 
     public String getFirstName() {
@@ -81,12 +63,20 @@ public class ResidentDTO {
         this.middleName = middleName;
     }
 
-    public String getResidentEmail() {
-        return residentEmail;
+    public String getEmail() {
+        return email;
     }
 
-    public void setResidentEmail(String residentEmail) {
-        this.residentEmail = residentEmail;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getPhoneNumber() {
@@ -97,15 +87,13 @@ public class ResidentDTO {
         this.phoneNumber = phoneNumber;
     }
 
-    public LocalDate getBirthdate() {
-        return birthdate;
+    public LocalDate getBirthDate() {
+        return birthDate;
     }
 
-    public void setBirthdate(LocalDate birthdate) {
-        this.birthdate = birthdate;
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
     }
-
-    // --- NEW GETTERS AND SETTERS ---
 
     public String getGender() {
         return gender;
@@ -161,5 +149,21 @@ public class ResidentDTO {
 
     public void setAddressLine1(String addressLine1) {
         this.addressLine1 = addressLine1;
+    }
+
+    public MultipartFile getValidId() {
+        return validId;
+    }
+
+    public void setValidId(MultipartFile validId) {
+        this.validId = validId;
+    }
+
+    public MultipartFile getProofOfEmployment() {
+        return proofOfEmployment;
+    }
+
+    public void setProofOfEmployment(MultipartFile proofOfEmployment) {
+        this.proofOfEmployment = proofOfEmployment;
     }
 }

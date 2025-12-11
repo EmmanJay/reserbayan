@@ -1,6 +1,7 @@
 package com.cagasi.reserbayan.controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,11 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import com.cagasi.reserbayan.dto.RegisterRequest; // IMPORT THIS!
 import com.cagasi.reserbayan.dto.ResidentDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
@@ -33,6 +31,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Map<String, Object> authResult = authService.authenticate(loginRequest.getIdentifier(),
                 loginRequest.getPassword());
+
         if (authResult != null) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -53,7 +52,13 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            // NOTE: Ensure your RegisterRequest.java DTO has a 'userType' field and getter!
+            // If you missed adding it in the DTO step, add: private String userType;
+
             if ("admin".equals(registerRequest.getUserType())) {
+                // --- ADMIN LOGIC (Legacy Mapping) ---
+                // Since Admin entity likely still has a single 'address' field, we construct it
+                // manually
                 Admin admin = new Admin();
                 admin.setFirstName(registerRequest.getFirstName());
                 admin.setLastName(registerRequest.getLastName());
@@ -61,24 +66,27 @@ public class AuthController {
                 admin.setResidentEmail(registerRequest.getEmail());
                 admin.setPassword(registerRequest.getPassword());
                 admin.setPhoneNumber(registerRequest.getPhoneNumber());
-                admin.setAddress(registerRequest.getAddress());
 
+                // Concatenate new address fields for Admin
+                String fullAddress = registerRequest.getAddressLine1() + ", " +
+                        registerRequest.getBarangay() + ", " +
+                        registerRequest.getCity();
+                admin.setAddress(fullAddress);
+
+                // Admin registration uses the old style (Entity + File)
                 Admin savedAdmin = authService.registerAdmin(admin, registerRequest.getProofOfEmployment());
+
                 response.put("success", true);
                 response.put("user", savedAdmin);
                 return ResponseEntity.ok(response);
-            } else {
-                Resident resident = new Resident();
-                resident.setFirstName(registerRequest.getFirstName());
-                resident.setLastName(registerRequest.getLastName());
-                resident.setMiddleName(registerRequest.getMiddleName());
-                resident.setBirthdate(LocalDate.parse(registerRequest.getBirthDate()));
-                resident.setResidentEmail(registerRequest.getEmail());
-                resident.setPassword(registerRequest.getPassword());
-                resident.setPhoneNumber(registerRequest.getPhoneNumber());
-                resident.setAddress(registerRequest.getAddress());
 
-                Resident savedResident = authService.registerResident(resident, registerRequest.getValidId());
+            } else {
+                // --- RESIDENT LOGIC (New Efficient Mapping) ---
+
+                // We NO LONGER manually map fields here (e.g. resident.setFirstName...)
+                // We pass the whole DTO to the service.
+                Resident savedResident = authService.registerResident(registerRequest, registerRequest.getValidId());
+
                 response.put("success", true);
                 response.put("user", savedResident);
                 return ResponseEntity.ok(response);
@@ -90,6 +98,23 @@ public class AuthController {
         }
     }
 
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody ResidentDTO residentDTO) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Resident updatedResident = authService.updateProfile(residentDTO.getResidentId(), residentDTO);
+            response.put("success", true);
+            response.put("user", updatedResident);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Profile update failed: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // Keep LoginRequest inner class if you prefer, or move to DTO package
     public static class LoginRequest {
         private String identifier;
         private String password;
@@ -108,127 +133,6 @@ public class AuthController {
 
         public void setPassword(String password) {
             this.password = password;
-        }
-    }
-
-    public static class RegisterRequest {
-        private String userType;
-        private String firstName;
-        private String lastName;
-        private String middleName;
-        private String birthDate;
-        private String email;
-        private String password;
-        private String phoneNumber;
-        private String address;
-        private MultipartFile validId;
-        private MultipartFile proofOfEmployment;
-
-        // getters and setters
-        public String getUserType() {
-            return userType;
-        }
-
-        public void setUserType(String userType) {
-            this.userType = userType;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-
-        public String getMiddleName() {
-            return middleName;
-        }
-
-        public void setMiddleName(String middleName) {
-            this.middleName = middleName;
-        }
-
-        public String getBirthDate() {
-            return birthDate;
-        }
-
-        public void setBirthDate(String birthDate) {
-            this.birthDate = birthDate;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getPhoneNumber() {
-            return phoneNumber;
-        }
-
-        public void setPhoneNumber(String phoneNumber) {
-            this.phoneNumber = phoneNumber;
-        }
-
-        public String getAddress() {
-            return address;
-        }
-
-        public void setAddress(String address) {
-            this.address = address;
-        }
-
-        public MultipartFile getValidId() {
-            return validId;
-        }
-
-        public void setValidId(MultipartFile validId) {
-            this.validId = validId;
-        }
-
-        public MultipartFile getProofOfEmployment() {
-            return proofOfEmployment;
-        }
-
-        public void setProofOfEmployment(MultipartFile proofOfEmployment) {
-            this.proofOfEmployment = proofOfEmployment;
-        }
-    }
-
-    @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody ResidentDTO residentDTO) {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            // Get resident ID from JWT token or session, but for now assume it's in the DTO
-            // In a real app, you'd extract from security context
-            Resident updatedResident = authService.updateProfile(residentDTO.getResidentId(), residentDTO);
-            response.put("success", true);
-            response.put("user", updatedResident);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Profile update failed: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
         }
     }
 }
