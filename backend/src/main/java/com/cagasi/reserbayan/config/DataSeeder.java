@@ -54,7 +54,9 @@ public class DataSeeder implements CommandLineRunner {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             ClassPathResource resource = new ClassPathResource("data.json");
-            List<Map<String, Object>> documentData = objectMapper.readValue(resource.getInputStream(), new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> documentData = objectMapper.readValue(resource.getInputStream(),
+                    new TypeReference<List<Map<String, Object>>>() {
+                    });
 
             for (Map<String, Object> data : documentData) {
                 String documentId = (String) data.get("id");
@@ -107,7 +109,8 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private int parseProcessingDays(String processingTime) {
-        if (processingTime == null) return 0;
+        if (processingTime == null)
+            return 0;
         processingTime = processingTime.toLowerCase();
         if (processingTime.contains("day")) {
             try {

@@ -41,9 +41,34 @@ public class SuperAdminController {
     @GetMapping("/summary")
     public ResponseEntity<?> getSummary() {
         Map<String, Object> summary = new HashMap<>();
-        summary.put("totalResidents", residentRepository.count());
-        summary.put("totalRequests", documentRequestRepository.count());
-        // Add more analytics as needed
+
+        // Total residents count
+        long totalResidents = residentRepository.count();
+        summary.put("totalResidents", totalResidents);
+
+        // Total document requests count
+        long totalRequests = documentRequestRepository.count();
+        summary.put("totalRequests", totalRequests);
+
+        // Pending residents count (residents with PENDING status)
+        long pendingResidents = residentRepository.findAll().stream()
+                .filter(r -> r.getStatus() == ResidentStatus.PENDING)
+                .count();
+        summary.put("pendingResidents", pendingResidents);
+
+        // Pending document requests count
+        long pendingRequests = documentRequestRepository.findAll().stream()
+                .filter(req -> req.getStatus().toString().equals("PENDING"))
+                .count();
+        summary.put("pendingRequests", pendingRequests);
+
+        // Today's requests count
+        java.time.LocalDate today = java.time.LocalDate.now();
+        long todayRequests = documentRequestRepository.findAll().stream()
+                .filter(req -> req.getSubmittedAt().toLocalDate().equals(today))
+                .count();
+        summary.put("todayRequests", todayRequests);
+
         return ResponseEntity.ok(summary);
     }
 
@@ -54,12 +79,130 @@ public class SuperAdminController {
         return ResponseEntity.ok(requests);
     }
 
+    @GetMapping("/recent-requests")
+    public ResponseEntity<?> getRecentRequests() {
+        List<DocumentRequest> allRequests = documentRequestRepository.findAll();
+
+        // Sort by submittedAt date (newest first) and limit to 10 most recent
+        List<DocumentRequest> recentRequests = allRequests.stream()
+                .sorted((a, b) -> b.getSubmittedAt().compareTo(a.getSubmittedAt()))
+                .limit(10)
+                .toList();
+
+        // Create a properly formatted response with enhanced information
+        List<Map<String, Object>> formattedRequests = recentRequests.stream().map(req -> {
+            Map<String, Object> requestMap = new HashMap<>();
+            requestMap.put("requestId", req.getRequestId());
+            requestMap.put("documentId", req.getDocumentId());
+            requestMap.put("documentName", req.getDocumentName());
+            requestMap.put("details", req.getDetails());
+            requestMap.put("status", req.getStatus());
+            requestMap.put("submittedAt", req.getSubmittedAt());
+            requestMap.put("updatedAt", req.getUpdatedAt());
+
+            // Add resident information
+            if (req.getResident() != null) {
+                Map<String, Object> residentInfo = new HashMap<>();
+                residentInfo.put("residentId", req.getResident().getResidentId());
+                residentInfo.put("firstName", req.getResident().getFirstName());
+                residentInfo.put("lastName", req.getResident().getLastName());
+                residentInfo.put("fullName", req.getResident().getFirstName() + " " + req.getResident().getLastName());
+                residentInfo.put("email", req.getResident().getResidentEmail());
+                requestMap.put("resident", residentInfo);
+            }
+
+            // Add attachment count if any
+            requestMap.put("attachmentCount", req.getAttachments() != null ? req.getAttachments().size() : 0);
+
+            return requestMap;
+        }).toList();
+
+        return ResponseEntity.ok(formattedRequests);
+    }
+
+    // Document Request Management
+    @GetMapping("/requests/{id}")
+    public ResponseEntity<?> getRequestById(@PathVariable Long id) {
+        DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
+        if (request == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Create formatted response similar to recent-requests
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("id", request.getRequestId());
+        requestMap.put("requestId", request.getRequestId());
+        requestMap.put("documentId", request.getDocumentId());
+        requestMap.put("documentName", request.getDocumentName());
+        requestMap.put("details", request.getDetails());
+        requestMap.put("status", request.getStatus());
+        requestMap.put("submittedAt", request.getSubmittedAt());
+        requestMap.put("updatedAt", request.getUpdatedAt());
+
+        // Add resident information
+        if (request.getResident() != null) {
+            Map<String, Object> residentInfo = new HashMap<>();
+            residentInfo.put("residentId", request.getResident().getResidentId());
+            residentInfo.put("firstName", request.getResident().getFirstName());
+            residentInfo.put("lastName", request.getResident().getLastName());
+            residentInfo.put("fullName",
+                    request.getResident().getFirstName() + " " + request.getResident().getLastName());
+            residentInfo.put("email", request.getResident().getResidentEmail());
+            requestMap.put("resident", residentInfo);
+        }
+
+        // Add attachment count
+        requestMap.put("attachmentCount", request.getAttachments() != null ? request.getAttachments().size() : 0);
+
+        return ResponseEntity.ok(requestMap);
+    }
+
+    @PutMapping("/requests/{id}/approve")
+    public ResponseEntity<?> approveDocumentRequest(@PathVariable Long id) {
+        DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
+        if (request == null || !request.getStatus().equals("Pending")) {
+            return ResponseEntity.notFound().build();
+        }
+        request.setStatus("Approved");
+        request.setUpdatedAt(java.time.LocalDateTime.now());
+        documentRequestRepository.save(request);
+
+        // Log the status change
+        StatusLog statusLog = new StatusLog();
+        statusLog.setDocumentRequest(request);
+        statusLog.setStatus("Approved");
+        statusLog.setTimestamp(java.time.LocalDateTime.now());
+        statusLogRepository.save(statusLog);
+
+        return ResponseEntity.ok(request);
+    }
+
+    @PutMapping("/requests/{id}/reject")
+    public ResponseEntity<?> rejectDocumentRequest(@PathVariable Long id) {
+        DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
+        if (request == null || !request.getStatus().equals("Pending")) {
+            return ResponseEntity.notFound().build();
+        }
+        request.setStatus("Rejected");
+        request.setUpdatedAt(java.time.LocalDateTime.now());
+        documentRequestRepository.save(request);
+
+        // Log the status change
+        StatusLog statusLog = new StatusLog();
+        statusLog.setDocumentRequest(request);
+        statusLog.setStatus("Rejected");
+        statusLog.setTimestamp(java.time.LocalDateTime.now());
+        statusLogRepository.save(statusLog);
+
+        return ResponseEntity.ok(request);
+    }
+
     // Resident Management
     @GetMapping("/residents")
     public ResponseEntity<?> getAllResidents() {
         List<Resident> residents = residentRepository.findAll().stream()
-            .filter(r -> r.getStatus() == ResidentStatus.APPROVED)
-            .toList();
+                .filter(r -> r.getStatus() == ResidentStatus.APPROVED)
+                .toList();
         return ResponseEntity.ok(residents);
     }
 
@@ -98,7 +241,8 @@ public class SuperAdminController {
         if (resident == null) {
             return ResponseEntity.notFound().build();
         }
-        // Assuming there's a verification status or field, for now just update status to APPROVED
+        // Assuming there's a verification status or field, for now just update status
+        // to APPROVED
         resident.setStatus(ResidentStatus.APPROVED);
         residentRepository.save(resident);
         return ResponseEntity.ok(resident);
@@ -110,15 +254,16 @@ public class SuperAdminController {
         if (resident == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(Map.of("password", resident.getPassword() != null ? resident.getPassword() : "Not set"));
+        return ResponseEntity
+                .ok(Map.of("password", resident.getPassword() != null ? resident.getPassword() : "Not set"));
     }
 
     // Resident Requests Management
     @GetMapping("/resident-requests")
     public ResponseEntity<?> getResidentRequests() {
         List<Resident> requests = residentRepository.findAll().stream()
-            .filter(r -> r.getStatus() == ResidentStatus.PENDING)
-            .toList();
+                .filter(r -> r.getStatus() == ResidentStatus.PENDING)
+                .toList();
         return ResponseEntity.ok(requests);
     }
 
