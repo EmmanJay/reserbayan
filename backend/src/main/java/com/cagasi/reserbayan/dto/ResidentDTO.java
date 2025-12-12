@@ -10,6 +10,7 @@ public class ResidentDTO {
     private String residentEmail;
     private String phoneNumber;
     private LocalDate birthdate;
+    private String validIdPath;
 
     // --- NEW FIELDS START ---
     private String gender;
@@ -103,6 +104,14 @@ public class ResidentDTO {
 
     public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public String getValidIdPath() {
+        return validIdPath;
+    }
+
+    public void setValidIdPath(String validIdPath) {
+        this.validIdPath = validIdPath;
     }
 
     // --- NEW GETTERS AND SETTERS ---
