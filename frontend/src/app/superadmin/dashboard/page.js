@@ -7,7 +7,7 @@ import {
   Check, X, Clock, ArrowRight, Plus,
   UserPlus, FilePlus, Settings, Bell,
   TrendingUp, AlertCircle, Search, ChevronRight,
-  Megaphone, Send, XCircle, CheckCircle
+  Megaphone, Send, XCircle, CheckCircle, Loader
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PendingAccountDetailsModal from '../../../components/PendingAccountDetailsModal';
@@ -24,7 +24,9 @@ export default function SuperAdminDashboard() {
     totalResidents: 0,
     totalRequests: 0,
     pendingRequests: 0,
-    pendingResidents: 0
+    pendingResidents: 0,
+    totalAnnouncements: 0,
+    activeAnnouncements: 0
   });
   const [recentDocRequests, setRecentDocRequests] = useState([]);
   const [pendingAccounts, setPendingAccounts] = useState([]);
@@ -41,6 +43,12 @@ export default function SuperAdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [requestDetails, setRequestDetails] = useState(null);
   const [requestModalLoading, setRequestModalLoading] = useState(false);
+
+  // Announcement states
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementTitle, setAnnouncementTitle] = useState('');
+  const [announcementContent, setAnnouncementContent] = useState('');
+  const [announcementLoading, setAnnouncementLoading] = useState(false);
 
   // Notification state
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
@@ -78,6 +86,73 @@ export default function SuperAdminDashboard() {
     return actionLoading[action] && actionLoading.accountId === accountId;
   };
 
+  // Function to handle posting announcement
+  const handlePostAnnouncement = async () => {
+    if (!announcementTitle.trim() || !announcementContent.trim()) {
+      showNotification('Please fill in both title and content fields', 'error');
+      return;
+    }
+
+    try {
+      setAnnouncementLoading(true);
+      const token = localStorage.getItem('token');
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      const response = await fetch(`${API_BASE}/announcements`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: announcementTitle.trim(),
+          content: announcementContent.trim(),
+          postedBy: currentUser.firstName + ' ' + currentUser.lastName
+        })
+      });
+
+      if (response.ok) {
+        const newAnnouncement = await response.json();
+        setAnnouncements(prev => [newAnnouncement, ...prev]);
+        setAnnouncementTitle('');
+        setAnnouncementContent('');
+        showNotification('Announcement posted successfully!', 'success');
+        fetchDashboardData(); // Refresh stats
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to post announcement:', errorData.message || response.statusText);
+        showNotification(errorData.message || 'Failed to post announcement. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error posting announcement:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    } finally {
+      setAnnouncementLoading(false);
+    }
+  };
+
+  // Function to fetch announcements
+  const fetchAnnouncements = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/announcements`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const announcementsData = await response.json();
+        setAnnouncements(announcementsData);
+      } else {
+        console.error('Failed to fetch announcements:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching announcements:', error);
+    }
+  };
+
   const fetchDashboardData = async () => {
     try {
       setDataLoading(true);
@@ -98,7 +173,9 @@ export default function SuperAdminDashboard() {
           totalResidents: summaryData.totalResidents || 0,
           totalRequests: summaryData.totalRequests || 0,
           pendingRequests: summaryData.pendingRequests || 0,
-          pendingResidents: summaryData.pendingResidents || 0
+          pendingResidents: summaryData.pendingResidents || 0,
+          totalAnnouncements: summaryData.totalAnnouncements || 0,
+          activeAnnouncements: summaryData.activeAnnouncements || 0
         });
       }
 
@@ -151,6 +228,9 @@ export default function SuperAdminDashboard() {
         }));
         setPendingAccounts(formattedData);
       }
+
+      // Fetch announcements
+      await fetchAnnouncements();
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -422,7 +502,7 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      
+       
       {/* NOTIFICATION TOAST */}
       <AnimatePresence>
         {notification.show && (
@@ -453,10 +533,10 @@ export default function SuperAdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
-       
+        
       {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-25">
-          
+           
 
         {dataLoading ? (
            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse">
@@ -466,7 +546,7 @@ export default function SuperAdminDashboard() {
            </div>
         ) : (
           <div className="space-y-8">
-               
+                
             {/* 1. QUICK ACTIONS BAR - More spaced out and cleaner */}
             <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] p-5 rounded-xl border-0 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white">
               <div className="flex items-center gap-2">
@@ -512,11 +592,12 @@ export default function SuperAdminDashboard() {
                 alert={stats.pendingResidents > 0}
               />
               <StatCard
-                label="Processed Docs"
-                value={stats.totalRequests - stats.pendingRequests}
-                icon={Check}
-                color="text-emerald-600"
-                bgColor="bg-emerald-50/80"
+                label="Active Announcements"
+                value={stats.activeAnnouncements}
+                icon={Megaphone}
+                color="text-purple-600"
+                bgColor="bg-purple-50/80"
+                alert={stats.activeAnnouncements > 0}
               />
             </div>
 
@@ -547,6 +628,8 @@ export default function SuperAdminDashboard() {
                          <input
                            type="text"
                            placeholder="Announcement Title"
+                           value={announcementTitle}
+                           onChange={(e) => setAnnouncementTitle(e.target.value)}
                            className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400"
                          />
                        </div>
@@ -554,12 +637,23 @@ export default function SuperAdminDashboard() {
                          <textarea
                            rows="3"
                            placeholder="Write your message here..."
+                           value={announcementContent}
+                           onChange={(e) => setAnnouncementContent(e.target.value)}
                            className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 resize-none"
                          ></textarea>
                        </div>
                        <div className="flex justify-end pt-1">
-                         <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-slate-200">
-                           <Send className="w-3 h-3" /> Post Now
+                         <button 
+                           onClick={handlePostAnnouncement}
+                           disabled={announcementLoading || !announcementTitle.trim() || !announcementContent.trim()}
+                           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                         >
+                           {announcementLoading ? (
+                             <Loader className="w-3 h-3 animate-spin" />
+                           ) : (
+                             <Send className="w-3 h-3" />
+                           )}
+                           {announcementLoading ? 'Posting...' : 'Post Now'}
                          </button>
                        </div>
                      </div>
@@ -621,12 +715,12 @@ export default function SuperAdminDashboard() {
                                   <div className="flex flex-col items-center gap-3">
                                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
                                        <FileText className="w-8 h-8 text-slate-300" />
-                                     </div>
-                                     <div>
-                                       <p className="text-slate-900 font-medium">No recent requests</p>
-                                       <p className="text-xs text-slate-500 mt-1">Requests will appear here automatically</p>
-                                     </div>
-                                   </div>
+                                    </div>
+                                    <div>
+                                      <p className="text-slate-900 font-medium">No recent requests</p>
+                                      <p className="text-xs text-slate-500 mt-1">Requests will appear here automatically</p>
+                                    </div>
+                                  </div>
                                 </td>
                               </tr>
                             )}
