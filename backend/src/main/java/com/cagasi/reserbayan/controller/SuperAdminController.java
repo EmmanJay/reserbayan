@@ -3,6 +3,7 @@ package com.cagasi.reserbayan.controller;
 import com.cagasi.reserbayan.entity.*;
 import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.*;
+import com.cagasi.reserbayan.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,9 @@ public class SuperAdminController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AnnouncementService announcementService;
+
     // Summary & Analytics
     @GetMapping("/summary")
     public ResponseEntity<?> getSummary() {
@@ -68,6 +72,10 @@ public class SuperAdminController {
                 .filter(req -> req.getSubmittedAt().toLocalDate().equals(today))
                 .count();
         summary.put("todayRequests", todayRequests);
+
+        // Add announcement summary
+        Map<String, Object> announcementSummary = announcementService.getAnnouncementSummary();
+        summary.putAll(announcementSummary);
 
         return ResponseEntity.ok(summary);
     }
@@ -287,6 +295,103 @@ public class SuperAdminController {
         resident.setStatus(ResidentStatus.REJECTED);
         residentRepository.save(resident);
         return ResponseEntity.ok(resident);
+    }
+
+    // Announcement Management
+    @GetMapping("/announcements")
+    public ResponseEntity<?> getAllAnnouncements() {
+        List<Announcement> announcements = announcementService.getAllAnnouncements();
+        return ResponseEntity.ok(announcements);
+    }
+
+    @GetMapping("/announcements/active")
+    public ResponseEntity<?> getActiveAnnouncements() {
+        List<Announcement> announcements = announcementService.getAllActiveAnnouncements();
+        return ResponseEntity.ok(announcements);
+    }
+
+    @PostMapping("/announcements")
+    public ResponseEntity<?> createAnnouncement(@RequestBody Map<String, String> request) {
+        try {
+            String title = request.get("title");
+            String content = request.get("content");
+            String postedBy = request.get("postedBy");
+
+            if (title == null || title.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
+            }
+
+            if (content == null || content.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Content is required"));
+            }
+
+            if (postedBy == null || postedBy.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Posted by field is required"));
+            }
+
+            Announcement announcement = announcementService.createAnnouncement(title, content, postedBy);
+            return ResponseEntity.ok(announcement);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to create announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
+    @PutMapping("/announcements/{id}")
+    public ResponseEntity<?> updateAnnouncement(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        try {
+            String title = request.get("title");
+            String content = request.get("content");
+
+            if (title == null || title.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
+            }
+
+            if (content == null || content.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Content is required"));
+            }
+
+            return announcementService.updateAnnouncement(id, title, content)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to update announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
+    @DeleteMapping("/announcements/{id}")
+    public ResponseEntity<?> deleteAnnouncement(@PathVariable Long id) {
+        try {
+            boolean deleted = announcementService.deleteAnnouncement(id);
+            if (deleted) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to delete announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
+    @PutMapping("/announcements/{id}/deactivate")
+    public ResponseEntity<?> deactivateAnnouncement(@PathVariable Long id) {
+        try {
+            boolean deactivated = announcementService.deactivateAnnouncement(id);
+            if (deactivated) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to deactivate announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
     }
 
     // Admin Management
