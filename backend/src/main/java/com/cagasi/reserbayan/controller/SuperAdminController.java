@@ -1,20 +1,39 @@
 package com.cagasi.reserbayan.controller;
 
-import com.cagasi.reserbayan.entity.*;
-import com.cagasi.reserbayan.entity.ResidentStatus;
-import com.cagasi.reserbayan.repository.*;
-import com.cagasi.reserbayan.service.AnnouncementService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.cagasi.reserbayan.entity.Admin;
+import com.cagasi.reserbayan.entity.Announcement;
+import com.cagasi.reserbayan.entity.DocumentRequest;
+import com.cagasi.reserbayan.entity.DocumentType;
+import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.entity.ResidentStatus;
+import com.cagasi.reserbayan.entity.Role;
+import com.cagasi.reserbayan.entity.Status;
+import com.cagasi.reserbayan.entity.StatusLog;
+import com.cagasi.reserbayan.repository.AdminRepository;
+import com.cagasi.reserbayan.repository.DocumentRequestRepository;
+import com.cagasi.reserbayan.repository.DocumentTypeRepository;
+import com.cagasi.reserbayan.repository.ResidentRepository;
+import com.cagasi.reserbayan.repository.StatusLogRepository;
+import com.cagasi.reserbayan.service.AnnouncementService;
 
 @RestController
 @RequestMapping("/api/superadmin")
@@ -83,8 +102,46 @@ public class SuperAdminController {
     // Request Management
     @GetMapping("/requests")
     public ResponseEntity<?> getAllRequests() {
-        List<DocumentRequest> requests = documentRequestRepository.findAll();
-        return ResponseEntity.ok(requests);
+        List<DocumentRequest> allRequests = documentRequestRepository.findAll();
+
+        // Create a properly formatted response with enhanced information
+        List<Map<String, Object>> formattedRequests = allRequests.stream().map(req -> {
+            Map<String, Object> requestMap = new HashMap<>();
+            requestMap.put("requestId", req.getRequestId());
+            requestMap.put("documentId", req.getDocumentId());
+            requestMap.put("documentName", req.getDocumentName());
+            requestMap.put("details", req.getDetails());
+            requestMap.put("status", req.getStatus());
+            requestMap.put("submittedAt", req.getSubmittedAt());
+            requestMap.put("updatedAt", req.getUpdatedAt());
+
+            // Add resident information in a format that matches both frontend expectations
+            if (req.getResident() != null) {
+                String fullName = req.getResident().getFirstName() + " " + req.getResident().getLastName();
+                
+                // Add flat properties for backward compatibility
+                requestMap.put("residentFirstName", req.getResident().getFirstName());
+                requestMap.put("residentLastName", req.getResident().getLastName());
+                requestMap.put("residentFullName", fullName);
+                requestMap.put("residentEmail", req.getResident().getResidentEmail());
+                
+                // Add nested object for newer frontend code
+                Map<String, Object> residentInfo = new HashMap<>();
+                residentInfo.put("residentId", req.getResident().getResidentId());
+                residentInfo.put("firstName", req.getResident().getFirstName());
+                residentInfo.put("lastName", req.getResident().getLastName());
+                residentInfo.put("fullName", fullName);
+                residentInfo.put("email", req.getResident().getResidentEmail());
+                requestMap.put("resident", residentInfo);
+            }
+
+            // Add attachment count if any
+            requestMap.put("attachmentCount", req.getAttachments() != null ? req.getAttachments().size() : 0);
+
+            return requestMap;
+        }).toList();
+
+        return ResponseEntity.ok(formattedRequests);
     }
 
     @GetMapping("/recent-requests")

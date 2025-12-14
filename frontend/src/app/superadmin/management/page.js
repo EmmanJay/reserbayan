@@ -736,7 +736,7 @@ export default function SuperAdminManagementPage() {
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {activeTab === 'document-requests' ? `${item.resident?.firstName || ''} ${item.resident?.lastName || ''}`.trim() || 'N/A' : `${item.firstName} ${item.middleName} ${item.lastName}`}
+                                {activeTab === 'document-requests' ? `${item.resident?.firstName || ''} ${item.resident?.lastName || ''}`.trim() || 'N/A' : [item.firstName, item.middleName, item.lastName].filter(name => name && name.trim()).join(' ').trim() || 'N/A'}
                               </div>
                               {item.username && activeTab !== 'document-requests' && (
                                 <div className="text-sm text-gray-500">@{item.username}</div>

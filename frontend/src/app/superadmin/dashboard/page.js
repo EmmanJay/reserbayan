@@ -189,22 +189,34 @@ export default function SuperAdminDashboard() {
 
       if (requestsResponse.ok) {
         const requestsData = await requestsResponse.json();
-        const recentRequests = requestsData.map(req => ({
-          id: req.requestId,
-          resident: req.residentFullName && req.residentFullName !== 'N/A' ? req.residentFullName :
-                   (req.residentFirstName && req.residentLastName && req.residentFirstName !== 'N/A' ? `${req.residentFirstName} ${req.residentLastName}` :
-                   (req.residentFirstName || req.residentLastName ? `${req.residentFirstName || ''} ${req.residentLastName || ''}`.trim() : 'Unknown Resident')),
-          email: req.residentEmail && req.residentEmail !== 'N/A' ? req.residentEmail : '',
-          documentName: req.documentName || 'Unknown Document',
-          details: req.details || '',
-          // Format: "Oct 24, 2023"
-          date: req.submittedAt ? new Date(req.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
-          // Format: "10:30 AM"
-          time: req.submittedAt ? new Date(req.submittedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-          // Format full datetime for sorting and detailed view
-          submittedAt: req.submittedAt,
-          status: req.status
-        }));
+        const recentRequests = requestsData.map(req => {
+          // Extract resident name from the nested object structure
+          let residentName = 'Unknown Resident';
+          if (req.resident) {
+            if (req.resident.fullName && req.resident.fullName.trim()) {
+              residentName = req.resident.fullName;
+            } else if (req.resident.firstName && req.resident.lastName) {
+              residentName = [req.resident.firstName, req.resident.lastName].filter(name => name && name.trim()).join(' ').trim();
+            } else if (req.resident.firstName || req.resident.lastName) {
+              residentName = [req.resident.firstName, req.resident.lastName].filter(name => name && name.trim()).join(' ').trim();
+            }
+          }
+          
+          return {
+            id: req.requestId,
+            resident: residentName,
+            email: req.resident?.email || '',
+            documentName: req.documentName || 'Unknown Document',
+            details: req.details || '',
+            // Format: "Oct 24, 2023"
+            date: req.submittedAt ? new Date(req.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
+            // Format: "10:30 AM"
+            time: req.submittedAt ? new Date(req.submittedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+            // Format full datetime for sorting and detailed view
+            submittedAt: req.submittedAt,
+            status: req.status
+          };
+        });
         setRecentDocRequests(recentRequests);
       } else {
         console.error('Failed to fetch recent requests:', requestsResponse.statusText);
