@@ -1,30 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
 import ViewDetailsModal from '@/app/components/ViewDetailsModal';
+import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 
 export default function SuperAdminManagementPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Get tab from URL parameters, default to 'administrators'
-  const getInitialTab = () => {
-    const tabParam = searchParams.get('tab');
-    const validTabs = ['administrators', 'residents', 'resident-requests', 'document-requests'];
-    return validTabs.includes(tabParam) ? tabParam : 'administrators';
-  };
-  
-  const [activeTab, setActiveTab] = useState(getInitialTab());
+  const [activeTab, setActiveTab] = useState('administrators');
   const [data, setData] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +39,8 @@ export default function SuperAdminManagementPage() {
   const [expandedImage, setExpandedImage] = useState(null);
   const [notificationModal, setNotificationModal] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState(null);
+  const [rejectionModal, setRejectionModal] = useState(null);
+  const [rejectionLoading, setRejectionLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -82,15 +76,6 @@ export default function SuperAdminManagementPage() {
     };
   }, [openDropdownId]);
 
-  // Handle URL parameter changes for tab selection
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    const validTabs = ['administrators', 'residents', 'resident-requests', 'document-requests'];
-    if (validTabs.includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [searchParams]);
-
   const fetchData = async (tab) => {
     setLoadingData(true);
     try {
@@ -107,7 +92,7 @@ export default function SuperAdminManagementPage() {
           endpoint = 'resident-requests';
           break;
         case 'document-requests':
-          endpoint = 'requests'; // Assuming this endpoint exists
+          endpoint = 'requests';
           break;
         default:
           endpoint = 'admins';
@@ -142,7 +127,7 @@ export default function SuperAdminManagementPage() {
     setActiveTab(tab);
     setSearchQuery('');
     setCurrentPage(1);
-    setOpenDropdownId(null); // Close any open dropdown when switching tabs
+    setOpenDropdownId(null);
   };
 
   const handleManage = (type, item, event) => {
@@ -155,24 +140,21 @@ export default function SuperAdminManagementPage() {
       setOpenDropdownId(null);
     } else {
       const rect = event.currentTarget.getBoundingClientRect();
-      const dropdownWidth = 192; // min-w-48 = 192px
+      const dropdownWidth = 192;
       const viewportWidth = window.innerWidth;
 
-      // Check if there's enough space on the right
       const spaceOnRight = viewportWidth - rect.right;
       let leftPosition;
 
       if (spaceOnRight >= dropdownWidth) {
-        // Enough space on the right, position normally
         leftPosition = rect.left + window.scrollX;
       } else {
-        // Not enough space on the right, position to the left
         leftPosition = rect.right - dropdownWidth + window.scrollX;
       }
 
       setDropdownPosition({
         top: rect.bottom + window.scrollY,
-        left: Math.max(8, leftPosition) // Ensure minimum 8px from left edge
+        left: Math.max(8, leftPosition)
       });
       setOpenDropdownId(dropdownId);
     }
@@ -182,10 +164,9 @@ export default function SuperAdminManagementPage() {
     e.stopPropagation();
     if (openDropdownId === itemId) {
         setOpenDropdownId(null);
-        setButtonRect(null); // Clear the rect on close
+        setButtonRect(null);
     } else {
         setOpenDropdownId(itemId);
-        // Save the button's exact position data
         setButtonRect(e.currentTarget.getBoundingClientRect());
     }
   };
@@ -211,7 +192,6 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to delete');
 
-          // Refresh data
           fetchData(activeTab);
 
           setNotificationModal({
@@ -233,7 +213,6 @@ export default function SuperAdminManagementPage() {
   };
 
   const handlePasswordReset = async (item) => {
-    // For admin, verify SuperAdmin password first
     if (activeTab === 'administrators') {
       const password = prompt('Enter your Super Admin password to reset this administrator\'s password:');
       if (!password) return;
@@ -340,7 +319,6 @@ export default function SuperAdminManagementPage() {
         throw new Error(errorData.error || 'Failed to add admin');
       }
 
-      // Refresh the data
       fetchData(activeTab);
 
       setNotificationModal({
@@ -375,17 +353,28 @@ export default function SuperAdminManagementPage() {
   const handleAccept = (item) => {
     const entityType = activeTab === 'resident-requests' ? 'resident' : 'document request';
     const endpoint = activeTab === 'resident-requests' ? 'resident-requests' : 'requests';
+    
+    const itemId = activeTab === 'resident-requests' ? item.residentId : item.requestId;
+    
+    let displayName = 'Unknown';
+    if (activeTab === 'resident-requests') {
+      displayName = [item.firstName, item.lastName].filter(name => name && name.trim()).join(' ').trim() || 'Unknown Resident';
+    } else if (activeTab === 'document-requests') {
+      displayName = item.resident ?
+        [item.resident.firstName, item.resident.lastName].filter(name => name && name.trim()).join(' ').trim() || 'Unknown Resident' :
+        'Unknown Resident';
+    }
 
     setConfirmationModal({
       type: 'approve',
       title: 'Confirm Approval',
-      message: `Are you sure you want to approve ${item.firstName} ${item.lastName}? This will grant them full access to request documents.`,
+      message: `Are you sure you want to approve ${displayName}? This will grant them full access to request documents.`,
       confirmText: 'Approve',
       confirmButtonClass: 'bg-green-600 hover:bg-green-700',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/approve`, {
+          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${itemId}/approve`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -393,7 +382,6 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to approve');
 
-          // Refresh data
           fetchData(activeTab);
           setNotificationModal({
             type: 'success',
@@ -411,8 +399,79 @@ export default function SuperAdminManagementPage() {
         }
       }
     });
+    
+    setIsViewDetailsModalOpen(false);
   };
 
+  const handleReject = (item) => {
+    const entityType = activeTab === 'resident-requests' ? 'resident registration' : 'document request';
+    
+    let displayName = 'Unknown';
+    if (activeTab === 'resident-requests') {
+      displayName = [item.firstName, item.lastName].filter(name => name && name.trim()).join(' ').trim() || 'Unknown Resident';
+    } else if (activeTab === 'document-requests') {
+      displayName = item.resident ?
+        [item.resident.firstName, item.resident.lastName].filter(name => name && name.trim()).join(' ').trim() || 'Unknown Resident' :
+        'Unknown Resident';
+    }
+
+    setRejectionModal({
+      item: item,
+      title: `Reject ${entityType.charAt(0).toUpperCase() + entityType.slice(1)}`,
+      itemName: displayName
+    });
+
+    setIsViewDetailsModalOpen(false);
+    setOpenDropdownId(null);
+  };
+
+  const handleRejectionSubmit = async (rejectionReason) => {
+    if (!rejectionModal || rejectionLoading) return;
+
+    setRejectionLoading(true);
+    
+    const entityType = activeTab === 'resident-requests' ? 'resident registration' : 'document request';
+    const endpoint = activeTab === 'resident-requests' ? 'resident-requests' : 'requests';
+    
+    const itemId = activeTab === 'resident-requests' ? rejectionModal.item.residentId : rejectionModal.item.requestId;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${itemId}/reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ rejectionReason: rejectionReason })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reject');
+      }
+
+      fetchData(activeTab);
+      
+      setNotificationModal({
+        type: 'success',
+        title: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} Rejected`,
+        message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been rejected successfully`,
+        autoClose: true,
+        autoCloseDelay: 3000
+      });
+      
+      setRejectionModal(null);
+    } catch (err) {
+      setNotificationModal({
+        type: 'error',
+        title: 'Rejection Failed',
+        message: 'Error rejecting: ' + err.message
+      });
+    } finally {
+      setRejectionLoading(false);
+    }
+  };
 
   const handleSuperAdminPasswordVerification = async (item) => {
     const password = prompt('Enter your Super Admin password to view this administrator\'s password:');
@@ -431,7 +490,6 @@ export default function SuperAdminManagementPage() {
 
       const result = await response.json();
       if (result.valid) {
-        // Password verified, now show the admin's password
         setPasswordRevealModal({ item: item, password: item.plainPassword || 'Admin123' });
       } else {
         setNotificationModal({
@@ -527,52 +585,6 @@ export default function SuperAdminManagementPage() {
     });
   };
 
-  const handleReject = (item) => {
-    const feedback = prompt(`Please provide feedback for rejecting ${item.firstName} ${item.lastName}:`);
-    if (feedback === null) return; // User cancelled
-
-    const entityType = activeTab === 'resident-requests' ? 'resident' : 'document request';
-    const endpoint = activeTab === 'resident-requests' ? 'resident-requests' : 'requests';
-
-    setConfirmationModal({
-      type: 'reject',
-      title: 'Confirm Rejection',
-      message: `Are you sure you want to reject ${item.firstName} ${item.lastName}? This will permanently deny their access to the system.`,
-      confirmText: 'Reject',
-      confirmButtonClass: 'bg-red-600 hover:bg-red-700',
-      onConfirm: async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/reject`, {
-            method: 'PUT',
-            headers: token ? {
-              'Authorization': `Bearer ${token}`,
-            } : {},
-          });
-          if (!response.ok) throw new Error('Failed to reject');
-
-          // TODO: Send notification with feedback to resident
-          // For now, just show success message
-          fetchData(activeTab);
-          setNotificationModal({
-            type: 'success',
-            title: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} Rejected`,
-            message: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} has been rejected successfully`,
-            autoClose: true,
-            autoCloseDelay: 3000
-          });
-          setOpenDropdownId(null);
-        } catch (err) {
-          setNotificationModal({
-            type: 'error',
-            title: 'Rejection Failed',
-            message: 'Error rejecting: ' + err.message
-          });
-        }
-      }
-    });
-  };
-
   if (!user || loading) {
     return (
       <div className="flex h-screen bg-gray-50 items-center justify-center">
@@ -591,28 +603,6 @@ export default function SuperAdminManagementPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* Header
-      <motion.div
-        className="mb-8 text-center relative"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl -z-10"></div>
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-        <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Oversee and manage all residents and administrators in the system.
-          View recent users, reset passwords, delete accounts, or explore detailed management options.
-        </p>
-        <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mx-auto mt-4"></div>
-      </motion.div> */}
-
-      {/* Tab Navigation */}
       <motion.div
         className="mb-6"
         initial={{ opacity: 0, y: 20 }}
@@ -644,14 +634,12 @@ export default function SuperAdminManagementPage() {
         </div>
       </motion.div>
 
-      {/* Content Area */}
       <motion.div
         className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
       >
-        {/* Header with Search and Add Button */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -689,7 +677,6 @@ export default function SuperAdminManagementPage() {
           </div>
         </div>
 
-        {/* Data Table */}
         {loadingData ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -809,9 +796,7 @@ export default function SuperAdminManagementPage() {
               </table>
             </div>
 
-            {/* Floating Dropdown */}
             {openDropdownId && (
-            
                 <div
                   className="absolute bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-48 z-20"
                   style={{
@@ -861,7 +846,6 @@ export default function SuperAdminManagementPage() {
                               <Key size={16} />
                               Reset Password
                             </button>
-
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -889,30 +873,78 @@ export default function SuperAdminManagementPage() {
                           </button>
                         )}
                         {activeTab === 'resident-requests' && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewInfo(item);
-                              setOpenDropdownId(null);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
-                          >
-                            <Eye size={16} />
-                            View Details
-                          </button>
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInfo(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Eye size={16} />
+                              View Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAccept(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded flex items-center gap-2"
+                            >
+                              <CheckCircle size={16} />
+                              Approve
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReject(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded flex items-center gap-2"
+                            >
+                              <XCircle size={16} />
+                              Reject
+                            </button>
+                          </>
                         )}
                         {activeTab === 'document-requests' && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewInfo(item);
-                              setOpenDropdownId(null);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
-                          >
-                            <Eye size={16} />
-                            View Details
-                          </button>
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewInfo(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                            >
+                              <Eye size={16} />
+                              View Details
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAccept(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded flex items-center gap-2"
+                            >
+                              <CheckCircle size={16} />
+                              Approve
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReject(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded flex items-center gap-2"
+                            >
+                              <XCircle size={16} />
+                              Reject
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={(e) => {
@@ -931,7 +963,6 @@ export default function SuperAdminManagementPage() {
                 </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
@@ -990,7 +1021,7 @@ export default function SuperAdminManagementPage() {
                       >
                         <span className="sr-only">Next</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 011.414-1.414z" clipRule="evenodd" />
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414z" clipRule="evenodd" />
                         </svg>
                       </button>
                     </nav>
@@ -1002,7 +1033,6 @@ export default function SuperAdminManagementPage() {
         )}
       </motion.div>
 
-      {/* Add Admin Modal */}
       {addAdminModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
@@ -1081,8 +1111,6 @@ export default function SuperAdminManagementPage() {
         </div>
       )}
 
-
-      {/* Password Warning Modal */}
       {passwordWarningModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
@@ -1127,7 +1155,6 @@ export default function SuperAdminManagementPage() {
         </div>
       )}
 
-      {/* Password Reveal Modal */}
       {passwordRevealModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
@@ -1169,8 +1196,6 @@ export default function SuperAdminManagementPage() {
         </div>
       )}
 
-
-      {/* View Details Modal */}
       <ViewDetailsModal
         isOpen={isViewDetailsModalOpen}
         onClose={() => setIsViewDetailsModalOpen(false)}
@@ -1178,11 +1203,19 @@ export default function SuperAdminManagementPage() {
         documentRequest={modalType === 'document-requests' ? selectedResident : null}
         title={modalType === 'document-requests' ? 'Document Request Details' : 'Resident Details'}
         showActions={modalType === 'document-requests' || modalType === 'resident-requests'}
-        onApprove={() => { handleAccept(selectedResident); setIsViewDetailsModalOpen(false); }}
-        onReject={() => { handleReject(selectedResident); setIsViewDetailsModalOpen(false); }}
+        onApprove={() => handleAccept(selectedResident)}
+        onReject={() => handleReject(selectedResident)}
       />
 
-      {/* Expanded Image Modal */}
+      <RejectionReasonModal
+        isOpen={!!rejectionModal}
+        onClose={() => setRejectionModal(null)}
+        onSubmit={handleRejectionSubmit}
+        title={rejectionModal?.title}
+        itemName={rejectionModal?.itemName}
+        loading={rejectionLoading}
+      />
+
       {expandedImage && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50 p-4">
           <div className="relative max-w-4xl max-h-full">

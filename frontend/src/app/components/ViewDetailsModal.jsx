@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Users, Mail, Phone, MapPin, Calendar, FileText, Eye, EyeOff } from 'lucide-react';
+import { X, Users, Mail, Phone, MapPin, Calendar, FileText, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function ViewDetailsModal({ isOpen, onClose, resident, documentRequest, title = "Details", showActions = false, onApprove, onReject }) {
@@ -27,6 +27,10 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
   } : resident;
 
   if (!isOpen || !actualResident) return null;
+
+  // Check if the status is rejected and get rejection reason
+  const isRejected = (status) => status?.toLowerCase() === 'rejected';
+  const rejectionReason = documentRequest?.rejectionReason || resident?.rejectionReason;
 
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -81,6 +85,19 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
               </div>
             </div>
 
+            {/* Rejection Reason Display */}
+            {isRejected(documentRequest?.status || resident?.status) && rejectionReason && (
+              <div className="bg-red-50 p-4 rounded-xl border border-red-200">
+                <h3 className="font-semibold text-red-900 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Rejection Reason
+                </h3>
+                <p className="text-red-800 bg-white p-3 rounded-lg border border-red-200">
+                  {rejectionReason}
+                </p>
+              </div>
+            )}
+
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
               <div className="space-y-6">
                 <div>
@@ -130,7 +147,12 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                         <FileText className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="text-sm text-gray-500">Status</p>
-                          <p className="font-medium text-gray-900">{actualResident.status}</p>
+                          <p className={`font-medium ${
+                            isRejected(actualResident.status) ? 'text-red-600' : 'text-gray-900'
+                          }`}>
+                            {actualResident.status}
+                            {isRejected(actualResident.status) && ' (Rejected)'}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -258,7 +280,12 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Status</p>
-                      <p className="font-medium text-gray-900">{documentRequest.status || 'N/A'}</p>
+                      <p className={`font-medium ${
+                        isRejected(documentRequest.status) ? 'text-red-600' : 'text-gray-900'
+                      }`}>
+                        {documentRequest.status || 'N/A'}
+                        {isRejected(documentRequest.status) && ' (Rejected)'}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cagasi.reserbayan.dto.DocumentRequestDTO;
 import com.cagasi.reserbayan.dto.DocumentRequestUpdateDTO;
 import com.cagasi.reserbayan.entity.DocumentRequest;
@@ -33,6 +32,7 @@ import com.cagasi.reserbayan.repository.DocumentRequestRepository;
 import com.cagasi.reserbayan.repository.RequestAttachmentRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 import com.cagasi.reserbayan.service.NotificationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/document-requests")
@@ -69,7 +69,10 @@ public class DocumentRequestController {
                 return ResponseEntity.badRequest().body("Resident not found");
             }
 
-            if (resident.getStatus() != ResidentStatus.APPROVED) {
+            if (resident.getStatus() == ResidentStatus.REJECTED) {
+                return ResponseEntity.badRequest()
+                        .body("Your account registration has been rejected. Please contact support or reapply with updated information.");
+            } else if (resident.getStatus() == ResidentStatus.PENDING) {
                 return ResponseEntity.badRequest()
                         .body("Your account has not been confirmed yet. Please wait for approval.");
             }

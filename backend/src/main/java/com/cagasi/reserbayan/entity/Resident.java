@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +50,10 @@ public class Resident {
 
     @Enumerated(EnumType.STRING)
     private ResidentStatus status = ResidentStatus.PENDING;
+
+    // Rejection reason field
+    @Column(columnDefinition = "TEXT")
+    private String rejectionReason;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -195,6 +200,14 @@ public class Resident {
 
     public void setStatus(ResidentStatus status) {
         this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public LocalDateTime getCreatedAt() {
