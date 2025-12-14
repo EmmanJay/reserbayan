@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle, XCircle, Search, MoreVertical, Eye } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
-import ViewDetailsModal from '@/app/components/ViewDetailsModal';
+import RequestDetailsModal from '@/app/components/RequestDetailsModal';
 import { motion } from 'framer-motion';
 
 export default function DocumentRequestsManagementPage() {
@@ -123,7 +123,15 @@ export default function DocumentRequestsManagementPage() {
   };
 
   const handleViewInfo = (resident) => {
-    setSelectedResident(resident);
+    // Transform data structure for RequestDetailsModal compatibility
+    const transformedResident = {
+      ...resident,
+      resident: resident.residentFullName && resident.residentFullName !== 'N/A' ? resident.residentFullName :
+               (resident.residentFirstName && resident.residentLastName && resident.residentFirstName !== 'N/A' ?
+                `${resident.residentFirstName} ${resident.residentLastName}` : 'Unknown Resident'),
+      email: resident.residentEmail && resident.residentEmail !== 'N/A' ? resident.residentEmail : 'N/A'
+    };
+    setSelectedResident(transformedResident);
     setIsViewDetailsModalOpen(true);
   };
 
@@ -461,14 +469,19 @@ export default function DocumentRequestsManagementPage() {
         </motion.div>
       </div>
 
-      {/* View Details Modal */}
-      <ViewDetailsModal
+      {/* Request Details Modal */}
+      <RequestDetailsModal
         isOpen={isViewDetailsModalOpen}
         onClose={() => setIsViewDetailsModalOpen(false)}
-        resident={null}
-        documentRequest={selectedResident}
-        title="Document Request Details"
-        showActions={true}
+        requestDetails={selectedResident}
+        onApprove={(requestId) => {
+          const item = data.find(d => d.requestId === requestId);
+          if (item) handleAccept(item);
+        }}
+        onReject={(requestId) => {
+          const item = data.find(d => d.requestId === requestId);
+          if (item) handleReject(item);
+        }}
       />
 
       <NotificationModal

@@ -14,6 +14,7 @@ public class RequestAttachment {
     private String fileName;
     private String fileType;
     private String filePath; // We store the path/URL, not the file itself
+    private Long fileSize; // File size in bytes
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -70,5 +71,13 @@ public class RequestAttachment {
 
     public void setDocumentRequest(DocumentRequest documentRequest) {
         this.documentRequest = documentRequest;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 }

@@ -260,7 +260,9 @@ export default function SuperAdminDashboard() {
     try {
       setModalLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/residents/${accountId}`, {
+      
+      // Use the same endpoint as the working resident-requests page
+      const response = await fetch(`${API_BASE}/resident-requests`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -268,8 +270,24 @@ export default function SuperAdminDashboard() {
       });
 
       if (response.ok) {
-        const details = await response.json();
-        setAccountDetails(details);
+        const allResidents = await response.json();
+        console.log('=== DASHBOARD DEBUG ===');
+        console.log('API Response - allResidents:', allResidents);
+        console.log('Number of residents:', allResidents.length);
+        console.log('Looking for accountId:', accountId);
+        
+        // Find the specific resident by ID
+        const resident = allResidents.find(r => r.residentId === parseInt(accountId));
+        console.log('Found resident object:', resident);
+        
+        if (resident) {
+          console.log('Resident validIdPath:', resident.validIdPath);
+          console.log('Setting accountDetails to:', resident);
+          setAccountDetails(resident);
+        } else {
+          console.error('Resident not found with ID:', accountId);
+          showNotification('Resident not found', 'error');
+        }
       } else {
         console.error('Failed to fetch account details');
         showNotification('Failed to load account details', 'error');
