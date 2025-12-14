@@ -7,7 +7,7 @@ import {
   Check, X, Clock, ArrowRight, Plus,
   UserPlus, FilePlus, Settings, Bell,
   TrendingUp, AlertCircle, Search, ChevronRight,
-  Megaphone, Send, XCircle, CheckCircle, Loader
+  Megaphone, Send, XCircle, CheckCircle, Loader, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsModal';
@@ -54,6 +54,10 @@ export default function SuperAdminDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
+  const [announcementPriority, setAnnouncementPriority] = useState('MEDIUM');
+  const [announcementStartDate, setAnnouncementStartDate] = useState('');
+  const [announcementEndDate, setAnnouncementEndDate] = useState('');
+  const [announcementIsVisible, setAnnouncementIsVisible] = useState(true);
   const [announcementLoading, setAnnouncementLoading] = useState(false);
 
   // Notification state
@@ -113,6 +117,10 @@ export default function SuperAdminDashboard() {
         body: JSON.stringify({
           title: announcementTitle.trim(),
           content: announcementContent.trim(),
+          priority: announcementPriority,
+          startDate: announcementStartDate ? new Date(announcementStartDate).toISOString() : null,
+          endDate: announcementEndDate ? new Date(announcementEndDate).toISOString() : null,
+          isVisible: announcementIsVisible,
           postedBy: currentUser.firstName + ' ' + currentUser.lastName
         })
       });
@@ -122,6 +130,10 @@ export default function SuperAdminDashboard() {
         setAnnouncements(prev => [newAnnouncement, ...prev]);
         setAnnouncementTitle('');
         setAnnouncementContent('');
+        setAnnouncementPriority('MEDIUM');
+        setAnnouncementStartDate('');
+        setAnnouncementEndDate('');
+        setAnnouncementIsVisible(true);
         showNotification('Announcement posted successfully!', 'success');
         fetchDashboardData(); // Refresh stats
       } else {
@@ -540,6 +552,7 @@ export default function SuperAdminDashboard() {
   const handleAddDocument = () => router.push('/superadmin/documents/add');
   const handleManageResidents = () => router.push('/superadmin/management/residents');
   const handleViewNotifications = () => router.push('/superadmin/notifications');
+  const handleViewAllAnnouncements = () => router.push('/superadmin/announcements');
 
   if (loading) {
     return (
@@ -665,14 +678,23 @@ export default function SuperAdminDashboard() {
                        <Megaphone className="w-24 h-24 text-blue-900" />
                      </div>
                      
-                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                       <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                         <Megaphone className="w-5 h-5" />
+                     <div className="flex items-center justify-between mb-4 relative z-10">
+                       <div className="flex items-center gap-3">
+                         <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                           <Megaphone className="w-5 h-5" />
+                         </div>
+                         <div>
+                           <h3 className="font-bold text-slate-800">Post Announcement</h3>
+                           <p className="text-xs text-slate-500">Notify all residents</p>
+                         </div>
                        </div>
-                       <div>
-                         <h3 className="font-bold text-slate-800">Post Announcement</h3>
-                         <p className="text-xs text-slate-500">Notify all residents</p>
-                       </div>
+                       <button
+                         onClick={handleViewAllAnnouncements}
+                         className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                       >
+                         View All Announcements
+                         <ArrowRight className="w-3 h-3" />
+                       </button>
                      </div>
 
                      <div className="space-y-3 relative z-10">
@@ -694,8 +716,64 @@ export default function SuperAdminDashboard() {
                            className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 resize-none"
                          ></textarea>
                        </div>
+                       
+                       {/* Date Range and Priority Row */}
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                         <div>
+                           <label className="block text-xs font-medium text-slate-600 mb-1">Priority</label>
+                           <select
+                             value={announcementPriority}
+                             onChange={(e) => setAnnouncementPriority(e.target.value)}
+                             className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                           >
+                             <option value="LOW">Low</option>
+                             <option value="MEDIUM">Medium</option>
+                             <option value="HIGH">High</option>
+                             <option value="URGENT">Urgent</option>
+                           </select>
+                         </div>
+                         <div>
+                           <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+                           <div className="relative">
+                             <input
+                               type="date"
+                               value={announcementStartDate}
+                               onChange={(e) => setAnnouncementStartDate(e.target.value)}
+                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                             />
+                             <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                           </div>
+                         </div>
+                         <div>
+                           <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+                           <div className="relative">
+                             <input
+                               type="date"
+                               value={announcementEndDate}
+                               onChange={(e) => setAnnouncementEndDate(e.target.value)}
+                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                             />
+                             <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                           </div>
+                         </div>
+                       </div>
+                       
+                       {/* Visibility Checkbox */}
+                       <div className="flex items-center gap-2">
+                         <input
+                           type="checkbox"
+                           id="announcementVisibility"
+                           checked={announcementIsVisible}
+                           onChange={(e) => setAnnouncementIsVisible(e.target.checked)}
+                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                         />
+                         <label htmlFor="announcementVisibility" className="text-sm text-slate-600">
+                           Visible to residents
+                         </label>
+                       </div>
+                       
                        <div className="flex justify-end pt-1">
-                         <button 
+                         <button
                            onClick={handlePostAnnouncement}
                            disabled={announcementLoading || !announcementTitle.trim() || !announcementContent.trim()}
                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"

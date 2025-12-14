@@ -17,8 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cagasi.reserbayan.dto.AnnouncementDTO;
+import com.cagasi.reserbayan.dto.AnnouncementRequest;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Announcement;
 import com.cagasi.reserbayan.entity.DocumentRequest;
@@ -123,13 +126,13 @@ public class SuperAdminController {
             // Add resident information in a format that matches both frontend expectations
             if (req.getResident() != null) {
                 String fullName = req.getResident().getFirstName() + " " + req.getResident().getLastName();
-                
+
                 // Add flat properties for backward compatibility
                 requestMap.put("residentFirstName", req.getResident().getFirstName());
                 requestMap.put("residentLastName", req.getResident().getLastName());
                 requestMap.put("residentFullName", fullName);
                 requestMap.put("residentEmail", req.getResident().getResidentEmail());
-                
+
                 // Add nested object for newer frontend code
                 Map<String, Object> residentInfo = new HashMap<>();
                 residentInfo.put("residentId", req.getResident().getResidentId());
@@ -257,17 +260,18 @@ public class SuperAdminController {
     }
 
     @PutMapping("/requests/{id}/reject")
-    public ResponseEntity<?> rejectDocumentRequest(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<?> rejectDocumentRequest(@PathVariable Long id,
+            @RequestBody Map<String, String> requestBody) {
         DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
         if (request == null || !request.getStatus().equals("Pending")) {
             return ResponseEntity.notFound().build();
         }
-        
+
         String rejectionReason = requestBody.get("rejectionReason");
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Rejection reason is required"));
         }
-        
+
         request.setStatus("Rejected");
         request.setRejectionReason(rejectionReason);
         request.setUpdatedAt(java.time.LocalDateTime.now());
@@ -374,21 +378,22 @@ public class SuperAdminController {
     }
 
     @PutMapping("/resident-requests/{id}/reject")
-    public ResponseEntity<?> rejectResidentRequest(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<?> rejectResidentRequest(@PathVariable Long id,
+            @RequestBody Map<String, String> requestBody) {
         Resident resident = residentRepository.findById(id).orElse(null);
         if (resident == null || resident.getStatus() != ResidentStatus.PENDING) {
             return ResponseEntity.notFound().build();
         }
-        
+
         String rejectionReason = requestBody.get("rejectionReason");
         if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Rejection reason is required"));
         }
-        
+
         resident.setStatus(ResidentStatus.REJECTED);
         resident.setRejectionReason(rejectionReason);
         residentRepository.save(resident);
-        
+
         // Create notification for the resident with rejection reason
         String notificationMessage = "Your account registration has been rejected.";
         notificationService.createNotification(
@@ -397,44 +402,73 @@ public class SuperAdminController {
                 notificationMessage,
                 "ACCOUNT_REJECTED",
                 rejectionReason);
-        
+
         return ResponseEntity.ok(resident);
     }
 
     // Announcement Management
     @GetMapping("/announcements")
-    public ResponseEntity<?> getAllAnnouncements() {
-        List<Announcement> announcements = announcementService.getAllAnnouncements();
-        return ResponseEntity.ok(announcements);
+    public ResponseEntity<?> getAllAnnouncements(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Boolean isVisible) {
+        try {
+            List<Announcement> announcements;
+
+            // If any filters are provided, use filtered method
+            if (search != null || priority != null || isActive != null || isVisible != null) {
+                announcements = announcementService.getFilteredAnnouncements(search, priority, isActive, isVisible);
+            } else {
+                announcements = announcementService.getAllAnnouncements();
+            }
+
+            // Convert to DTOs for response
+            List<AnnouncementDTO> announcementDTOs = announcements.stream()
+                    .map(AnnouncementDTO::new)
+                    .toList();
+
+            return ResponseEntity.ok(announcementDTOs);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch announcements: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
     }
 
     @GetMapping("/announcements/active")
     public ResponseEntity<?> getActiveAnnouncements() {
-        List<Announcement> announcements = announcementService.getAllActiveAnnouncements();
-        return ResponseEntity.ok(announcements);
+        try {
+            List<Announcement> announcements = announcementService.getAllActiveAnnouncements();
+            List<AnnouncementDTO> announcementDTOs = announcements.stream()
+                    .map(AnnouncementDTO::new)
+                    .toList();
+            return ResponseEntity.ok(announcementDTOs);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch active announcements: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
+    @GetMapping("/announcements/{id}")
+    public ResponseEntity<?> getAnnouncementById(@PathVariable Long id) {
+        try {
+            return announcementService.getAnnouncementById(id)
+                    .map(announcement -> ResponseEntity.ok(new AnnouncementDTO(announcement)))
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
     }
 
     @PostMapping("/announcements")
-    public ResponseEntity<?> createAnnouncement(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> createAnnouncement(@RequestBody AnnouncementRequest request) {
         try {
-            String title = request.get("title");
-            String content = request.get("content");
-            String postedBy = request.get("postedBy");
-
-            if (title == null || title.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
-            }
-
-            if (content == null || content.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Content is required"));
-            }
-
-            if (postedBy == null || postedBy.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Posted by field is required"));
-            }
-
-            Announcement announcement = announcementService.createAnnouncement(title, content, postedBy);
-            return ResponseEntity.ok(announcement);
+            Announcement announcement = announcementService.createAnnouncement(request);
+            return ResponseEntity.ok(new AnnouncementDTO(announcement));
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to create announcement: " + e.getMessage());
@@ -443,21 +477,10 @@ public class SuperAdminController {
     }
 
     @PutMapping("/announcements/{id}")
-    public ResponseEntity<?> updateAnnouncement(@PathVariable Long id, @RequestBody Map<String, String> request) {
+    public ResponseEntity<?> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementRequest request) {
         try {
-            String title = request.get("title");
-            String content = request.get("content");
-
-            if (title == null || title.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Title is required"));
-            }
-
-            if (content == null || content.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Content is required"));
-            }
-
-            return announcementService.updateAnnouncement(id, title, content)
-                    .map(ResponseEntity::ok)
+            return announcementService.updateAnnouncement(id, request)
+                    .map(announcement -> ResponseEntity.ok(new AnnouncementDTO(announcement)))
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -494,6 +517,22 @@ public class SuperAdminController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Failed to deactivate announcement: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
+    @PutMapping("/announcements/{id}/toggle-visibility")
+    public ResponseEntity<?> toggleAnnouncementVisibility(@PathVariable Long id) {
+        try {
+            boolean toggled = announcementService.toggleAnnouncementVisibility(id);
+            if (toggled) {
+                return ResponseEntity.ok().build();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to toggle announcement visibility: " + e.getMessage());
             return ResponseEntity.status(500).body(error);
         }
     }

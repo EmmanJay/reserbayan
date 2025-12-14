@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/resubmit",
                                 "/api/document-types", "/api/document-types/**", "/uploads/**")
                         .permitAll()
+                        .requestMatchers("/api/superadmin/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

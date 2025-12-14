@@ -1,15 +1,18 @@
 package com.cagasi.reserbayan.service;
 
+import com.cagasi.reserbayan.dto.AnnouncementRequest;
 import com.cagasi.reserbayan.entity.Announcement;
 import com.cagasi.reserbayan.repository.AnnouncementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AnnouncementService {
@@ -27,17 +30,60 @@ public class AnnouncementService {
         return announcementRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    // Get announcements with filtering
+    public List<Announcement> getFilteredAnnouncements(String search, String priority, Boolean isActive,
+            Boolean isVisible) {
+        List<Announcement> announcements = announcementRepository.findAllByOrderByCreatedAtDesc();
+
+        return announcements.stream()
+                .filter(announcement -> {
+                    // Search filter
+                    if (StringUtils.hasText(search)) {
+                        String searchLower = search.toLowerCase();
+                        if (!announcement.getTitle().toLowerCase().contains(searchLower) &&
+                                !announcement.getContent().toLowerCase().contains(searchLower) &&
+                                !announcement.getPostedBy().toLowerCase().contains(searchLower)) {
+                            return false;
+                        }
+                    }
+
+                    // Priority filter
+                    if (StringUtils.hasText(priority) && !priority.equals("ALL")) {
+                        if (announcement.getPriority() == null || !announcement.getPriority().name().equals(priority)) {
+                            return false;
+                        }
+                    }
+
+                    // Active filter
+                    if (isActive != null && announcement.getIsActive() != isActive) {
+                        return false;
+                    }
+
+                    // Visibility filter
+                    if (isVisible != null && announcement.getIsVisible() != isVisible) {
+                        return false;
+                    }
+
+                    return true;
+                })
+                .collect(Collectors.toList());
+    }
+
     // Get announcement by ID
     public Optional<Announcement> getAnnouncementById(Long id) {
         return announcementRepository.findById(id);
     }
 
     // Create new announcement
-    public Announcement createAnnouncement(String title, String content, String postedBy) {
+    public Announcement createAnnouncement(AnnouncementRequest request) {
         Announcement announcement = new Announcement();
-        announcement.setTitle(title);
-        announcement.setContent(content);
-        announcement.setPostedBy(postedBy);
+        announcement.setTitle(request.getTitle());
+        announcement.setContent(request.getContent());
+        announcement.setPostedBy(request.getPostedBy());
+        announcement.setStartDate(request.getStartDate());
+        announcement.setEndDate(request.getEndDate());
+        announcement.setPriority(request.getPriority());
+        announcement.setIsVisible(request.getIsVisible());
         announcement.setCreatedAt(LocalDateTime.now());
         announcement.setIsActive(true);
 
@@ -45,13 +91,17 @@ public class AnnouncementService {
     }
 
     // Update existing announcement
-    public Optional<Announcement> updateAnnouncement(Long id, String title, String content) {
+    public Optional<Announcement> updateAnnouncement(Long id, AnnouncementRequest request) {
         Optional<Announcement> existingAnnouncement = announcementRepository.findById(id);
 
         if (existingAnnouncement.isPresent()) {
             Announcement announcement = existingAnnouncement.get();
-            announcement.setTitle(title);
-            announcement.setContent(content);
+            announcement.setTitle(request.getTitle());
+            announcement.setContent(request.getContent());
+            announcement.setStartDate(request.getStartDate());
+            announcement.setEndDate(request.getEndDate());
+            announcement.setPriority(request.getPriority());
+            announcement.setIsVisible(request.getIsVisible());
             announcement.setUpdatedAt(LocalDateTime.now());
 
             return Optional.of(announcementRepository.save(announcement));
@@ -67,6 +117,21 @@ public class AnnouncementService {
         if (existingAnnouncement.isPresent()) {
             Announcement announcement = existingAnnouncement.get();
             announcement.setIsActive(false);
+            announcement.setUpdatedAt(LocalDateTime.now());
+            announcementRepository.save(announcement);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Toggle announcement visibility
+    public boolean toggleAnnouncementVisibility(Long id) {
+        Optional<Announcement> existingAnnouncement = announcementRepository.findById(id);
+
+        if (existingAnnouncement.isPresent()) {
+            Announcement announcement = existingAnnouncement.get();
+            announcement.setIsVisible(!announcement.getIsVisible());
             announcement.setUpdatedAt(LocalDateTime.now());
             announcementRepository.save(announcement);
             return true;
