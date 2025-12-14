@@ -8,6 +8,7 @@ public class RegisterRequest {
     // Discriminator to check if "admin" or "resident"
     private String userType;
 
+    private Long residentId; // For resubmission updates
     private String firstName;
     private String lastName;
     private String middleName;
@@ -37,6 +38,14 @@ public class RegisterRequest {
 
     public void setUserType(String userType) {
         this.userType = userType;
+    }
+
+    public Long getResidentId() {
+        return residentId;
+    }
+
+    public void setResidentId(Long residentId) {
+        this.residentId = residentId;
     }
 
     public String getFirstName() {

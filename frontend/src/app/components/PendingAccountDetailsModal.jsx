@@ -15,6 +15,53 @@ export default function PendingAccountDetailsModal({
 }) {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
+  // Utility function to extract valid ID path from different possible field names
+  const getValidIdPath = (account) => {
+    return account?.validIdPath ||
+           account?.validId ||
+           account?.idDocumentPath ||
+           account?.documentPath ||
+           null;
+  };
+
+  // Utility function to build the full image URL
+  const buildImageUrl = (path) => {
+    if (!path) return '/documents/no-preview.png';
+    
+    // If it's already a full URL, use as-is
+    if (path.startsWith('http')) {
+      return path;
+    }
+    
+    // If it's a Windows absolute path, extract just the filename
+    if (path.includes('\\') || path.includes('C:')) {
+      const fileName = path.split('\\').pop().split('/').pop();
+      return `http://localhost:8080/uploads/resident/${fileName}`;
+    }
+    
+    // If it's a relative path, prepend the backend URL
+    if (path.startsWith('uploads/')) {
+      return `http://localhost:8080/${path}`;
+    }
+    
+    // Default: assume it's just a filename in the uploads directory
+    return `http://localhost:8080/uploads/resident/${path}`;
+  };
+
+  // Utility function to check if file is a PDF
+  const isPdfFile = (path) => {
+    if (!path) return false;
+    const extension = path.toLowerCase().split('.').pop();
+    return extension === 'pdf';
+  };
+
+  // Utility function to check if file is an image
+  const isImageFile = (path) => {
+    if (!path) return false;
+    const extension = path.toLowerCase().split('.').pop();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension);
+  };
+
   if (!isOpen || !accountDetails) return null;
 
   const formatDate = (dateString) => {
@@ -224,62 +271,161 @@ export default function PendingAccountDetailsModal({
                 </div>
 
                 {/* Valid ID Document - Secure Viewing Section */}
-                {accountDetails.validIdPath ? (
-                  <div className="bg-white rounded-xl border border-slate-200 p-6">
-                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      Valid ID Document
-                    </h4>
-                    <div className="space-y-4">
-                      <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-300 transition-colors" onClick={handleImageClick}>
-                        <img
-                          src={accountDetails.validIdPath.startsWith('http')
-                            ? accountDetails.validIdPath
-                            : `http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`
-                          }
-                          alt="Valid ID Document"
-                          className="w-full h-auto max-h-96 object-contain bg-slate-50 hover:opacity-90 transition-opacity"
-                          onError={(e) => {
-                            e.target.src = '/documents/no-preview.png';
-                          }}
-                        />
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <Eye className="w-4 h-4 text-amber-600" />
-                          <p className="text-sm text-amber-800 font-medium">
-                            For Review Only - No Download
-                          </p>
+                {(() => {
+                  const validIdPath = getValidIdPath(accountDetails);
+                  
+                  // Debug logging for troubleshooting
+                  console.log('=== PENDING ACCOUNT MODAL DEBUG ===');
+                  console.log('Account Details:', accountDetails);
+                  console.log('Valid ID Path found:', validIdPath);
+                  console.log('Account ID:', accountDetails.residentId || accountDetails.id);
+                  
+                  return validIdPath ? (
+                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                      <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Valid ID Document
+                      </h4>
+                      <div className="space-y-4">
+                        {isPdfFile(validIdPath) ? (
+                          // PDF Document Display
+                          <div className="border border-slate-200 rounded-lg overflow-hidden">
+                            <div className="bg-red-50 border-b border-red-200 p-4 text-center">
+                              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <User className="w-8 h-8 text-red-600" />
+                              </div>
+                              <h5 className="text-sm font-semibold text-red-800">PDF Document</h5>
+                              <p className="text-xs text-red-600 mt-1">Valid ID uploaded as PDF file</p>
+                            </div>
+                            <div className="p-4 bg-slate-50">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4 text-slate-600" />
+                                  <span className="text-sm text-slate-700 font-medium">
+                                    PDF Document - Click to view
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={handleImageClick}
+                                  className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors"
+                                >
+                                  View PDF
+                                </button>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-2">
+                                PDF documents require special handling. Click "View PDF" to open in a secure viewer.
+                              </p>
+                            </div>
+                          </div>
+                        ) : isImageFile(validIdPath) ? (
+                          // Image Document Display
+                          <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-300 transition-colors" onClick={handleImageClick}>
+                            <img
+                              src={buildImageUrl(validIdPath)}
+                              alt="Valid ID Document"
+                              className="w-full h-auto max-h-96 object-contain bg-slate-50 hover:opacity-90 transition-opacity"
+                              onError={(e) => {
+                                console.error('Failed to load valid ID image:', validIdPath);
+                                console.error('Tried URL:', buildImageUrl(validIdPath));
+                                e.target.src = '/documents/no-preview.png';
+                              }}
+                              onLoad={() => {
+                                console.log('Successfully loaded valid ID image:', validIdPath);
+                                console.log('Loaded from URL:', buildImageUrl(validIdPath));
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          // Unknown file type
+                          <div className="border border-slate-200 rounded-lg overflow-hidden">
+                            <div className="bg-yellow-50 border-b border-yellow-200 p-4 text-center">
+                              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <User className="w-8 h-8 text-yellow-600" />
+                              </div>
+                              <h5 className="text-sm font-semibold text-yellow-800">Unknown File Type</h5>
+                              <p className="text-xs text-yellow-600 mt-1">
+                                File: {validIdPath.split('/').pop()}
+                              </p>
+                            </div>
+                            <div className="p-4 bg-slate-50">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4 text-slate-600" />
+                                  <span className="text-sm text-slate-700 font-medium">
+                                    Unsupported file format
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={handleImageClick}
+                                  className="px-3 py-1 bg-yellow-600 text-white text-xs font-medium rounded-md hover:bg-yellow-700 transition-colors"
+                                >
+                                  Try to View
+                                </button>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-2">
+                                This file type may not be supported for in-browser viewing.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Action buttons for all file types */}
+                        <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-4 h-4 text-amber-600" />
+                            <p className="text-sm text-amber-800 font-medium">
+                              For Review Only - No Download
+                            </p>
+                          </div>
+                          <button
+                            onClick={handleImageClick}
+                            className="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 transition-colors"
+                          >
+                            {isPdfFile(validIdPath) ? 'View PDF' : 'View Full Size'}
+                          </button>
                         </div>
-                        <button
-                          onClick={handleImageClick}
-                          className="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 transition-colors"
-                        >
-                          View Full Size
-                        </button>
+                        <p className="text-xs text-slate-500 text-center">
+                          Click to view full size. Document viewing is logged for security purposes.
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-500 text-center">
-                        Click on the image to view full size. Document viewing is logged for security purposes.
-                      </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-xl border border-slate-200 p-6">
-                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      Valid ID Document
-                    </h4>
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
-                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <User className="w-8 h-8 text-slate-400" />
+                  ) : (
+                    <div className="bg-white rounded-xl border border-slate-200 p-6">
+                      <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        Valid ID Document
+                      </h4>
+                      <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <User className="w-8 h-8 text-slate-400" />
+                        </div>
+                        <p className="text-slate-500 font-medium">
+                          {accountDetails.status === 'REJECTED' ? 'Valid ID document unavailable' : 'No valid ID document uploaded'}
+                        </p>
+                        <p className="text-sm text-slate-400 mt-2">
+                          {accountDetails.status === 'REJECTED'
+                            ? 'A valid ID was previously uploaded but the file is no longer accessible. This may indicate a file storage issue.'
+                            : 'This resident did not upload a valid ID during registration.'
+                          }
+                        </p>
+                        {/* Debug info for development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <details className="mt-4 text-left">
+                            <summary className="text-xs text-slate-400 cursor-pointer">Debug Info</summary>
+                            <pre className="text-xs text-slate-400 mt-2 bg-slate-50 p-2 rounded overflow-auto">
+                              {JSON.stringify({
+                                residentId: accountDetails.residentId || accountDetails.id,
+                                status: accountDetails.status,
+                                availableFields: Object.keys(accountDetails),
+                                searchedFields: ['validIdPath', 'validId', 'idDocumentPath', 'documentPath']
+                              }, null, 2)}
+                            </pre>
+                          </details>
+                        )}
                       </div>
-                      <p className="text-slate-500 font-medium">No valid ID document uploaded</p>
-                      <p className="text-sm text-slate-400 mt-2">
-                        This resident did not upload a valid ID during registration.
-                      </p>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Registration Information */}
                 <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -393,19 +539,54 @@ export default function PendingAccountDetailsModal({
                 </div>
               </div>
 
-              {/* Image Content */}
+              {/* Content based on file type */}
               <div className="p-6 overflow-auto max-h-[calc(90vh-140px)]">
-                <img
-                  src={accountDetails.validIdPath.startsWith('http')
-                    ? accountDetails.validIdPath
-                    : `http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`
+                {(() => {
+                  const validIdPath = getValidIdPath(accountDetails);
+                  
+                  if (isPdfFile(validIdPath)) {
+                    // PDF Display using iframe
+                    return (
+                      <div className="w-full h-[70vh]">
+                        <iframe
+                          src={buildImageUrl(validIdPath)}
+                          className="w-full h-full border border-slate-200 rounded-lg"
+                          title="Valid ID Document - PDF"
+                        >
+                          <p className="p-4 text-center text-slate-600">
+                            Your browser does not support PDFs. 
+                            <a 
+                              href={buildImageUrl(validIdPath)} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline ml-1"
+                            >
+                              Download the PDF
+                            </a>
+                          </p>
+                        </iframe>
+                      </div>
+                    );
+                  } else {
+                    // Image Display
+                    return (
+                      <img
+                        src={buildImageUrl(validIdPath)}
+                        alt="Valid ID Document - Full Size"
+                        className="w-full h-auto object-contain bg-slate-50 rounded-lg"
+                        onError={(e) => {
+                          const validIdPath = getValidIdPath(accountDetails);
+                          console.error('Failed to load valid ID image in viewer:', validIdPath);
+                          console.error('Tried URL in viewer:', buildImageUrl(validIdPath));
+                          e.target.src = '/documents/no-preview.png';
+                        }}
+                        onLoad={() => {
+                          console.log('Successfully loaded valid ID image in viewer');
+                        }}
+                      />
+                    );
                   }
-                  alt="Valid ID Document - Full Size"
-                  className="w-full h-auto object-contain bg-slate-50 rounded-lg"
-                  onError={(e) => {
-                    e.target.src = '/documents/no-preview.png';
-                  }}
-                />
+                })()}
               </div>
             </motion.div>
           </div>

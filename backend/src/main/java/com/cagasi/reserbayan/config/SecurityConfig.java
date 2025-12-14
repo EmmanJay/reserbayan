@@ -40,7 +40,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/auth/**", "/api/document-types", "/api/document-types/**", "/uploads/**")
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/resubmit",
+                                "/api/document-types", "/api/document-types/**", "/uploads/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
