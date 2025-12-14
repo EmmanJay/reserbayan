@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import RequestsList from '@/components/requests/RequestsList';
-import RequestModal from '@/components/requests/RequestModal';
+import RequestsList from '@/app/components/requests/RequestsList';
+import RequestModal from '@/app/components/requests/RequestModal';
 
 export default function SuperAdminNotificationsPage() {
   const [requests, setRequests] = useState([]);

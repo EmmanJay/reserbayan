@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/app/components/ui/button';
+import { Input } from '@/app/components/ui/input';
 import { X, Mail, Lock, Phone, FileText, CheckCircle, Eye, EyeOff, Calendar } from 'lucide-react';
-import NotificationModal from '@/components/NotificationModal';
+import NotificationModal from '@/app/components/NotificationModal';
 
 // --- Sorted and Title Cased Sitios ---
 const SITIO_OPTIONS = [

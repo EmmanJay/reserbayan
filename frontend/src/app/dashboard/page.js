@@ -3,13 +3,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Megaphone, Eye } from 'lucide-react';
+import { FileText, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Megaphone, Eye, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
-import PendingRestrictionModal from '@/components/PendingRestrictionModal';
-import RequestModal from '@/components/requests/RequestModal'; // Detail View
-import RequestFormModal from '@/components/requests/RequestFormModal'; // Create View
+import PendingRestrictionModal from '@/app/components/PendingRestrictionModal';
+import RequestModal from '@/app/components/requests/RequestModal'; // Detail View
+import RequestFormModal from '@/app/components/requests/RequestFormModal'; // Create View
+import AccountActivityModal from '@/app/components/AccountActivityModal';
+import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -19,7 +21,9 @@ export default function DashboardPage() {
   // Modals state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
   const [viewRequest, setViewRequest] = useState(null);
+  const [showAccountActivityModal, setShowAccountActivityModal] = useState(false);
 
   // Announcements state
   const [announcements, setAnnouncements] = useState([]);
@@ -64,6 +68,15 @@ export default function DashboardPage() {
       fetchAnnouncements();
     }
   }, [user]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('openActivity') === 'true') {
+      setShowAccountActivityModal(true);
+      // Clean up the URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
@@ -125,6 +138,10 @@ export default function DashboardPage() {
               onClick={() => {
                 if (user.status === 'PENDING') {
                   setShowPendingModal(true);
+                  return;
+                }
+                if (user.status === 'REJECTED') {
+                  setShowRejectedModal(true);
                   return;
                 }
                 setShowRequestModal(true);
@@ -237,18 +254,53 @@ export default function DashboardPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
               <p className="text-gray-600 text-lg">Loading your recent requests...</p>
             </div>
-          ) : recentRequests.length > 0 ? (
+          ) : (
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
               <div className="p-8">
                 <div className="space-y-6">
+                  {/* Account Activity */}
+                  {(user.status?.toLowerCase() === 'pending' || user.status?.toLowerCase() === 'approved' || user.status?.toLowerCase() === 'rejected') && (
+                    <motion.div
+                      onClick={() => setShowAccountActivityModal(true)}
+                      className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:shadow-md transition-all duration-300 cursor-pointer"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.1 }}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-xl p-3 w-12 h-12 flex items-center justify-center shadow-lg">
+                          <Users className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-lg">Account Registration</h4>
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {user.status?.toLowerCase() === 'pending' ? 'Under review by administrators' :
+                             user.status?.toLowerCase() === 'approved' ? 'Approved and active' :
+                             'Requires resubmission'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${
+                        user.status?.toLowerCase() === 'approved' ? 'text-green-600 bg-green-50' :
+                        user.status?.toLowerCase() === 'pending' ? 'text-yellow-600 bg-yellow-50' :
+                        'text-red-600 bg-red-50'
+                      }`}>
+                        {getStatusIcon(user.status)}
+                        <span className="capitalize">{user.status}</span>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Document Requests */}
                   {recentRequests.map((request, index) => (
-                    <motion.div 
-                      key={request.requestId} 
+                    <motion.div
+                      key={request.requestId}
                       onClick={() => setViewRequest(request)}
                       className="flex items-center justify-between p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 * index }}
+                      transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
                     >
                       <div className="flex items-center space-x-4">
                         <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-xl p-3 w-12 h-12 flex items-center justify-center shadow-lg">
@@ -269,36 +321,18 @@ export default function DashboardPage() {
                     </motion.div>
                   ))}
                 </div>
-                <div className="mt-8 text-center">
-                  <Link
-                    href="/requests"
-                    className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-                  >
-                    <span>View All Requests</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
+                {recentRequests.length > 0 && (
+                  <div className="mt-8 text-center">
+                    <Link
+                      href="/requests"
+                      className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    >
+                      <span>View All Requests</span>
+                      <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+                )}
               </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
-              <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-full p-6 w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                <FileText className="w-12 h-12 text-gray-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-700 mb-4">No Recent Activity</h3>
-              <p className="text-gray-500 mb-8 text-lg">You havent submitted any requests yet. Get started by requesting your first document!</p>
-              <button
-                onClick={() => {
-                  if (user.status === 'PENDING') {
-                    setShowPendingModal(true);
-                    return;
-                  }
-                  setShowRequestModal(true);
-                }}
-                className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              >
-                Request Your First Document
-              </button>
             </div>
           )}
         </motion.div>
@@ -330,6 +364,16 @@ export default function DashboardPage() {
           onClose={() => setShowPendingModal(false)}
         />
 
+        {/* 4. REJECTED RESUBMIT MODAL */}
+        <RejectedResubmitModal
+          isOpen={showRejectedModal}
+          onClose={() => setShowRejectedModal(false)}
+          onResubmit={() => {
+            setShowRejectedModal(false);
+            setShowAccountActivityModal(true);
+          }}
+        />
+
         {/* 4. ANNOUNCEMENT DETAIL MODAL */}
         {selectedAnnouncement && !selectedAnnouncement.viewAll && (
           <AnnouncementModal
@@ -345,6 +389,16 @@ export default function DashboardPage() {
             onClose={() => setSelectedAnnouncement(null)}
           />
         )}
+
+        {/* 6. ACCOUNT ACTIVITY MODAL */}
+        <AccountActivityModal
+          isOpen={showAccountActivityModal}
+          onClose={() => setShowAccountActivityModal(false)}
+          user={user}
+          onResubmit={() => {
+            // For now, just close - EditDetailsModal will be opened from AccountActivityModal
+          }}
+        />
       </div>
     </motion.div>
   );

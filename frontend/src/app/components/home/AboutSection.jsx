@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/app/components/ui/button';
 import { FileText, ClipboardCheck, Clock, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';

@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Edit, Trash2, Save, X, FileText } from 'lucide-react';
 import Link from 'next/link';
-import NotificationModal from '@/components/NotificationModal';
-import ConfirmationModal from '@/components/ConfirmationModal';
+import NotificationModal from '@/app/components/NotificationModal';
+import ConfirmationModal from '@/app/components/ConfirmationModal';
 
 export default function SuperAdminDocumentViewPage() {
   const router = useRouter();

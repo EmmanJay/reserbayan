@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Users, Mail, Phone, MapPin, Calendar, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import ViewDetailsModal from '@/app/components/ViewDetailsModal';
 
 export default function ViewAllResidentsPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function ViewAllResidentsPage() {
   const [residentsLoading, setResidentsLoading] = useState(true);
   const [selectedResident, setSelectedResident] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -139,7 +141,10 @@ export default function ViewAllResidentsPage() {
               {filteredResidents.map((resident) => (
                 <button
                   key={resident.residentId}
-                  onClick={() => setSelectedResident(resident)}
+                  onClick={() => {
+                    setSelectedResident(resident);
+                    setIsModalOpen(true);
+                  }}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     selectedResident?.residentId === resident.residentId
                       ? 'bg-blue-50 border border-blue-200'
@@ -162,99 +167,25 @@ export default function ViewAllResidentsPage() {
             </div>
           </motion.div>
 
-          {/* Details Panel */}
+          {/* Placeholder for Details */}
           <motion.div
             className="flex-1 bg-white rounded-xl shadow-md border border-gray-200 p-6 overflow-y-auto"
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
           >
-            {selectedResident ? (
-              <>
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-full flex items-center justify-center">
-                    <Users className="w-8 h-8" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      {selectedResident.firstName} {selectedResident.middleName} {selectedResident.lastName}
-                    </h2>
-                    <p className="text-gray-600">Resident ID: {selectedResident.residentId}</p>
-                  </div>
-                  <div className="ml-auto">
-                    <Link
-                      href={`/superadmin/management/residents/${selectedResident.residentId}`}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Manage
-                    </Link>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Mail className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="font-medium text-gray-900">{selectedResident.residentEmail}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Phone Number</p>
-                        <p className="font-medium text-gray-900">{selectedResident.phoneNumber || 'Not provided'}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Address</p>
-                        <p className="font-medium text-gray-900">{selectedResident.address || 'Not provided'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Birthdate</p>
-                        <p className="font-medium text-gray-900">
-                          {selectedResident.birthdate ? new Date(selectedResident.birthdate).toLocaleDateString() : 'Not provided'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Valid ID Path</p>
-                        <p className="font-medium text-gray-900">{selectedResident.validIdPath || 'Not provided'}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Calendar className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500">Created At</p>
-                        <p className="font-medium text-gray-900">
-                          {new Date(selectedResident.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Select a resident to view details</p>
-              </div>
-            )}
+            <div className="text-center py-12">
+              <p className="text-gray-500">Click on a resident to view details</p>
+            </div>
           </motion.div>
+
+          {/* View Details Modal */}
+          <ViewDetailsModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            resident={selectedResident}
+            title="Resident Details"
+          />
         </div>
       )}
     </motion.div>

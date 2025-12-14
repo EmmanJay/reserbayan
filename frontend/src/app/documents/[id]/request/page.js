@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Upload, X, File } from 'lucide-react'; // Added icons
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
-import PendingRestrictionModal from '@/components/PendingRestrictionModal';
-import NotificationModal from '@/components/NotificationModal';
+import PendingRestrictionModal from '@/app/components/PendingRestrictionModal';
+import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
+import NotificationModal from '@/app/components/NotificationModal';
 
 export default function RequestDocumentPage() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function RequestDocumentPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [showRejectedModal, setShowRejectedModal] = useState(false);
   const [notificationModal, setNotificationModal] = useState(null);
 
   useEffect(() => {
@@ -114,6 +116,11 @@ export default function RequestDocumentPage() {
 
     if (user.status === 'PENDING') {
       setShowPendingModal(true);
+      return;
+    }
+
+    if (user.status === 'REJECTED') {
+      setShowRejectedModal(true);
       return;
     }
 
@@ -329,6 +336,16 @@ export default function RequestDocumentPage() {
       <PendingRestrictionModal
         isOpen={showPendingModal}
         onClose={() => setShowPendingModal(false)}
+      />
+
+      {/* Rejected Resubmit Modal */}
+      <RejectedResubmitModal
+        isOpen={showRejectedModal}
+        onClose={() => setShowRejectedModal(false)}
+        onResubmit={() => {
+          setShowRejectedModal(false);
+          router.push('/dashboard?openActivity=true');
+        }}
       />
 
       <NotificationModal

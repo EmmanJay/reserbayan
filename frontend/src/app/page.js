@@ -1,4 +1,4 @@
-import HeroSection from '@/components/home/HeroSection';
+import HeroSection from '@/app/components/home/HeroSection';
 // You can also add other homepage-specific sections here
 // import FeaturesSection from '@/components/home/FeaturesSection';
 

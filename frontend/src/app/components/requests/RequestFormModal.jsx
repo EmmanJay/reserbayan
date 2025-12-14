@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Upload, File, Send } from 'lucide-react';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
-import NotificationModal from '@/components/NotificationModal';
+import NotificationModal from '@/app/components/NotificationModal';
 
 export default function RequestFormModal({ user, onClose, onSuccess }) {
   const { documentsData } = useDocumentTypes();
