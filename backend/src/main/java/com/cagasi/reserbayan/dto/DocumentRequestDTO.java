@@ -1,13 +1,31 @@
 package com.cagasi.reserbayan.dto;
 
+import com.cagasi.reserbayan.entity.RequestAttachment;
+import java.util.List;
+
 public class DocumentRequestDTO {
 
+    private Long requestId;
     private String documentId; // from your JSON file
     private String documentName; // from your JSON file
     private Long residentId; // from logged-in user
+    private String residentName;
     private String details; // purpose
+    private String status;
+    private String submittedAt;
+    private String updatedAt;
+    private List<RequestAttachment> attachments;
+    private int attachmentCount;
 
     // Getters & Setters
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
 
     public String getDocumentId() {
         return documentId;
@@ -33,11 +51,59 @@ public class DocumentRequestDTO {
         this.residentId = residentId;
     }
 
+    public String getResidentName() {
+        return residentName;
+    }
+
+    public void setResidentName(String residentName) {
+        this.residentName = residentName;
+    }
+
     public String getDetails() {
         return details;
     }
 
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(String submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<RequestAttachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<RequestAttachment> attachments) {
+        this.attachments = attachments;
+    }
+
+    public int getAttachmentCount() {
+        return attachmentCount;
+    }
+
+    public void setAttachmentCount(int attachmentCount) {
+        this.attachmentCount = attachmentCount;
     }
 }

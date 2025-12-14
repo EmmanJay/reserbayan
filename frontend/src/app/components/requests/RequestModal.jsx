@@ -21,6 +21,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
   const [filesToRemove, setFilesToRemove] = useState([]); 
   const [newFiles, setNewFiles] = useState([]); 
   const [isSaving, setIsSaving] = useState(false);
+  const [isDownloading, setIsDownloading] = useState({});
 
   if (!displayRequest) return null;
 
@@ -38,6 +39,78 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
         return <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✗</span></div>;
       default:
         return <div className="w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
+    }
+  };
+
+  // --- SECURE FILE DOWNLOAD HANDLER ---
+  const handleDownloadAttachment = async (file) => {
+    if (!displayRequest?.requestId || !file?.id) return;
+    
+    // Set downloading state for this specific file
+    setIsDownloading(prev => ({ ...prev, [file.id]: true }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setNotification({ 
+          type: 'error', 
+          title: 'Authentication Error', 
+          message: 'Please log in again to download files.' 
+        });
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:8080/api/document-requests/${displayRequest.requestId}/attachments/${file.id}/download`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.fileName || 'document';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        setNotification({
+          type: 'success',
+          title: 'Download Complete',
+          message: 'File downloaded successfully.',
+          autoClose: true
+        });
+      } else if (response.status === 401) {
+        setNotification({ 
+          type: 'error', 
+          title: 'Unauthorized', 
+          message: 'Please log in again to download files.' 
+        });
+      } else if (response.status === 403) {
+        setNotification({ 
+          type: 'error', 
+          title: 'Access Denied', 
+          message: 'You do not have permission to download this file.' 
+        });
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      setNotification({ 
+        type: 'error', 
+        title: 'Download Failed', 
+        message: 'Failed to download file. Please try again.' 
+      });
+    } finally {
+      // Clear downloading state
+      setIsDownloading(prev => ({ ...prev, [file.id]: false }));
     }
   };
 
@@ -229,7 +302,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
 
       <div className="relative mx-auto p-2 sm:p-4 max-w-5xl h-full flex items-center justify-center">
         <div className="bg-white rounded-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-        
+         
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -271,7 +344,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
 
           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             <div className="lg:col-span-2 space-y-6">
-              
+               
               <div>
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-600" aria-hidden="true" />
@@ -325,11 +398,11 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                          key={file.id} 
                          className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg group"
                        >
-                         <a 
-                             href={`http://localhost:8080/uploads/${file.filePath}`} 
-                             target="_blank" 
-                             rel="noopener noreferrer"
-                             className="flex items-center gap-3 overflow-hidden flex-1"
+                         <button 
+                             onClick={() => handleDownloadAttachment(file)}
+                             disabled={isDownloading[file.id]}
+                             className="flex items-center gap-3 overflow-hidden flex-1 hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                             title="Click to download"
                          >
                            <div className="bg-blue-50 p-2 rounded-md">
                              <FileText className="w-5 h-5 text-blue-600" />
@@ -338,9 +411,11 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                              <p className="text-sm font-medium text-gray-700 truncate">
                                  {file.fileName}
                              </p>
-                             <p className="text-xs text-gray-500">Click to view</p>
+                             <p className="text-xs text-gray-500">
+                               {isDownloading[file.id] ? 'Downloading...' : 'Click to download'}
+                             </p>
                            </div>
-                         </a>
+                         </button>
                          
                          {isEditing && (
                              <button 

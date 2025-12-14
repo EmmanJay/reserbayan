@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Mail, Phone, MapPin, Calendar, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, Calendar, CheckCircle, XCircle, Clock, Loader2, Eye } from 'lucide-react';
 import { useState } from 'react';
 
 export default function PendingAccountDetailsModal({
@@ -223,8 +223,8 @@ export default function PendingAccountDetailsModal({
                   </div>
                 </div>
 
-                {/* Valid ID Document */}
-                {accountDetails.validIdPath && (
+                {/* Valid ID Document - Secure Viewing Section */}
+                {accountDetails.validIdPath ? (
                   <div className="bg-white rounded-xl border border-slate-200 p-6">
                     <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                       <User className="w-5 h-5" />
@@ -232,17 +232,50 @@ export default function PendingAccountDetailsModal({
                     </h4>
                     <div className="space-y-4">
                       <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-300 transition-colors" onClick={handleImageClick}>
-                        <img 
-                          src={`http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`} 
-                          alt="Valid ID Document" 
+                        <img
+                          src={accountDetails.validIdPath.startsWith('http')
+                            ? accountDetails.validIdPath
+                            : `http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`
+                          }
+                          alt="Valid ID Document"
                           className="w-full h-auto max-h-96 object-contain bg-slate-50 hover:opacity-90 transition-opacity"
                           onError={(e) => {
                             e.target.src = '/documents/no-preview.png';
                           }}
                         />
                       </div>
+                      <div className="flex items-center justify-between p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Eye className="w-4 h-4 text-amber-600" />
+                          <p className="text-sm text-amber-800 font-medium">
+                            For Review Only - No Download
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleImageClick}
+                          className="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 transition-colors"
+                        >
+                          View Full Size
+                        </button>
+                      </div>
                       <p className="text-xs text-slate-500 text-center">
-                        Click on the image to view full size
+                        Click on the image to view full size. Document viewing is logged for security purposes.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-slate-200 p-6">
+                    <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      Valid ID Document
+                    </h4>
+                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+                      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <User className="w-8 h-8 text-slate-400" />
+                      </div>
+                      <p className="text-slate-500 font-medium">No valid ID document uploaded</p>
+                      <p className="text-sm text-slate-400 mt-2">
+                        This resident did not upload a valid ID during registration.
                       </p>
                     </div>
                   </div>
@@ -277,22 +310,6 @@ export default function PendingAccountDetailsModal({
           {!loading && (
             <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
               <button
-                onClick={handleApprove}
-                disabled={isApproveLoading || isRejectLoading}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors ${
-                  isApproveLoading
-                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-700'
-                }`}
-              >
-                {isApproveLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <CheckCircle className="w-5 h-5" />
-                )}
-                {isApproveLoading ? 'Approving...' : 'Approve Account'}
-              </button>
-              <button
                 onClick={handleReject}
                 disabled={isApproveLoading || isRejectLoading}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors ${
@@ -308,12 +325,28 @@ export default function PendingAccountDetailsModal({
                 )}
                 {isRejectLoading ? 'Rejecting...' : 'Reject Account'}
               </button>
+              <button
+                onClick={handleApprove}
+                disabled={isApproveLoading || isRejectLoading}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors ${
+                  isApproveLoading
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
+              >
+                {isApproveLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-5 h-5" />
+                )}
+                {isApproveLoading ? 'Approving...' : 'Approve Account'}
+              </button>
             </div>
           )}
         </motion.div>
       </div>
 
-      {/* Full Size Image Viewer Modal */}
+      {/* Secure Image Viewer Modal */}
       <AnimatePresence>
         {isImageViewerOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={handleImageViewerBackdropClick}>
@@ -337,8 +370,11 @@ export default function PendingAccountDetailsModal({
             >
               {/* Header */}
               <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-slate-900">Valid ID Document - Full Size</h3>
-                <button 
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Valid ID Document - Secure Review</h3>
+                  <p className="text-xs text-slate-600 mt-1">This document is for verification purposes only</p>
+                </div>
+                <button
                   onClick={handleCloseImageViewer}
                   className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-white transition-colors"
                 >
@@ -346,11 +382,25 @@ export default function PendingAccountDetailsModal({
                 </button>
               </div>
 
+              {/* Security Notice */}
+              <div className="bg-amber-50 border-b border-amber-200 px-6 py-3">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-amber-600" />
+                  <p className="text-sm text-amber-800">
+                    <strong>Security Notice:</strong> This document contains sensitive personal information.
+                    Viewing is logged for audit purposes. Do not screenshot or share this document.
+                  </p>
+                </div>
+              </div>
+
               {/* Image Content */}
-              <div className="p-6 overflow-auto max-h-[calc(90vh-80px)]">
-                <img 
-                  src={`http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`} 
-                  alt="Valid ID Document - Full Size" 
+              <div className="p-6 overflow-auto max-h-[calc(90vh-140px)]">
+                <img
+                  src={accountDetails.validIdPath.startsWith('http')
+                    ? accountDetails.validIdPath
+                    : `http://localhost:8080/${accountDetails.validIdPath.replace(/\\/g, '/')}`
+                  }
+                  alt="Valid ID Document - Full Size"
                   className="w-full h-auto object-contain bg-slate-50 rounded-lg"
                   onError={(e) => {
                     e.target.src = '/documents/no-preview.png';

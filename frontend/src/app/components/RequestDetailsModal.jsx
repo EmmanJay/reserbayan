@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, User, FileText, Calendar, Clock, Info, Paperclip } from 'lucide-react';
+import { X, User, FileText, Calendar, Clock, Info, Paperclip, Download, CheckCircle, XCircle } from 'lucide-react';
 
 export default function RequestDetailsModal({
   isOpen,
@@ -11,6 +12,91 @@ export default function RequestDetailsModal({
   onApprove,
   onReject
 }) {
+  const [isDownloading, setIsDownloading] = useState({});
+  const [attachments, setAttachments] = useState([]);
+
+  // Fetch attachments when requestDetails changes
+  useEffect(() => {
+    if (requestDetails?.requestId) {
+      fetchAttachments();
+    }
+  }, [requestDetails]);
+
+  const fetchAttachments = async () => {
+    if (!requestDetails?.requestId) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      // Fetch the full request details including attachments
+      const response = await fetch(
+        `http://localhost:8080/api/document-requests/${requestDetails.requestId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const fullRequestData = await response.json();
+        setAttachments(fullRequestData.attachments || []);
+      }
+    } catch (error) {
+      console.error('Error fetching attachments:', error);
+    }
+  };
+
+  // Secure file download handler
+  const handleDownloadAttachment = async (file) => {
+    if (!requestDetails?.requestId || !file?.id) return;
+    
+    // Set downloading state for this specific file
+    setIsDownloading(prev => ({ ...prev, [file.id]: true }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in again to download files.');
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:8080/api/document-requests/${requestDetails.requestId}/attachments/${file.id}/download`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.fileName || 'document';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else if (response.status === 401) {
+        alert('Please log in again to download files.');
+      } else if (response.status === 403) {
+        alert('You do not have permission to download this file.');
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download file. Please try again.');
+    } finally {
+      // Clear downloading state
+      setIsDownloading(prev => ({ ...prev, [file.id]: false }));
+    }
+  };
+
   if (!isOpen || !requestDetails) return null;
 
   const formatDate = (dateString) => {
@@ -64,7 +150,7 @@ export default function RequestDetailsModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
@@ -114,10 +200,10 @@ export default function RequestDetailsModal({
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(requestDetails.status)}`}>
                         {requestDetails.status}
                       </span>
-                      {requestDetails.attachmentCount > 0 && (
+                      {(attachments.length > 0 || requestDetails.attachmentCount > 0) && (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white border border-white/30">
                           <Paperclip className="w-3 h-3 mr-1" />
-                          {requestDetails.attachmentCount} attachment{requestDetails.attachmentCount !== 1 ? 's' : ''}
+                          {attachments.length || requestDetails.attachmentCount} attachment{((attachments.length || requestDetails.attachmentCount) !== 1) ? 's' : ''}
                         </span>
                       )}
                     </div>
@@ -139,7 +225,7 @@ export default function RequestDetailsModal({
                     </div>
                     <div>
                       <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Request ID</label>
-                      <p className="text-sm font-medium text-slate-900">#{requestDetails.id}</p>
+                      <p className="text-sm font-medium text-slate-900">#{requestDetails.id || requestDetails.requestId}</p>
                     </div>
                     <div>
                       <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Status</label>
@@ -212,53 +298,93 @@ export default function RequestDetailsModal({
                 </div>
               )}
 
-              {/* Attachments */}
-              {requestDetails.attachmentCount > 0 && (
+              {/* Attachments - NEW SECURE DOWNLOAD SECTION */}
+              {(attachments.length > 0 || requestDetails.attachmentCount > 0) && (
                 <div className="bg-white rounded-xl border border-slate-200 p-6">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                     <Paperclip className="w-5 h-5" />
                     Attachments
                   </h4>
-                  <div className="space-y-2">
-                    <p className="text-sm text-slate-600">
-                      This request has {requestDetails.attachmentCount} attachment{requestDetails.attachmentCount !== 1 ? 's' : ''}.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from({ length: requestDetails.attachmentCount }, (_, i) => (
-                        <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                          <Paperclip className="w-3 h-3 mr-1" />
-                          Attachment {i + 1}
-                        </span>
-                      ))}
+                  
+                  {attachments.length > 0 ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-slate-600 mb-4">
+                        {attachments.length} attachment{attachments.length !== 1 ? 's' : ''} available for download.
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {attachments.map((file) => (
+                          <div 
+                            key={file.id} 
+                            className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
+                          >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="bg-blue-100 p-2 rounded-md flex-shrink-0">
+                                <FileText className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div className="overflow-hidden">
+                                <p className="text-sm font-medium text-slate-900 truncate">
+                                  {file.fileName}
+                                </p>
+                                <p className="text-xs text-slate-500">
+                                  {isDownloading[file.id] ? 'Downloading...' : 'Click to download'}
+                                </p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => handleDownloadAttachment(file)}
+                              disabled={isDownloading[file.id]}
+                              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                              title="Download file"
+                            >
+                              <Download className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-slate-600">
+                        This request has {requestDetails.attachmentCount} attachment{requestDetails.attachmentCount !== 1 ? 's' : ''}.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from({ length: requestDetails.attachmentCount }, (_, i) => (
+                          <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                            <Paperclip className="w-3 h-3 mr-1" />
+                            Attachment {i + 1}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer Actions */}
         {!loading && (
-          <div className="bg-slate-50 px-6 py-4 border-t border-slate-200">
+          <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
             {/* Action buttons - only show for pending requests */}
             {requestDetails?.status === 'Pending' && (
-              <div className="flex gap-3 justify-end mb-4">
+              <>
                 <button
-                  onClick={() => onReject(requestDetails.id)}
-                  className="px-6 py-2 bg-white border border-red-200 text-red-700 rounded-xl font-medium hover:bg-red-50 hover:border-red-300 transition-colors"
+                  onClick={() => onReject(requestDetails.id || requestDetails.requestId)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-red-600 text-white hover:bg-red-700"
                 >
+                  <XCircle className="w-5 h-5" />
                   Reject Request
                 </button>
                 <button
-                  onClick={() => onApprove(requestDetails.id)}
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+                  onClick={() => onApprove(requestDetails.id || requestDetails.requestId)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-green-600 text-white hover:bg-green-700"
                 >
+                  <CheckCircle className="w-5 h-5" />
                   Approve Request
                 </button>
-              </div>
+              </>
             )}
-            
           </div>
         )}
       </motion.div>

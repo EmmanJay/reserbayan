@@ -6,6 +6,7 @@ import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, 
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
 import ViewDetailsModal from '@/app/components/ViewDetailsModal';
+import RequestDetailsModal from '@/app/components/RequestDetailsModal';
 import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 import { motion } from 'framer-motion';
 
@@ -340,7 +341,18 @@ export default function SuperAdminManagementPage() {
   };
 
   const handleViewInfo = (resident) => {
-    setSelectedResident(resident);
+    // Transform data structure for RequestDetailsModal compatibility
+    let transformedResident = resident;
+    if (activeTab === 'document-requests') {
+      // Convert nested resident object to string format expected by RequestDetailsModal
+      const fullName = `${resident.resident?.firstName || ''} ${resident.resident?.lastName || ''}`.trim();
+      transformedResident = {
+        ...resident,
+        resident: fullName || 'Unknown Resident',
+        email: resident.resident?.email || resident.residentEmail || 'N/A'
+      };
+    }
+    setSelectedResident(transformedResident);
     setModalType(activeTab);
     setIsViewDetailsModalOpen(true);
   };
@@ -1196,6 +1208,36 @@ export default function SuperAdminManagementPage() {
         </div>
       )}
 
+
+      {/* Conditional Modal Rendering */}
+      {modalType === 'document-requests' ? (
+        <RequestDetailsModal
+          isOpen={isViewDetailsModalOpen}
+          onClose={() => setIsViewDetailsModalOpen(false)}
+          requestDetails={selectedResident}
+          onApprove={(requestId) => {
+            const item = data.find(d => d.requestId === requestId);
+            if (item) handleAccept(item);
+            setIsViewDetailsModalOpen(false);
+          }}
+          onReject={(requestId) => {
+            const item = data.find(d => d.requestId === requestId);
+            if (item) handleReject(item);
+            setIsViewDetailsModalOpen(false);
+          }}
+        />
+      ) : (
+        <ViewDetailsModal
+          isOpen={isViewDetailsModalOpen}
+          onClose={() => setIsViewDetailsModalOpen(false)}
+          resident={selectedResident}
+          documentRequest={null}
+          title="Resident Details"
+          showActions={modalType === 'resident-requests'}
+          onApprove={() => { handleAccept(selectedResident); setIsViewDetailsModalOpen(false); }}
+          onReject={() => { handleReject(selectedResident); setIsViewDetailsModalOpen(false); }}
+        />
+      )}
       <ViewDetailsModal
         isOpen={isViewDetailsModalOpen}
         onClose={() => setIsViewDetailsModalOpen(false)}
