@@ -10,8 +10,8 @@ import {
   Megaphone, Send, XCircle, CheckCircle, Loader
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PendingAccountDetailsModal from '../../../components/PendingAccountDetailsModal';
-import RequestDetailsModal from '../../../components/RequestDetailsModal';
+import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsModal';
+import RequestDetailsModal from '@/app/components/RequestDetailsModal';
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
@@ -191,14 +191,16 @@ export default function SuperAdminDashboard() {
         const requestsData = await requestsResponse.json();
         const recentRequests = requestsData.map(req => ({
           id: req.requestId,
-          resident: req.resident?.fullName || 'Unknown Resident',
-          email: req.resident?.email || '',
+          resident: req.residentFullName && req.residentFullName !== 'N/A' ? req.residentFullName :
+                   (req.residentFirstName && req.residentLastName && req.residentFirstName !== 'N/A' ? `${req.residentFirstName} ${req.residentLastName}` :
+                   (req.residentFirstName || req.residentLastName ? `${req.residentFirstName || ''} ${req.residentLastName || ''}`.trim() : 'Unknown Resident')),
+          email: req.residentEmail && req.residentEmail !== 'N/A' ? req.residentEmail : '',
           documentName: req.documentName || 'Unknown Document',
           details: req.details || '',
           // Format: "Oct 24, 2023"
-          date: new Date(req.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+          date: req.submittedAt ? new Date(req.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A',
           // Format: "10:30 AM"
-          time: new Date(req.submittedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+          time: req.submittedAt ? new Date(req.submittedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : 'N/A',
           // Format full datetime for sorting and detailed view
           submittedAt: req.submittedAt,
           status: req.status

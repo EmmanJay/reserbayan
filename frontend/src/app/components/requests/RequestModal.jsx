@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Calendar, XCircle, Paperclip, ExternalLink, Edit2, Save, Trash2, Plus, RotateCcw, Send } from 'lucide-react';
-import NotificationModal from '@/components/NotificationModal';
+import NotificationModal from '@/app/components/NotificationModal';
 
 function RequestModal({ request, user, onClose, cancelRequest, approveRequest, rejectRequest, onReRequest, onUpdateRequest }) {
   const [notification, setNotification] = useState(null);

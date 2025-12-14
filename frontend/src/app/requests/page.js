@@ -6,9 +6,9 @@ import { FileText, Search, SortAsc, SortDesc, Grid3X3, List } from 'lucide-react
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
-import RequestCard from '@/components/requests/RequestCard';
-import RequestModal from '@/components/requests/RequestModal'; // Ensure this points to your new/updated modal
-import RequestsList from '@/components/requests/RequestsList';
+import RequestCard from '@/app/components/requests/RequestCard';
+import RequestModal from '@/app/components/requests/RequestModal'; // Ensure this points to your new/updated modal
+import RequestsList from '@/app/components/requests/RequestsList';
 
 export default function RequestsPage() {
   const { user } = useUser();

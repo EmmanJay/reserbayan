@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import SignUpContainer from '@/components/auth/SignUpContainer';
+import SignUpContainer from '@/app/components/auth/SignUpContainer';
 
 export default function HeroSection() {
   const [showSignUp, setShowSignUp] = useState(false);

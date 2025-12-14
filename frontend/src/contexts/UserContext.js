@@ -19,15 +19,25 @@ export function UserProvider({ children }) {
       setUser(e.detail);
     };
 
+    const handleUserLogin = (e) => {
+      // For login, the user data is already in localStorage, but we can refresh from there
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+
     const handleUserLogout = () => {
       setUser(null);
     };
 
     window.addEventListener('userUpdated', handleUserUpdate);
+    window.addEventListener('userLogin', handleUserLogin);
     window.addEventListener('userLogout', handleUserLogout);
 
     return () => {
       window.removeEventListener('userUpdated', handleUserUpdate);
+      window.removeEventListener('userLogin', handleUserLogin);
       window.removeEventListener('userLogout', handleUserLogout);
     };
   }, []);

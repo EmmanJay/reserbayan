@@ -2,8 +2,8 @@ import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 
 // Import your components here
-import ClientLayout from '@/components/ClientLayout';
-import AuthModal from '@/components/auth/AuthModal';
+import ClientLayout from '@/app/components/ClientLayout';
+import AuthModal from '@/app/components/auth/AuthModal';
 import { UserProvider } from '@/contexts/UserContext';
 
 const inter = Inter({

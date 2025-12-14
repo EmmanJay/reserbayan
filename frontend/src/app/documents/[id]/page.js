@@ -5,17 +5,21 @@ import { notFound } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { use, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
 import { useUser } from '@/contexts/UserContext';
-import PendingRestrictionModal from '@/components/PendingRestrictionModal';
+import PendingRestrictionModal from '@/app/components/PendingRestrictionModal';
+import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
 
 export default function DocumentDetailPage({ params }) {
-  const { documentsData, loading, error } = useDocumentTypes();
-  const { user } = useUser();
-  const resolvedParams = use(params);
-  const searchParams = useSearchParams();
-  const from = searchParams.get('from');
-  const [showPendingModal, setShowPendingModal] = useState(false);
+   const { documentsData, loading, error } = useDocumentTypes();
+   const { user } = useUser();
+   const resolvedParams = use(params);
+   const searchParams = useSearchParams();
+   const router = useRouter();
+   const from = searchParams.get('from');
+   const [showPendingModal, setShowPendingModal] = useState(false);
+   const [showRejectedModal, setShowRejectedModal] = useState(false);
 
   const doc = documentsData.find((doc) => doc.id === resolvedParams.id);
 
@@ -116,10 +120,12 @@ export default function DocumentDetailPage({ params }) {
                 window.dispatchEvent(new CustomEvent('showSignUp'));
                 return;
               }
-              
+
               // Check if user is pending
               if (user.status === 'PENDING') {
                 setShowPendingModal(true);
+              } else if (user.status === 'REJECTED') {
+                setShowRejectedModal(true);
               } else {
                 window.location.href = `/documents/${doc.id}/request`;
               }
@@ -138,6 +144,16 @@ export default function DocumentDetailPage({ params }) {
       <PendingRestrictionModal
         isOpen={showPendingModal}
         onClose={() => setShowPendingModal(false)}
+      />
+
+      {/* Rejected Resubmit Modal */}
+      <RejectedResubmitModal
+        isOpen={showRejectedModal}
+        onClose={() => setShowRejectedModal(false)}
+        onResubmit={() => {
+          setShowRejectedModal(false);
+          router.push('/dashboard?openActivity=true');
+        }}
       />
     </motion.div>
   );

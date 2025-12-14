@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
-import NotificationModal from '@/components/NotificationModal';
-import ConfirmationModal from '@/components/ConfirmationModal';
+import NotificationModal from '@/app/components/NotificationModal';
+import ConfirmationModal from '@/app/components/ConfirmationModal';
+import ViewDetailsModal from '@/app/components/ViewDetailsModal';
 import { motion } from 'framer-motion';
 
 import Link from 'next/link';
@@ -29,6 +30,9 @@ export default function SuperAdminManagementPage() {
   const [addAdminModal, setAddAdminModal] = useState(false);
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [viewInfoModal, setViewInfoModal] = useState(null);
+  const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
+  const [selectedResident, setSelectedResident] = useState(null);
+  const [modalType, setModalType] = useState(null);
   const [passwordWarningModal, setPasswordWarningModal] = useState(null);
   const [passwordRevealModal, setPasswordRevealModal] = useState(null);
   const [expandedImage, setExpandedImage] = useState(null);
@@ -97,7 +101,13 @@ export default function SuperAdminManagementPage() {
         } : {},
       });
       if (!response.ok) throw new Error(`Failed to fetch ${tab}`);
-      const data = await response.json();
+      let data = await response.json();
+
+      // Filter document requests to show only pending ones
+      if (tab === 'document-requests') {
+        data = data.filter(item => item.status === 'Pending');
+      }
+
       setData(data);
       setTotalPages(Math.ceil(data.length / itemsPerPage));
       setCurrentPage(1);
@@ -121,7 +131,9 @@ export default function SuperAdminManagementPage() {
     event.preventDefault();
     event.stopPropagation();
 
-    if (openDropdownId === item.residentId) {
+    const dropdownId = activeTab === 'document-requests' ? item.requestId : item.residentId;
+
+    if (openDropdownId === dropdownId) {
       setOpenDropdownId(null);
     } else {
       const rect = event.currentTarget.getBoundingClientRect();
@@ -144,7 +156,7 @@ export default function SuperAdminManagementPage() {
         top: rect.bottom + window.scrollY,
         left: Math.max(8, leftPosition) // Ensure minimum 8px from left edge
       });
-      setOpenDropdownId(item.residentId);
+      setOpenDropdownId(dropdownId);
     }
   };
 
@@ -331,8 +343,10 @@ export default function SuperAdminManagementPage() {
     }
   };
 
-  const handleViewInfo = (request) => {
-    setViewInfoModal(request);
+  const handleViewInfo = (resident) => {
+    setSelectedResident(resident);
+    setModalType(activeTab);
+    setIsViewDetailsModalOpen(true);
   };
 
   const handleEditFromView = (item) => {
@@ -669,13 +683,18 @@ export default function SuperAdminManagementPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {activeTab === 'administrators' ? 'Role' : activeTab === 'residents' ? 'Address' : 'Status'}
+                      {activeTab === 'document-requests' ? 'Resident' : 'Name'}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {activeTab === 'document-requests' ? 'Document' : 'Email'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {activeTab === 'document-requests' ? 'Date' : 'Phone'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {activeTab === 'administrators' ? 'Role' : activeTab === 'residents' ? 'Sitio' : 'Status'}
+                    </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
@@ -690,12 +709,12 @@ export default function SuperAdminManagementPage() {
                         item.middleName?.toLowerCase().includes(query) ||
                         item.residentEmail?.toLowerCase().includes(query) ||
                         item.phoneNumber?.toLowerCase().includes(query) ||
-                        item.address?.toLowerCase().includes(query)
+                        item.sitio?.toLowerCase().includes(query)
                       );
                     })
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                    .map((item) => (
-                      <tr key={item.residentId} className="hover:bg-gray-50">
+                    .map((item, index) => (
+                      <tr key={`${activeTab}-${item.requestId || item.residentId}-${index}`} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
@@ -717,19 +736,19 @@ export default function SuperAdminManagementPage() {
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
-                                {item.firstName} {item.middleName} {item.lastName}
+                                {activeTab === 'document-requests' ? `${item.resident?.firstName || ''} ${item.resident?.lastName || ''}`.trim() || 'N/A' : `${item.firstName} ${item.middleName} ${item.lastName}`}
                               </div>
-                              {item.username && (
+                              {item.username && activeTab !== 'document-requests' && (
                                 <div className="text-sm text-gray-500">@{item.username}</div>
                               )}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {item.residentEmail}
+                          {activeTab === 'document-requests' ? item.documentName : item.residentEmail}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {item.phoneNumber || 'N/A'}
+                          {activeTab === 'document-requests' ? (item.submittedAt ? new Date(item.submittedAt).toLocaleDateString() : 'N/A') : item.phoneNumber || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {activeTab === 'administrators' ? (
@@ -738,7 +757,7 @@ export default function SuperAdminManagementPage() {
                             </span>
                           ) : activeTab === 'residents' ? (
                             <span className="text-sm text-gray-900">
-                              {item.address || 'N/A'}
+                              {item.sitio || 'N/A'}
                             </span>
                           ) : (
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -749,9 +768,6 @@ export default function SuperAdminManagementPage() {
                               {item.status || 'N/A'}
                             </span>
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="relative">
@@ -787,7 +803,7 @@ export default function SuperAdminManagementPage() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   {(() => {
-                    const item = data.find(d => d.residentId === openDropdownId);
+                    const item = data.find(d => (activeTab === 'document-requests' ? d.requestId : d.residentId) === openDropdownId);
                     if (!item) return null;
 
                     return (
@@ -854,42 +870,31 @@ export default function SuperAdminManagementPage() {
                             View Details
                           </button>
                         )}
-                        {(activeTab === 'resident-requests' || activeTab === 'document-requests') && (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewInfo(item);
-                                setOpenDropdownId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
-                            >
-                              <Eye size={16} />
-                              View Details
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAccept(item);
-                                setOpenDropdownId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
-                            >
-                              <CheckCircle size={16} />
-                              Approve
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleReject(item);
-                                setOpenDropdownId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
-                            >
-                              <XCircle size={16} />
-                              Reject
-                            </button>
-                          </>
+                        {activeTab === 'resident-requests' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewInfo(item);
+                              setOpenDropdownId(null);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                          >
+                            <Eye size={16} />
+                            View Details
+                          </button>
+                        )}
+                        {activeTab === 'document-requests' && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewInfo(item);
+                              setOpenDropdownId(null);
+                            }}
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded flex items-center gap-2"
+                          >
+                            <Eye size={16} />
+                            View Details
+                          </button>
                         )}
                         <button
                           onClick={(e) => {
@@ -1147,93 +1152,15 @@ export default function SuperAdminManagementPage() {
       )}
 
 
-      {/* View Info Modal */}
-      {viewInfoModal && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
-          <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Users className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Resident Information</h3>
-                  <p className="text-sm text-gray-600">
-                    {viewInfoModal.firstName} {viewInfoModal.middleName} {viewInfoModal.lastName}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {viewInfoModal.firstName} {viewInfoModal.middleName} {viewInfoModal.lastName}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.residentEmail}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.phoneNumber}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Address</label>
-                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.address}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Birthdate</label>
-                    <p className="mt-1 text-sm text-gray-900">{viewInfoModal.birthdate}</p>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Valid ID</label>
-                  {viewInfoModal.validIdPath ? (
-                    <div className="border border-gray-200 rounded-lg p-4">
-                      <img
-                        src={`http://localhost:8080/${viewInfoModal.validIdPath.replace(/\\/g, '/')}`}
-                        alt="Valid ID"
-                        className="w-full h-auto max-h-64 object-contain rounded cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setExpandedImage(`http://localhost:8080/${viewInfoModal.validIdPath.replace(/\\/g, '/')}`)}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                      <div className="hidden text-center text-gray-500 py-4">
-                        <div className="text-4xl mb-2">📄</div>
-                        <p>Unable to load image</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2 text-center">Click image to expand</p>
-                    </div>
-                  ) : (
-                    <div className="border border-gray-200 rounded-lg p-4 text-center text-gray-500">
-                      No ID uploaded
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setViewInfoModal(null)}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      {/* View Details Modal */}
+      <ViewDetailsModal
+        isOpen={isViewDetailsModalOpen}
+        onClose={() => setIsViewDetailsModalOpen(false)}
+        resident={modalType === 'document-requests' ? null : selectedResident}
+        documentRequest={modalType === 'document-requests' ? selectedResident : null}
+        title={modalType === 'document-requests' ? 'Document Request Details' : 'Resident Details'}
+        showActions={modalType === 'document-requests'}
+      />
 
       {/* Expanded Image Modal */}
       {expandedImage && (
