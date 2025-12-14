@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Megaphone, Eye, Users } from 'lucide-react';
+import { FileText, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Megaphone, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
@@ -28,7 +28,7 @@ export default function DashboardPage() {
   // Announcements state
   const [announcements, setAnnouncements] = useState([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [expandedAnnouncements, setExpandedAnnouncements] = useState(new Set());
 
   const recentRequests = useMemo(() => {
     return requests
@@ -42,6 +42,12 @@ export default function DashboardPage() {
       setAnnouncementsLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
+      if (!token) {
+        console.error('No authentication token found');
+        setAnnouncements([]);
+        return;
+      }
+      
       const response = await fetch('http://localhost:8080/api/residents/announcements', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -50,17 +56,35 @@ export default function DashboardPage() {
       });
       
       if (response.ok) {
-        const announcementsData = await response.json();
-        setAnnouncements(announcementsData);
+        const responseData = await response.json();
+        // Extract the announcements array from the response
+        const announcementsList = responseData.announcements || [];
+        console.log('Fetched announcements:', announcementsList.length, announcementsList);
+        setAnnouncements(announcementsList);
       } else {
         const errorText = await response.text().catch(() => 'Unknown error');
         console.error('Failed to fetch announcements:', response.status, response.statusText, errorText);
+        setAnnouncements([]);
       }
     } catch (error) {
       console.error('Error fetching announcements:', error);
+      setAnnouncements([]);
     } finally {
       setAnnouncementsLoading(false);
     }
+  };
+
+  // Toggle announcement card expansion
+  const toggleAnnouncementExpansion = (announcementId) => {
+    setExpandedAnnouncements(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(announcementId)) {
+        newSet.delete(announcementId);
+      } else {
+        newSet.add(announcementId);
+      }
+      return newSet;
+    });
   };
 
   useEffect(() => {
@@ -185,42 +209,83 @@ export default function DashboardPage() {
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
               <div className="p-8">
                 <div className="space-y-6">
-                  {announcements.slice(0, 3).map((announcement, index) => (
-                    <motion.div
-                      key={announcement.announcementId}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.1 * index }}
-                      className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-lg hover:border-blue-200 transition-all duration-300 cursor-pointer group"
-                      onClick={() => setSelectedAnnouncement(announcement)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                            <Megaphone className="w-6 h-6" />
+                  {announcements.slice(0, 3).map((announcement, index) => {
+                    const isExpanded = expandedAnnouncements.has(announcement.announcementId);
+                    
+                    return (
+                      <motion.div
+                        key={announcement.announcementId}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.1 * index }}
+                        className="p-4 md:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-lg hover:border-blue-200 transition-all duration-300 group"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 flex-shrink-0">
+                              <Megaphone className="w-5 h-5 md:w-6 md:h-6" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-gray-900 text-base md:text-lg group-hover:text-[#1E2566] transition-colors line-clamp-2">
+                                {announcement.title}
+                              </h4>
+                              <p className="text-xs md:text-sm text-gray-500 flex items-center mt-1">
+                                <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                                <span className="truncate">
+                                  Posted by {announcement.postedBy} on {new Date(announcement.createdAt).toLocaleDateString()}
+                                </span>
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-gray-900 text-lg group-hover:text-[#1E2566] transition-colors">{announcement.title}</h4>
-                            <p className="text-sm text-gray-500 flex items-center">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              Posted by {announcement.postedBy} on {new Date(announcement.createdAt).toLocaleDateString()}
+                          
+                          {/* Toggle Button */}
+                          <button
+                            onClick={() => toggleAnnouncementExpansion(announcement.announcementId)}
+                            className="ml-2 md:ml-4 p-1.5 md:p-2 rounded-full hover:bg-white hover:bg-opacity-50 transition-all duration-200 group/toggle flex-shrink-0"
+                            aria-label={isExpanded ? 'Collapse announcement' : 'Expand announcement'}
+                            aria-expanded={isExpanded}
+                            aria-controls={`announcement-content-${announcement.announcementId}`}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-[#1E2566] group-hover/toggle:text-[#2F87C3] transition-colors" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-[#1E2566] group-hover/toggle:text-[#2F87C3] transition-colors" />
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* Announcement Content */}
+                        <motion.div
+                          id={`announcement-content-${announcement.announcementId}`}
+                          initial={false}
+                          animate={{
+                            height: isExpanded ? 'auto' : 0,
+                            opacity: isExpanded ? 1 : 0
+                          }}
+                          transition={{ duration: 0.3, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pt-2 md:pt-3">
+                            <p className="text-sm md:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                              {announcement.content}
                             </p>
                           </div>
-                        </div>
-                        <button className="text-[#1E2566] hover:text-[#2F87C3] transition-colors opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0">
-                          <Eye className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <p className="text-gray-700 leading-relaxed line-clamp-2 group-hover:text-gray-800 transition-colors">
-                        {announcement.content}
-                      </p>
-                    </motion.div>
-                  ))}
+                        </motion.div>
+                        
+                        {/* Collapsed Preview */}
+                        {!isExpanded && (
+                          <p className="text-sm md:text-base text-gray-700 leading-relaxed line-clamp-2 md:line-clamp-3 group-hover:text-gray-800 transition-colors">
+                            {announcement.content}
+                          </p>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
                 {announcements.length > 3 && (
                   <div className="mt-8 text-center">
                     <button
-                      onClick={() => setSelectedAnnouncement({ viewAll: true })}
+                      onClick={() => router.push('/announcements')}
                       className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-4 rounded-xl font-semibold hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                     >
                       <span>View All Announcements ({announcements.length})</span>
@@ -374,21 +439,6 @@ export default function DashboardPage() {
           }}
         />
 
-        {/* 4. ANNOUNCEMENT DETAIL MODAL */}
-        {selectedAnnouncement && !selectedAnnouncement.viewAll && (
-          <AnnouncementModal
-            announcement={selectedAnnouncement}
-            onClose={() => setSelectedAnnouncement(null)}
-          />
-        )}
-
-        {/* 5. ALL ANNOUNCEMENTS MODAL */}
-        {selectedAnnouncement && selectedAnnouncement.viewAll && (
-          <AllAnnouncementsModal
-            announcements={announcements}
-            onClose={() => setSelectedAnnouncement(null)}
-          />
-        )}
 
         {/* 6. ACCOUNT ACTIVITY MODAL */}
         <AccountActivityModal
@@ -400,168 +450,6 @@ export default function DashboardPage() {
           }}
         />
       </div>
-    </motion.div>
-  );
-}
-
-// Announcement Detail Modal Component
-function AnnouncementModal({ announcement, onClose }) {
-  return (
-    <motion.div
-      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border border-gray-100"
-        initial={{ scale: 0.9, opacity: 0, y: 50 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 50 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
-        {/* Header */}
-        <div className="p-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-lg">
-                <Megaphone className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">{announcement.title}</h2>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="w-4 h-4" />
-                  <span>Posted by {announcement.postedBy} on {new Date(announcement.createdAt).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-3 hover:bg-white hover:bg-opacity-80 rounded-full transition-all duration-200 group"
-            >
-              <XCircle className="w-6 h-6 text-gray-400 group-hover:text-gray-600" />
-            </button>
-          </div>
-        </div>
-        
-        {/* Content */}
-        <div className="p-8 overflow-y-auto max-h-[60vh]">
-          <motion.div
-            className="prose max-w-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
-                {announcement.content}
-              </p>
-            </div>
-          </motion.div>
-        </div>
-        
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50">
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-4 py-2 rounded-lg font-medium text-sm hover:shadow-lg transition-all duration-300"
-            >
-              Got it!
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// All Announcements Modal Component
-function AllAnnouncementsModal({ announcements, onClose }) {
-  return (
-    <motion.div
-      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden border border-gray-100"
-        initial={{ scale: 0.9, opacity: 0, y: 50 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 50 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-      >
-        {/* Header */}
-        <div className="p-8 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-lg">
-                <Megaphone className="w-6 h-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">All Announcements</h2>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>{announcements.length} announcements total</span>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-3 hover:bg-white hover:bg-opacity-80 rounded-full transition-all duration-200 group"
-            >
-              <XCircle className="w-6 h-6 text-gray-400 group-hover:text-gray-600" />
-            </button>
-          </div>
-        </div>
-        
-        {/* Content */}
-        <div className="p-8 overflow-y-auto max-h-[70vh]">
-          <div className="space-y-8">
-            {announcements.map((announcement, index) => (
-              <motion.div
-                key={announcement.announcementId}
-                className="p-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 hover:shadow-lg transition-all duration-300"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 * index }}
-              >
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-md flex-shrink-0">
-                    <Megaphone className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900 text-xl mb-2">{announcement.title}</h4>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                      <Calendar className="w-4 h-4" />
-                      <span>Posted by {announcement.postedBy} on {new Date(announcement.createdAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl p-6 border border-blue-200">
-                  <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
-                    {announcement.content}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-100 bg-gray-50">
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </motion.div>
     </motion.div>
   );
 }

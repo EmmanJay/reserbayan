@@ -1,49 +1,40 @@
-package com.cagasi.reserbayan.entity;
+package com.cagasi.reserbayan.dto;
 
-import jakarta.persistence.*;
+import com.cagasi.reserbayan.entity.Announcement;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "announcements")
-public class Announcement {
+public class AnnouncementDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long announcementId;
-
-    @Column(nullable = false)
     private String title;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    @Column(nullable = false)
     private String postedBy;
-
-    private LocalDateTime createdAt = LocalDateTime.now();
-
+    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    @Column(nullable = false)
-    private Boolean isActive = true;
-
+    private Boolean isActive;
     private LocalDateTime startDate;
-
     private LocalDateTime endDate;
+    private Announcement.Priority priority;
+    private Boolean isVisible;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Priority priority = Priority.MEDIUM;
-
-    @Column(nullable = false)
-    private Boolean isVisible = true;
-
-    public enum Priority {
-        LOW, MEDIUM, HIGH, URGENT
+    public AnnouncementDTO() {
     }
 
-    // --- Getters and Setters ---
+    public AnnouncementDTO(Announcement announcement) {
+        this.announcementId = announcement.getAnnouncementId();
+        this.title = announcement.getTitle();
+        this.content = announcement.getContent();
+        this.postedBy = announcement.getPostedBy();
+        this.createdAt = announcement.getCreatedAt();
+        this.updatedAt = announcement.getUpdatedAt();
+        this.isActive = announcement.getIsActive();
+        this.startDate = announcement.getStartDate();
+        this.endDate = announcement.getEndDate();
+        this.priority = announcement.getPriority();
+        this.isVisible = announcement.getIsVisible();
+    }
 
+    // Getters and Setters
     public Long getAnnouncementId() {
         return announcementId;
     }
@@ -116,11 +107,11 @@ public class Announcement {
         this.endDate = endDate;
     }
 
-    public Priority getPriority() {
+    public Announcement.Priority getPriority() {
         return priority;
     }
 
-    public void setPriority(Priority priority) {
+    public void setPriority(Announcement.Priority priority) {
         this.priority = priority;
     }
 
