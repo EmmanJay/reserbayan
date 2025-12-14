@@ -114,22 +114,6 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/resubmit")
-    public ResponseEntity<?> resubmitApplication(@ModelAttribute RegisterRequest registerRequest) throws IOException {
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            Resident resubmittedResident = authService.resubmitApplication(registerRequest);
-            response.put("success", true);
-            response.put("user", resubmittedResident);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "Resubmission failed: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
     // Keep LoginRequest inner class if you prefer, or move to DTO package
     public static class LoginRequest {
         private String identifier;

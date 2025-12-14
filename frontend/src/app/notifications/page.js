@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Bell, CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { Bell, CheckCircle, XCircle, AlertCircle, X, Circle, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 
@@ -23,7 +23,7 @@ export default function NotificationsPage() {
     if (!token || !user?.residentId) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/api/notifications/resident/${user.residentId}/unread`, {
+      const res = await fetch(`http://localhost:8080/api/notifications/resident/${user.residentId}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       if (res.ok) {
@@ -46,8 +46,10 @@ export default function NotificationsPage() {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      // Remove the notification from the list
-      setNotifications(notifications.filter(n => n.notificationId !== notificationId));
+      // Update the notification status in the local state
+      setNotifications(notifications.map(n => 
+        n.notificationId === notificationId ? { ...n, isRead: true } : n
+      ));
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
@@ -58,21 +60,43 @@ export default function NotificationsPage() {
       case 'REQUEST_APPROVED':
         return <CheckCircle className="w-6 h-6 text-green-500" />;
       case 'REQUEST_REJECTED':
+      case 'ACCOUNT_REJECTED':
         return <XCircle className="w-6 h-6 text-red-500" />;
       default:
         return <AlertCircle className="w-6 h-6 text-blue-500" />;
     }
   };
 
-  const getNotificationColor = (type) => {
+  const getNotificationColor = (type, isRead) => {
+    let baseColors = '';
     switch (type) {
       case 'REQUEST_APPROVED':
-        return 'border-green-200 bg-green-50';
+        baseColors = isRead ? 'border-green-100 bg-green-25' : 'border-green-200 bg-green-50';
+        break;
       case 'REQUEST_REJECTED':
-        return 'border-red-200 bg-red-50';
+      case 'ACCOUNT_REJECTED':
+        baseColors = isRead ? 'border-red-100 bg-red-25' : 'border-red-200 bg-red-50';
+        break;
       default:
-        return 'border-blue-200 bg-blue-50';
+        baseColors = isRead ? 'border-blue-100 bg-blue-25' : 'border-blue-200 bg-blue-50';
     }
+    return baseColors;
+  };
+
+  const getReadStatusIndicator = (isRead) => {
+    return isRead ? (
+      <Circle className="w-3 h-3 text-gray-400 fill-gray-400" />
+    ) : (
+      <Circle className="w-3 h-3 text-blue-500 fill-blue-500" />
+    );
+  };
+
+  const getTextOpacity = (isRead) => {
+    return isRead ? 'text-gray-600' : 'text-gray-900';
+  };
+
+  const isRejectionNotification = (type) => {
+    return type === 'REQUEST_REJECTED' || type === 'ACCOUNT_REJECTED';
   };
 
   if (loading) {
@@ -111,36 +135,62 @@ export default function NotificationsPage() {
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
           >
             <Bell className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No New Notifications</h3>
-            <p className="text-gray-500">You dont have any notifications at the moment.</p>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Notifications</h3>
+            <p className="text-gray-500">You don't have any notifications at the moment.</p>
           </motion.div>
         ) : (
           <div className="space-y-4">
             {notifications.map((notification, index) => (
               <motion.div
                 key={notification.notificationId}
-                className={`bg-white rounded-xl shadow-md p-6 border-l-4 ${getNotificationColor(notification.type)} border-l-8 relative`}
+                className={`bg-white rounded-xl shadow-md p-6 border-l-4 ${getNotificationColor(notification.type, notification.isRead)} border-l-8 relative`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 * index, ease: "easeOut" }}
               >
-                <button
-                  onClick={() => markAsRead(notification.notificationId)}
-                  className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                  title="Mark as read"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <div className="flex items-start gap-4 pr-8">
+                <div className="absolute top-4 right-4 flex items-center gap-2">
+                  {getReadStatusIndicator(notification.isRead)}
+                  {!notification.isRead && (
+                    <button
+                      onClick={() => markAsRead(notification.notificationId)}
+                      className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                      title="Mark as read"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-start gap-4 pr-12">
                   <div className="flex-shrink-0">
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 mb-1">{notification.title}</h3>
-                    <p className="text-gray-700 mb-2">{notification.message}</p>
-                    <p className="text-sm text-gray-500">
+                    <h3 className={`font-semibold mb-1 ${getTextOpacity(notification.isRead)}`}>
+                      {notification.title}
+                    </h3>
+                    <p className={`mb-2 ${getTextOpacity(notification.isRead)}`}>
+                      {notification.message}
+                    </p>
+                    
+                    {/* Show rejection reason if available */}
+                    {isRejectionNotification(notification.type) && notification.additionalData && (
+                      <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                        <h4 className="text-sm font-medium text-red-900 mb-1 flex items-center gap-1">
+                          <AlertTriangle className="w-4 h-4" />
+                          Reason for Rejection:
+                        </h4>
+                        <p className="text-sm text-red-800">{notification.additionalData}</p>
+                      </div>
+                    )}
+                    
+                    <p className="text-sm text-gray-500 mt-3">
                       {new Date(notification.createdAt).toLocaleString('en-US')}
                     </p>
+                    {!notification.isRead && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
+                        New
+                      </span>
+                    )}
                   </div>
                 </div>
               </motion.div>

@@ -34,6 +34,7 @@ import com.cagasi.reserbayan.repository.DocumentTypeRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 import com.cagasi.reserbayan.repository.StatusLogRepository;
 import com.cagasi.reserbayan.service.AnnouncementService;
+import com.cagasi.reserbayan.service.NotificationService;
 
 @RestController
 @RequestMapping("/api/superadmin")
@@ -59,6 +60,9 @@ public class SuperAdminController {
 
     @Autowired
     private AnnouncementService announcementService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // Summary & Analytics
     @GetMapping("/summary")
@@ -112,6 +116,7 @@ public class SuperAdminController {
             requestMap.put("documentName", req.getDocumentName());
             requestMap.put("details", req.getDetails());
             requestMap.put("status", req.getStatus());
+            requestMap.put("rejectionReason", req.getRejectionReason());
             requestMap.put("submittedAt", req.getSubmittedAt());
             requestMap.put("updatedAt", req.getUpdatedAt());
 
@@ -162,6 +167,7 @@ public class SuperAdminController {
             requestMap.put("documentName", req.getDocumentName());
             requestMap.put("details", req.getDetails());
             requestMap.put("status", req.getStatus());
+            requestMap.put("rejectionReason", req.getRejectionReason());
             requestMap.put("submittedAt", req.getSubmittedAt());
             requestMap.put("updatedAt", req.getUpdatedAt());
 
@@ -201,6 +207,7 @@ public class SuperAdminController {
         requestMap.put("documentName", request.getDocumentName());
         requestMap.put("details", request.getDetails());
         requestMap.put("status", request.getStatus());
+        requestMap.put("rejectionReason", request.getRejectionReason());
         requestMap.put("submittedAt", request.getSubmittedAt());
         requestMap.put("updatedAt", request.getUpdatedAt());
 
@@ -230,36 +237,59 @@ public class SuperAdminController {
         }
         request.setStatus("Approved");
         request.setUpdatedAt(java.time.LocalDateTime.now());
-        documentRequestRepository.save(request);
+        DocumentRequest savedRequest = documentRequestRepository.save(request);
 
         // Log the status change
         StatusLog statusLog = new StatusLog();
-        statusLog.setDocumentRequest(request);
+        statusLog.setDocumentRequest(savedRequest);
         statusLog.setStatus("Approved");
         statusLog.setTimestamp(java.time.LocalDateTime.now());
         statusLogRepository.save(statusLog);
 
-        return ResponseEntity.ok(request);
+        // Create notification for the resident
+        notificationService.createNotification(
+                request.getResident(),
+                "Document Request Approved",
+                "Your request for '" + request.getDocumentName() + "' has been approved.",
+                "REQUEST_APPROVED");
+
+        return ResponseEntity.ok(savedRequest);
     }
 
     @PutMapping("/requests/{id}/reject")
-    public ResponseEntity<?> rejectDocumentRequest(@PathVariable Long id) {
+    public ResponseEntity<?> rejectDocumentRequest(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
         DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
         if (request == null || !request.getStatus().equals("Pending")) {
             return ResponseEntity.notFound().build();
         }
+        
+        String rejectionReason = requestBody.get("rejectionReason");
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Rejection reason is required"));
+        }
+        
         request.setStatus("Rejected");
+        request.setRejectionReason(rejectionReason);
         request.setUpdatedAt(java.time.LocalDateTime.now());
-        documentRequestRepository.save(request);
+        DocumentRequest savedRequest = documentRequestRepository.save(request);
 
         // Log the status change
         StatusLog statusLog = new StatusLog();
-        statusLog.setDocumentRequest(request);
+        statusLog.setDocumentRequest(savedRequest);
         statusLog.setStatus("Rejected");
         statusLog.setTimestamp(java.time.LocalDateTime.now());
         statusLogRepository.save(statusLog);
 
-        return ResponseEntity.ok(request);
+        // Create notification for the resident with rejection reason
+        String notificationMessage = "Your request for '" + request.getDocumentName() + "' has been rejected.";
+        notificationService.createNotification(
+                request.getResident(),
+                "Document Request Rejected",
+                notificationMessage,
+                "REQUEST_REJECTED",
+                rejectionReason);
+
+        return ResponseEntity.ok(savedRequest);
     }
 
     // Resident Management
@@ -344,13 +374,30 @@ public class SuperAdminController {
     }
 
     @PutMapping("/resident-requests/{id}/reject")
-    public ResponseEntity<?> rejectResidentRequest(@PathVariable Long id) {
+    public ResponseEntity<?> rejectResidentRequest(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
         Resident resident = residentRepository.findById(id).orElse(null);
         if (resident == null || resident.getStatus() != ResidentStatus.PENDING) {
             return ResponseEntity.notFound().build();
         }
+        
+        String rejectionReason = requestBody.get("rejectionReason");
+        if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Rejection reason is required"));
+        }
+        
         resident.setStatus(ResidentStatus.REJECTED);
+        resident.setRejectionReason(rejectionReason);
         residentRepository.save(resident);
+        
+        // Create notification for the resident with rejection reason
+        String notificationMessage = "Your account registration has been rejected.";
+        notificationService.createNotification(
+                resident,
+                "Account Registration Rejected",
+                notificationMessage,
+                "ACCOUNT_REJECTED",
+                rejectionReason);
+        
         return ResponseEntity.ok(resident);
     }
 

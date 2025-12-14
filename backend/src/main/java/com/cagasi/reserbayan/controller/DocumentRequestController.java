@@ -32,6 +32,8 @@ import com.cagasi.reserbayan.repository.ResidentRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import com.cagasi.reserbayan.service.NotificationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/document-requests")
@@ -106,6 +108,12 @@ public class DocumentRequestController {
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            if (resident.getStatus() == ResidentStatus.REJECTED) {
+                return ResponseEntity.badRequest()
+                        .body("Your account registration has been rejected. Please contact support or reapply with updated information.");
+            } else if (resident.getStatus() == ResidentStatus.PENDING) {
+                return ResponseEntity.badRequest()
+                        .body("Your account has not been confirmed yet. Please wait for approval.");
             }
 
             Optional<DocumentRequest> requestOpt = documentRequestRepository.findById(id);

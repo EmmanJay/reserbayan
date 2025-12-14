@@ -16,11 +16,16 @@ public class NotificationService {
     private NotificationRepository notificationRepository;
 
     public Notification createNotification(Resident resident, String title, String message, String type) {
+        return createNotification(resident, title, message, type, null);
+    }
+
+    public Notification createNotification(Resident resident, String title, String message, String type, String additionalData) {
         Notification notification = new Notification();
         notification.setResident(resident);
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setType(type);
+        notification.setAdditionalData(additionalData);
         return notificationRepository.save(notification);
     }
 

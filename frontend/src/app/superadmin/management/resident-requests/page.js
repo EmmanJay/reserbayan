@@ -460,26 +460,8 @@ export default function ViewAllResidentRequestsPage() {
 
               <div className="flex gap-3 mt-6">
                 <button
-                  onClick={() => {
-                    handleAccept(viewInfoModal);
-                    setViewInfoModal(null);
-                  }}
-                  className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => {
-                    handleReject(viewInfoModal);
-                    setViewInfoModal(null);
-                  }}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Reject
-                </button>
-                <button
                   onClick={() => setViewInfoModal(null)}
-                  className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
                   Close
                 </button>
