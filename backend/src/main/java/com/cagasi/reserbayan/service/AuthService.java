@@ -111,7 +111,7 @@ public class AuthService {
 
         // 4. Handle File Upload
         if (validId != null && !validId.isEmpty()) {
-            String uploadDir = "uploads/resident/";
+            String uploadDir = System.getProperty("user.dir") + "/uploads/resident/";
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -119,7 +119,8 @@ public class AuthService {
             String fileName = UUID.randomUUID().toString() + "_" + validId.getOriginalFilename();
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(validId.getInputStream(), filePath);
-            resident.setValidIdPath(filePath.toString());
+            // Store relative path for web access, not absolute path
+            resident.setValidIdPath("uploads/resident/" + fileName);
         }
 
         return residentRepository.save(resident);
@@ -142,8 +143,8 @@ public class AuthService {
         Resident resident = residentRepository.findByResidentEmail(email).orElse(null);
         if (resident != null
                 && (resident.getStatus() == ResidentStatus.APPROVED
-                    || resident.getStatus() == ResidentStatus.PENDING
-                    || resident.getStatus() == ResidentStatus.REJECTED)
+                        || resident.getStatus() == ResidentStatus.PENDING
+                        || resident.getStatus() == ResidentStatus.REJECTED)
                 && passwordEncoder.matches(password, resident.getPassword())) {
             return resident;
         }

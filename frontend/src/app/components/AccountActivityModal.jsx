@@ -198,6 +198,31 @@ export default function AccountActivityModal({ isOpen, onClose, user, onResubmit
               body: formData,
             });
 
+            // Check if response is ok
+            if (!response.ok) {
+              let errorMessage = 'Failed to resubmit application. Please try again.';
+              try {
+                // Try to get error details
+                const responseText = await response.text();
+                if (responseText) {
+                  try {
+                    const errorData = JSON.parse(responseText);
+                    if (errorData.message) {
+                      errorMessage = errorData.message;
+                    }
+                  } catch (jsonError) {
+                    // If not JSON, use the text directly
+                    errorMessage = responseText;
+                  }
+                }
+              } catch (parseError) {
+                console.warn('Could not parse error response:', parseError);
+              }
+              alert(errorMessage);
+              return;
+            }
+
+            // Parse successful response
             const data = await response.json();
 
             if (data.success) {
@@ -209,11 +234,11 @@ export default function AccountActivityModal({ isOpen, onClose, user, onResubmit
               setShowEditModal(false);
               onClose();
             } else {
-              alert('Failed to resubmit application. Please try again.');
+              alert(data.message || 'Failed to resubmit application. Please try again.');
             }
           } catch (error) {
             console.error('Error resubmitting:', error);
-            alert('Error resubmitting application. Please try again.');
+            alert('Network error: Please check your connection and try again.');
           }
         }}
       />
