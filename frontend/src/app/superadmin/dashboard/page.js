@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsModal';
 import RequestDetailsModal from '@/app/components/RequestDetailsModal';
+import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 
 export default function SuperAdminDashboard() {
   const router = useRouter();
@@ -43,6 +44,11 @@ export default function SuperAdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [requestDetails, setRequestDetails] = useState(null);
   const [requestModalLoading, setRequestModalLoading] = useState(false);
+
+  // Modal state for rejection reason
+  const [isRejectionModalOpen, setIsRejectionModalOpen] = useState(false);
+  const [rejectionItem, setRejectionItem] = useState(null);
+  const [rejectionType, setRejectionType] = useState(null); // 'request' or 'account'
 
   // Announcement states
   const [announcements, setAnnouncements] = useState([]);
@@ -370,37 +376,12 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Enhanced function to handle account rejection
-  const handleRejectAccount = async (accountId) => {
-    try {
-      setActionLoadingState('reject', accountId, true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/resident-requests/${accountId}/reject`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        // Close modal and refresh data
-        setIsModalOpen(false);
-        setSelectedAccount(null);
-        setAccountDetails(null);
-        fetchDashboardData();
-        showNotification('Account rejected successfully!', 'success');
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to reject account:', errorData.message || response.statusText);
-        showNotification(errorData.message || 'Failed to reject account. Please try again.', 'error');
-      }
-    } catch (error) {
-      console.error('Error rejecting account:', error);
-      showNotification('Error connecting to server. Please check your internet connection.', 'error');
-    } finally {
-      setActionLoadingState('reject', accountId, false);
-    }
+  // Function to handle account rejection - open rejection modal
+  const handleRejectAccount = (accountId) => {
+    const account = pendingAccounts.find(acc => acc.id === accountId);
+    setRejectionItem(account);
+    setRejectionType('account');
+    setIsRejectionModalOpen(true);
   };
 
   // Function to close modal
@@ -415,6 +396,13 @@ export default function SuperAdminDashboard() {
     setIsRequestModalOpen(false);
     setSelectedRequest(null);
     setRequestDetails(null);
+  };
+
+  // Function to close rejection modal
+  const handleCloseRejectionModal = () => {
+    setIsRejectionModalOpen(false);
+    setRejectionItem(null);
+    setRejectionType(null);
   };
 
   // Function to handle request approval
@@ -447,33 +435,65 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Function to handle request rejection
-  const handleRejectRequest = async (requestId) => {
+  // Function to handle request rejection - open rejection modal
+  const handleRejectRequest = (requestId) => {
+    const request = recentDocRequests.find(req => req.id === requestId);
+    setRejectionItem(request);
+    setRejectionType('request');
+    setIsRejectionModalOpen(true);
+  };
+
+  // Function to handle actual rejection with reason
+  const handleRejectWithReason = async (reason) => {
+    if (!rejectionItem || !rejectionType) return;
+
     try {
+      setActionLoadingState('reject', rejectionItem.id, true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/requests/${requestId}/reject`, {
+      
+      let apiEndpoint;
+      let requestBody;
+
+      if (rejectionType === 'request') {
+        apiEndpoint = `${API_BASE}/requests/${rejectionItem.id}/reject`;
+        requestBody = { rejectionReason: reason };
+      } else if (rejectionType === 'account') {
+        apiEndpoint = `${API_BASE}/resident-requests/${rejectionItem.id}/reject`;
+        requestBody = { rejectionReason: reason };
+      }
+
+      const response = await fetch(apiEndpoint, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify(requestBody)
       });
 
       if (response.ok) {
-        // Close modal and refresh data
+        // Close all modals and refresh data
         setIsRequestModalOpen(false);
+        setIsModalOpen(false);
         setSelectedRequest(null);
+        setSelectedAccount(null);
         setRequestDetails(null);
+        setAccountDetails(null);
+        setIsRejectionModalOpen(false);
+        setRejectionItem(null);
+        setRejectionType(null);
         fetchDashboardData();
-        showNotification('Request rejected successfully!', 'success');
+        showNotification(`${rejectionType === 'request' ? 'Request' : 'Account'} rejected successfully!`, 'success');
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to reject request:', errorData.message || response.statusText);
-        showNotification(errorData.message || 'Failed to reject request. Please try again.', 'error');
+        console.error('Failed to reject item:', errorData.message || response.statusText);
+        showNotification(errorData.message || `Failed to reject ${rejectionType}. Please try again.`, 'error');
       }
     } catch (error) {
-      console.error('Error rejecting request:', error);
+      console.error('Error rejecting item:', error);
       showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    } finally {
+      setActionLoadingState('reject', rejectionItem.id, false);
     }
   };
 
@@ -831,6 +851,16 @@ export default function SuperAdminDashboard() {
         loading={requestModalLoading}
         onApprove={handleApproveRequest}
         onReject={handleRejectRequest}
+      />
+
+      {/* Rejection Reason Modal */}
+      <RejectionReasonModal
+        isOpen={isRejectionModalOpen}
+        onClose={handleCloseRejectionModal}
+        onSubmit={handleRejectWithReason}
+        title={`Reject ${rejectionType === 'request' ? 'Document Request' : 'Account Registration'}`}
+        itemName={rejectionType === 'request' ? rejectionItem?.documentName : rejectionItem?.name}
+        loading={actionLoading.reject && actionLoading.accountId === rejectionItem?.id}
       />
     </div>
   );
