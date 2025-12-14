@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
@@ -12,10 +12,19 @@ import Link from 'next/link';
 
 export default function SuperAdminManagementPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('administrators');
+  
+  // Get tab from URL parameters, default to 'administrators'
+  const getInitialTab = () => {
+    const tabParam = searchParams.get('tab');
+    const validTabs = ['administrators', 'residents', 'resident-requests', 'document-requests'];
+    return validTabs.includes(tabParam) ? tabParam : 'administrators';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [data, setData] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +81,15 @@ export default function SuperAdminManagementPage() {
       document.removeEventListener('click', handleClickOutside);
     };
   }, [openDropdownId]);
+
+  // Handle URL parameter changes for tab selection
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    const validTabs = ['administrators', 'residents', 'resident-requests', 'document-requests'];
+    if (validTabs.includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
 
   const fetchData = async (tab) => {
     setLoadingData(true);
