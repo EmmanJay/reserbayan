@@ -54,6 +54,7 @@ export default function SignUpContainer({ onClose }) {
   const [phoneError, setPhoneError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [notificationModal, setNotificationModal] = useState(null);
+  const [fileError, setFileError] = useState('');
 
   // --- STYLES ---
   const inputHeight = `h-12`; 
@@ -164,6 +165,10 @@ export default function SignUpContainer({ onClose }) {
         setNotificationModal({ type: 'warning', title: 'Invalid Phone Number', message: 'Please enter a valid Philippine mobile number (e.g., 0917xxxxxxx).' });
         setLoading(false); return;
       }
+      if (fileError) {
+        setNotificationModal({ type: 'warning', title: 'Invalid File', message: fileError });
+        setLoading(false); return;
+      }
 
       const formData = new FormData();
       formData.append('userType', 'user');
@@ -209,7 +214,32 @@ export default function SignUpContainer({ onClose }) {
   };
 
   const handleFileChange = (e) => {
-    setEmploymentFile(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      const fileType = file.type.toLowerCase();
+      
+      if (!allowedTypes.includes(fileType)) {
+        setFileError('Invalid file type. Only PNG, JPG, and JPEG files are allowed.');
+        setEmploymentFile(null);
+        // Clear the input
+        e.target.value = '';
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setFileError('File size too large. Maximum size is 5MB.');
+        setEmploymentFile(null);
+        e.target.value = '';
+        return;
+      }
+      
+      setFileError('');
+      setEmploymentFile(file);
+    }
   };
 
   useEffect(() => {
@@ -506,9 +536,10 @@ export default function SignUpContainer({ onClose }) {
               <FileText className="w-5 h-5" /> Valid ID Document {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
             <div className="relative">
-              <input id="file-upload" type="file" accept="image/*,application/pdf" onChange={handleFileChange} required className={`border border-gray-300 rounded-lg p-2.5 w-full text-base file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#004AAD] file:text-white hover:file:bg-[#003A88] transition-colors ${inputHeight}`} />
+              <input id="file-upload" type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFileChange} required className={`border border-gray-300 rounded-lg p-2.5 w-full text-base file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#004AAD] file:text-white hover:file:bg-[#003A88] transition-colors ${inputHeight}`} />
             </div>
-            <p className={`text-sm ml-1 text-gray-500 mt-2`}>Upload a valid government-issued ID (PNG, JPG, or PDF)</p>
+            <p className={`text-sm ml-1 text-gray-500 mt-2`}>Upload a valid government-issued ID (PNG, JPG, JPEG only)</p>
+            {fileError && (<p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-100">{fileError}</p>)}
           </div>
 
           <div className="pt-8">

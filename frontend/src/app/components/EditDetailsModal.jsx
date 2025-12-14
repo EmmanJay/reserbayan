@@ -21,6 +21,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentFileUrl, setCurrentFileUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [fileError, setFileError] = useState('');
 
   useEffect(() => {
     if (resident && isOpen) {
@@ -55,6 +56,28 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      const fileType = file.type.toLowerCase();
+      
+      if (!allowedTypes.includes(fileType)) {
+        setFileError('Invalid file type. Only PNG, JPG, and JPEG files are allowed.');
+        setSelectedFile(null);
+        // Clear the input
+        e.target.value = '';
+        return;
+      }
+      
+      // Check file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setFileError('File size too large. Maximum size is 5MB.');
+        setSelectedFile(null);
+        e.target.value = '';
+        return;
+      }
+      
+      setFileError('');
       setSelectedFile(file);
     }
   };
@@ -62,6 +85,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
   const removeFile = () => {
     setSelectedFile(null);
     setCurrentFileUrl('');
+    setFileError('');
   };
 
   const handleSubmit = async (e) => {
@@ -335,7 +359,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                             <input
                               type="file"
                               id="file-upload"
-                              accept="image/*,application/pdf"
+                              accept="image/png,image/jpeg,image/jpg"
                               onChange={handleFileChange}
                               className="hidden"
                             />
@@ -345,7 +369,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                             >
                               <Upload className="w-8 h-8" />
                               <span className="text-sm font-medium">Click to upload new file</span>
-                              <span className="text-xs text-gray-400">Supported: Images, PDF</span>
+                              <span className="text-xs text-gray-400">Supported: PNG, JPG, JPEG only</span>
                             </label>
                           </div>
                         </div>
