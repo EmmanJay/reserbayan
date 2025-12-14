@@ -48,18 +48,18 @@ export default function PendingAccountDetailsModal({
     return `http://localhost:8080/uploads/resident/${path}`;
   };
 
-  // Utility function to check if file is a PDF
+  // Utility function to check if file is an image (PNG, JPG, JPEG only)
+  const isImageFile = (path) => {
+    if (!path) return false;
+    const extension = path.toLowerCase().split('.').pop();
+    return ['jpg', 'jpeg', 'png'].includes(extension);
+  };
+  
+  // Utility function to check if file is a PDF (no longer accepted)
   const isPdfFile = (path) => {
     if (!path) return false;
     const extension = path.toLowerCase().split('.').pop();
     return extension === 'pdf';
-  };
-
-  // Utility function to check if file is an image
-  const isImageFile = (path) => {
-    if (!path) return false;
-    const extension = path.toLowerCase().split('.').pop();
-    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(extension);
   };
 
   if (!isOpen || !accountDetails) return null;
@@ -288,41 +288,41 @@ export default function PendingAccountDetailsModal({
                       </h4>
                       <div className="space-y-4">
                         {isPdfFile(validIdPath) ? (
-                          // PDF Document Display
-                          <div className="border border-slate-200 rounded-lg overflow-hidden">
+                          // PDF Document Display (no longer accepted)
+                          <div className="border border-red-200 rounded-lg overflow-hidden">
                             <div className="bg-red-50 border-b border-red-200 p-4 text-center">
                               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
                                 <User className="w-8 h-8 text-red-600" />
                               </div>
-                              <h5 className="text-sm font-semibold text-red-800">PDF Document</h5>
-                              <p className="text-xs text-red-600 mt-1">Valid ID uploaded as PDF file</p>
+                              <h5 className="text-sm font-semibold text-red-800">Unsupported PDF Document</h5>
+                              <p className="text-xs text-red-600 mt-1">PDF files are no longer accepted for valid ID</p>
                             </div>
                             <div className="p-4 bg-slate-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <Eye className="w-4 h-4 text-slate-600" />
                                   <span className="text-sm text-slate-700 font-medium">
-                                    PDF Document - Click to view
+                                    Legacy PDF Document - For Archive Only
                                   </span>
                                 </div>
                                 <button
                                   onClick={handleImageClick}
-                                  className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors"
+                                  className="px-3 py-1 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors"
                                 >
-                                  View PDF
+                                  View Legacy PDF
                                 </button>
                               </div>
                               <p className="text-xs text-slate-500 mt-2">
-                                PDF documents require special handling. Click "View PDF" to open in a secure viewer.
+                                PDF documents are no longer accepted. Please ask resident to resubmit with image file (PNG, JPG, JPEG).
                               </p>
                             </div>
                           </div>
                         ) : isImageFile(validIdPath) ? (
-                          // Image Document Display
+                          // Image Document Display (PNG, JPG, JPEG only)
                           <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-300 transition-colors" onClick={handleImageClick}>
                             <img
                               src={buildImageUrl(validIdPath)}
-                              alt="Valid ID Document"
+                              alt="Valid ID Document - Image File"
                               className="w-full h-auto max-h-96 object-contain bg-slate-50 hover:opacity-90 transition-opacity"
                               onError={(e) => {
                                 console.error('Failed to load valid ID image:', validIdPath);
@@ -381,7 +381,7 @@ export default function PendingAccountDetailsModal({
                             onClick={handleImageClick}
                             className="px-3 py-1 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 transition-colors"
                           >
-                            {isPdfFile(validIdPath) ? 'View PDF' : 'View Full Size'}
+                            {isPdfFile(validIdPath) ? 'View Legacy PDF' : 'View Full Size'}
                           </button>
                         </div>
                         <p className="text-xs text-slate-500 text-center">
@@ -545,26 +545,21 @@ export default function PendingAccountDetailsModal({
                   const validIdPath = getValidIdPath(accountDetails);
                   
                   if (isPdfFile(validIdPath)) {
-                    // PDF Display using iframe
+                    // PDF Display using iframe (no longer accepted)
                     return (
                       <div className="w-full h-[70vh]">
-                        <iframe
-                          src={buildImageUrl(validIdPath)}
-                          className="w-full h-full border border-slate-200 rounded-lg"
-                          title="Valid ID Document - PDF"
-                        >
-                          <p className="p-4 text-center text-slate-600">
-                            Your browser does not support PDFs. 
-                            <a 
-                              href={buildImageUrl(validIdPath)} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 underline ml-1"
-                            >
-                              Download the PDF
-                            </a>
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-6 h-full flex flex-col justify-center items-center text-center">
+                          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <User className="w-8 h-8 text-red-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-red-800 mb-2">Legacy PDF Document</h3>
+                          <p className="text-sm text-red-600 mb-4">
+                            PDF files are no longer accepted for valid ID verification.
                           </p>
-                        </iframe>
+                          <p className="text-xs text-red-500">
+                            Please ask the resident to resubmit with an image file (PNG, JPG, or JPEG).
+                          </p>
+                        </div>
                       </div>
                     );
                   } else {

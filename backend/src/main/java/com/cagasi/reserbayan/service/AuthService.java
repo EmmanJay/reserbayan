@@ -111,6 +111,14 @@ public class AuthService {
 
         // 4. Handle File Upload
         if (validId != null && !validId.isEmpty()) {
+            // Validate file type - only accept image files (png, jpg, jpeg)
+            String contentType = validId.getContentType();
+            if (contentType == null || (!contentType.equals("image/jpeg") &&
+                    !contentType.equals("image/jpg") && !contentType.equals("image/png"))) {
+                throw new RuntimeException(
+                        "Invalid file type. Only image files (PNG, JPG, JPEG) are allowed for valid ID.");
+            }
+
             String uploadDir = System.getProperty("user.dir") + "/uploads/resident/";
             Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {

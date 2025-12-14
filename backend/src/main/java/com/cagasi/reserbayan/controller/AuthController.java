@@ -171,11 +171,9 @@ public class AuthController {
             if (registerRequest.getValidId() != null && !registerRequest.getValidId().isEmpty()) {
                 MultipartFile validIdFile = registerRequest.getValidId();
 
-                // Validate file type
+                // Validate file type - only accept image files (png, jpg, jpeg)
                 String contentType = validIdFile.getContentType();
-                if (contentType != null && (contentType.equals("application/pdf") ||
-                        contentType.startsWith("image/") ||
-                        contentType.equals("image/jpeg") ||
+                if (contentType != null && (contentType.equals("image/jpeg") ||
                         contentType.equals("image/jpg") ||
                         contentType.equals("image/png"))) {
                     try {
@@ -213,7 +211,7 @@ public class AuthController {
                     }
                 } else {
                     response.put("success", false);
-                    response.put("message", "Invalid file type. Only PDF and image files are allowed.");
+                    response.put("message", "Invalid file type. Only image files (PNG, JPG, JPEG) are allowed.");
                     return ResponseEntity.badRequest().body(response);
                 }
             }
