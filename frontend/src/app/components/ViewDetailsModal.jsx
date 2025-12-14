@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Users, Mail, Phone, MapPin, Calendar, FileText, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-export default function ViewDetailsModal({ isOpen, onClose, resident, documentRequest, title = "Details", showActions = false }) {
+export default function ViewDetailsModal({ isOpen, onClose, resident, documentRequest, title = "Details", showActions = false, onApprove, onReject }) {
    const [showPassword, setShowPassword] = useState(false);
    const [expandedImage, setExpandedImage] = useState(null);
    const [expandedAttachment, setExpandedAttachment] = useState(null);
@@ -310,11 +310,13 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
             {showActions && (
               <div className="flex gap-3">
                 <button
+                  onClick={onReject}
                   className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
                 >
                   Reject
                 </button>
                 <button
+                  onClick={onApprove}
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
                 >
                   Approve
