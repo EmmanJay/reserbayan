@@ -26,6 +26,7 @@ import com.cagasi.reserbayan.dto.DocumentRequestUpdateDTO;
 import com.cagasi.reserbayan.entity.DocumentRequest;
 import com.cagasi.reserbayan.entity.RequestAttachment;
 import com.cagasi.reserbayan.entity.Resident;
+import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.DocumentRequestRepository;
 import com.cagasi.reserbayan.repository.RequestAttachmentRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
@@ -108,12 +109,6 @@ public class DocumentRequestController {
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            if (resident.getStatus() == ResidentStatus.REJECTED) {
-                return ResponseEntity.badRequest()
-                        .body("Your account registration has been rejected. Please contact support or reapply with updated information.");
-            } else if (resident.getStatus() == ResidentStatus.PENDING) {
-                return ResponseEntity.badRequest()
-                        .body("Your account has not been confirmed yet. Please wait for approval.");
             }
 
             Optional<DocumentRequest> requestOpt = documentRequestRepository.findById(id);
