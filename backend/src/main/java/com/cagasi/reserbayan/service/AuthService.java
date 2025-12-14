@@ -140,9 +140,7 @@ public class AuthService {
 
     public Resident authenticateResident(String email, String password) {
         Resident resident = residentRepository.findByResidentEmail(email).orElse(null);
-        if (resident != null
-                && (resident.getStatus() == ResidentStatus.APPROVED || resident.getStatus() == ResidentStatus.PENDING)
-                && passwordEncoder.matches(password, resident.getPassword())) {
+        if (resident != null && passwordEncoder.matches(password, resident.getPassword())) {
             return resident;
         }
         return null;
@@ -214,6 +212,47 @@ public class AuthService {
         resident.setSitio(residentDTO.getSitio());
         resident.setAddressLine1(residentDTO.getAddressLine1());
         // -------------------
+
+        return residentRepository.save(resident);
+    }
+
+    // --- RESUBMIT APPLICATION METHOD ---
+    public Resident resubmitApplication(RegisterRequest request) throws IOException {
+        // Find existing resident by email
+        Resident resident = residentRepository.findByResidentEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Resident not found"));
+
+        // Update fields with new data
+        resident.setFirstName(request.getFirstName());
+        resident.setLastName(request.getLastName());
+        resident.setMiddleName(request.getMiddleName());
+        resident.setPhoneNumber(request.getPhoneNumber());
+        resident.setBirthdate(request.getBirthDate());
+
+        // Update address fields
+        resident.setGender(request.getGender());
+        resident.setRegion(request.getRegion());
+        resident.setProvince(request.getProvince());
+        resident.setCity(request.getCity());
+        resident.setBarangay(request.getBarangay());
+        resident.setSitio(request.getSitio());
+        resident.setAddressLine1(request.getAddressLine1());
+
+        // Handle file upload if provided
+        if (request.getValidId() != null && !request.getValidId().isEmpty()) {
+            String uploadDir = "uploads/resident/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = UUID.randomUUID().toString() + "_" + request.getValidId().getOriginalFilename();
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(request.getValidId().getInputStream(), filePath);
+            resident.setValidIdPath(filePath.toString());
+        }
+
+        // Change status to PENDING
+        resident.setStatus(ResidentStatus.PENDING);
 
         return residentRepository.save(resident);
     }

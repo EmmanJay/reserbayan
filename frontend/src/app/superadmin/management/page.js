@@ -1177,7 +1177,9 @@ export default function SuperAdminManagementPage() {
         resident={modalType === 'document-requests' ? null : selectedResident}
         documentRequest={modalType === 'document-requests' ? selectedResident : null}
         title={modalType === 'document-requests' ? 'Document Request Details' : 'Resident Details'}
-        showActions={modalType === 'document-requests'}
+        showActions={modalType === 'document-requests' || modalType === 'resident-requests'}
+        onApprove={() => { handleAccept(selectedResident); setIsViewDetailsModalOpen(false); }}
+        onReject={() => { handleReject(selectedResident); setIsViewDetailsModalOpen(false); }}
       />
 
       {/* Expanded Image Modal */}
