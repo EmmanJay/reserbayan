@@ -72,8 +72,10 @@ public class SuperAdminController {
     public ResponseEntity<?> getSummary() {
         Map<String, Object> summary = new HashMap<>();
 
-        // Total residents count
-        long totalResidents = residentRepository.count();
+        // Total residents count (only approved residents)
+        long totalResidents = residentRepository.findAll().stream()
+                .filter(r -> r.getStatus() == ResidentStatus.APPROVED)
+                .count();
         summary.put("totalResidents", totalResidents);
 
         // Total document requests count
@@ -88,7 +90,7 @@ public class SuperAdminController {
 
         // Pending document requests count
         long pendingRequests = documentRequestRepository.findAll().stream()
-                .filter(req -> req.getStatus().toString().equals("PENDING"))
+                .filter(req -> req.getStatus().equals("Pending"))
                 .count();
         summary.put("pendingRequests", pendingRequests);
 

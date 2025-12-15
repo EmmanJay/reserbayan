@@ -451,20 +451,20 @@ public class DocumentRequestController {
     }
 
     private DocumentRequestDTO parseJson(String dataJson) {
-        // Simple JSON parsing - in production, use proper JSON library like Jackson
-        // For now, this is a simplified implementation
-        DocumentRequestDTO dto = new DocumentRequestDTO();
-        // Parse the JSON string and populate the DTO
-        // This is a placeholder implementation
-        return dto;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(dataJson, DocumentRequestDTO.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse JSON data: " + e.getMessage());
+        }
     }
 
     private DocumentRequestUpdateDTO parseUpdateJson(String dataJson) {
-        // Simple JSON parsing - in production, use proper JSON library like Jackson
-        // For now, this is a simplified implementation
-        DocumentRequestUpdateDTO dto = new DocumentRequestUpdateDTO();
-        // Parse the JSON string and populate the DTO
-        // This is a placeholder implementation
-        return dto;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(dataJson, DocumentRequestUpdateDTO.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse JSON data: " + e.getMessage());
+        }
     }
 }

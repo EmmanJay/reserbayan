@@ -39,19 +39,39 @@ export default function NotificationsPage() {
 
   const markAsRead = async (notificationId) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
 
+    console.log('Marking notification as read:', notificationId);
+    
     try {
-      await fetch(`http://localhost:8080/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`http://localhost:8080/api/notifications/${notificationId}/read`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
       });
-      // Update the notification status in the local state
-      setNotifications(notifications.map(n => 
-        n.notificationId === notificationId ? { ...n, isRead: true } : n
-      ));
+      
+      console.log('API Response status:', response.status);
+      console.log('API Response ok:', response.ok);
+      
+      if (response.ok) {
+        // Update local state and refresh from database
+        setNotifications(notifications.map(n =>
+          n.notificationId === notificationId ? { ...n, isRead: true } : n
+        ));
+        console.log('Notification marked as read successfully');
+        
+        // Refresh notifications to get latest data from database
+        setTimeout(() => fetchNotifications(), 500);
+      } else {
+        console.error('Failed to mark notification as read:', response.status, response.statusText);
+      }
     } catch (err) {
-      console.error('Failed to mark as read:', err);
+      console.error('Failed to mark as read (network error):', err);
     }
   };
 
@@ -69,34 +89,43 @@ export default function NotificationsPage() {
 
   const getNotificationColor = (type, isRead) => {
     let baseColors = '';
+    const unread = isUnread({ isRead }); // Use helper function
     switch (type) {
       case 'REQUEST_APPROVED':
-        baseColors = isRead ? 'border-green-100 bg-green-25' : 'border-green-200 bg-green-50';
+        baseColors = unread ? 'border-green-200 bg-green-50' : 'border-green-100 bg-green-25';
         break;
       case 'REQUEST_REJECTED':
       case 'ACCOUNT_REJECTED':
-        baseColors = isRead ? 'border-red-100 bg-red-25' : 'border-red-200 bg-red-50';
+        baseColors = unread ? 'border-red-200 bg-red-50' : 'border-red-100 bg-red-25';
         break;
       default:
-        baseColors = isRead ? 'border-blue-100 bg-blue-25' : 'border-blue-200 bg-blue-50';
+        baseColors = unread ? 'border-blue-200 bg-blue-50' : 'border-blue-100 bg-blue-25';
     }
     return baseColors;
   };
 
   const getReadStatusIndicator = (isRead) => {
-    return isRead ? (
-      <Circle className="w-3 h-3 text-gray-400 fill-gray-400" />
-    ) : (
+    const unread = isUnread({ isRead }); // Use helper function
+    return unread ? (
       <Circle className="w-3 h-3 text-blue-500 fill-blue-500" />
+    ) : (
+      <Circle className="w-3 h-3 text-gray-400 fill-gray-400" />
     );
   };
 
   const getTextOpacity = (isRead) => {
-    return isRead ? 'text-gray-600' : 'text-gray-900';
+    const unread = isUnread({ isRead }); // Use helper function
+    return unread ? 'text-gray-900' : 'text-gray-600';
   };
 
   const isRejectionNotification = (type) => {
     return type === 'REQUEST_REJECTED' || type === 'ACCOUNT_REJECTED';
+  };
+
+  // Helper function to determine if notification is unread based on database isRead field
+  const isUnread = (notification) => {
+    // Database stores: 0 = unread, 1 = read
+    return notification.isRead === 0;
   };
 
   if (loading) {
@@ -150,7 +179,7 @@ export default function NotificationsPage() {
               >
                 <div className="absolute top-4 right-4 flex items-center gap-2">
                   {getReadStatusIndicator(notification.isRead)}
-                  {!notification.isRead && (
+                  {isUnread(notification) && (
                     <button
                       onClick={() => markAsRead(notification.notificationId)}
                       className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -186,7 +215,7 @@ export default function NotificationsPage() {
                     <p className="text-sm text-gray-500 mt-3">
                       {new Date(notification.createdAt).toLocaleString('en-US')}
                     </p>
-                    {!notification.isRead && (
+                    {isUnread(notification) && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-2">
                         New
                       </span>

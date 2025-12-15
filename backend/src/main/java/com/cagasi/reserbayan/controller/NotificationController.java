@@ -36,6 +36,7 @@ public class NotificationController {
 
     @PutMapping("/{notificationId}/read")
     public ResponseEntity<?> markAsRead(@PathVariable Long notificationId) {
+        System.out.println("Received PUT request to mark notification " + notificationId + " as read");
         notificationService.markAsRead(notificationId);
         return ResponseEntity.ok().build();
     }
