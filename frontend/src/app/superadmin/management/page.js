@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 export default function SuperAdminManagementPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,9 @@ export default function SuperAdminManagementPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const itemsPerPage = 10;
+  
+  // Cache for data to avoid unnecessary re-fetching
+  const [dataCache, setDataCache] = useState({});
 
   // Modals and states
   const [openDropdownId, setOpenDropdownId] = useState(null);
@@ -60,14 +64,31 @@ export default function SuperAdminManagementPage() {
     setRole(role);
     setLoading(false);
 
-    // Set default tab based on role
-    const defaultTab = role === 'ADMIN' ? 'residents' : 'administrators';
-    if (activeTab === 'administrators' && role === 'ADMIN') {
+    // Check for tab parameter in URL and set initial tab
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['administrators', 'residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
+      setActiveTab(tabParam);
+      fetchData(tabParam, true);
+    } else {
+      // Set default tab based on role
+      const defaultTab = role === 'ADMIN' ? 'residents' : 'administrators';
       setActiveTab(defaultTab);
+      fetchData(defaultTab, true);
     }
+  }, [router, searchParams]);
 
-    fetchData(activeTab);
-  }, [router, activeTab]);
+  // Handle URL parameter changes after initial load
+  useEffect(() => {
+    if (!loading) {
+      const tabParam = searchParams.get('tab');
+      if (tabParam && ['administrators', 'residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
+        if (activeTab !== tabParam) {
+          setActiveTab(tabParam);
+          fetchData(tabParam, false);
+        }
+      }
+    }
+  }, [searchParams, loading, activeTab]);
 
   // Close dropdown when clicking anywhere on the screen
   useEffect(() => {
@@ -86,8 +107,35 @@ export default function SuperAdminManagementPage() {
     };
   }, [openDropdownId]);
 
-  const fetchData = async (tab) => {
-    setLoadingData(true);
+  const fetchData = async (tab, forceRefresh = false) => {
+    // Check if we have cached data and don't need to force refresh
+    if (!forceRefresh && dataCache[tab]) {
+      setData(dataCache[tab].data);
+      setTotalPages(Math.ceil(dataCache[tab].data.length / itemsPerPage));
+      setCurrentPage(1);
+      
+      // Set sitios for residents tab from cache
+      if (tab === 'residents') {
+        setAvailableSitios(dataCache[tab].sitios || []);
+      } else {
+        setAvailableSitios([]);
+        setSitioFilter('');
+      }
+      
+      // Clear document request filters when not on document-requests tab
+      if (tab !== 'document-requests') {
+        setStatusFilter('');
+        setSortOrder('asc');
+      }
+      
+      return;
+    }
+
+    // Only show loading if we don't have any cached data or force refresh
+    if (!dataCache[tab] || forceRefresh) {
+      setLoadingData(true);
+    }
+    
     try {
       const token = localStorage.getItem('token');
       let endpoint = '';
@@ -117,9 +165,10 @@ export default function SuperAdminManagementPage() {
       let data = await response.json();
 
       // Extract unique sitios for residents tab
+      let sitios = [];
       if (tab === 'residents') {
-        const uniqueSitios = [...new Set(data.map(item => item.sitio).filter(sitio => sitio && sitio.trim() !== ''))].sort();
-        setAvailableSitios(uniqueSitios);
+        sitios = [...new Set(data.map(item => item.sitio).filter(sitio => sitio && sitio.trim() !== ''))].sort();
+        setAvailableSitios(sitios);
       } else {
         setAvailableSitios([]);
         setSitioFilter('');
@@ -131,6 +180,14 @@ export default function SuperAdminManagementPage() {
         setSortOrder('asc');
       }
 
+      // Cache the data
+      const cacheEntry = {
+        data: data,
+        sitios: sitios,
+        timestamp: Date.now()
+      };
+      setDataCache(prev => ({ ...prev, [tab]: cacheEntry }));
+      
       setData(data);
       setTotalPages(Math.ceil(data.length / itemsPerPage));
       setCurrentPage(1);
@@ -151,6 +208,13 @@ export default function SuperAdminManagementPage() {
     setSortOrder('asc');
     setCurrentPage(1);
     setOpenDropdownId(null);
+    
+    // Load data from cache or fetch if not available
+    fetchData(tab, false);
+    
+    // Update URL to reflect the tab change
+    const newUrl = `/superadmin/management?tab=${tab}`;
+    router.push(newUrl, { scroll: false });
   };
 
   const handleManage = (type, item, event) => {
@@ -215,7 +279,7 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to delete');
 
-          fetchData(activeTab);
+          fetchData(activeTab, true);
 
           setNotificationModal({
             type: 'success',
@@ -361,7 +425,7 @@ export default function SuperAdminManagementPage() {
         throw new Error(errorData.error || 'Failed to add admin');
       }
 
-      fetchData(activeTab);
+      fetchData(activeTab, true);
 
       setNotificationModal({
         type: 'success',
@@ -434,7 +498,7 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to approve');
 
-          fetchData(activeTab);
+          fetchData(activeTab, true);
           setNotificationModal({
             type: 'success',
             title: `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} Approved`,
@@ -499,7 +563,7 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to complete document request');
 
-          fetchData(activeTab);
+          fetchData(activeTab, true);
           setNotificationModal({
             type: 'success',
             title: 'Document Request Completed',
@@ -544,7 +608,7 @@ export default function SuperAdminManagementPage() {
         throw new Error(errorData.error || 'Failed to reject');
       }
 
-      fetchData(activeTab);
+      fetchData(activeTab, true);
       
       setNotificationModal({
         type: 'success',
@@ -621,7 +685,7 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to toggle status');
 
-          fetchData(activeTab);
+          fetchData(activeTab, true);
           setNotificationModal({
             type: 'success',
             title: 'Status Updated',
@@ -659,7 +723,7 @@ export default function SuperAdminManagementPage() {
           });
           if (!response.ok) throw new Error('Failed to promote');
 
-          fetchData(activeTab);
+          fetchData(activeTab, true);
           setNotificationModal({
             type: 'success',
             title: 'Administrator Promoted',

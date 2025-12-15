@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
@@ -12,8 +12,20 @@ import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 
+// Helper function to get proper CSS classes for active tabs
+const getActiveTabStyles = (color) => {
+  const styles = {
+    blue: 'bg-blue-100 text-blue-700 border border-blue-200',
+    green: 'bg-green-100 text-green-700 border border-green-200',
+    orange: 'bg-orange-100 text-orange-700 border border-orange-200',
+    purple: 'bg-purple-100 text-purple-700 border border-purple-200',
+  };
+  return styles[color] || 'bg-gray-100 text-gray-700 border border-gray-200';
+};
+
 export default function AdminManagementPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,14 +69,36 @@ export default function AdminManagementPage() {
     setRole(role);
     setLoading(false);
 
-    // Set default tab based on role
-    const defaultTab = role === 'ADMIN' ? 'residents' : 'administrators';
-    if (activeTab === 'administrators' && role === 'ADMIN') {
-      setActiveTab(defaultTab);
+    // Determine initial tab from URL or set default
+    const tabParam = searchParams.get('tab');
+    let initialTab;
+    
+    if (tabParam && ['residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
+      initialTab = tabParam;
+    } else if (role === 'SUPER_ADMIN') {
+      // Super admin default to administrators tab
+      initialTab = 'administrators';
+    } else {
+      // Admin default to residents tab
+      initialTab = 'residents';
     }
+    
+    setActiveTab(initialTab);
+    fetchData(initialTab);
+  }, [router, searchParams]);
 
-    fetchData(activeTab);
-  }, [router, activeTab]);
+  // Handle URL parameter changes for tab switching
+  useEffect(() => {
+    if (!loading) {
+      const tabParam = searchParams.get('tab');
+      if (tabParam && ['residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
+        if (activeTab !== tabParam) {
+          setActiveTab(tabParam);
+        }
+        fetchData(tabParam);
+      }
+    }
+  }, [searchParams, loading]);
 
   // Close dropdown when clicking anywhere on the screen
   useEffect(() => {
@@ -145,6 +179,10 @@ export default function AdminManagementPage() {
     setSortOrder('asc');
     setCurrentPage(1);
     setOpenDropdownId(null);
+    
+    // Update URL to reflect the current tab using Next.js router
+    const newUrl = tab === 'residents' ? '/admin/management' : `/admin/management?tab=${tab}`;
+    router.push(newUrl, { scroll: false });
   };
 
   const handleManage = (type, item, event) => {
@@ -481,7 +519,7 @@ export default function AdminManagementPage() {
                 onClick={() => handleTabChange(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? `bg-${tab.color}-100 text-${tab.color}-700 border border-${tab.color}-200`
+                    ? getActiveTabStyles(tab.color)
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >

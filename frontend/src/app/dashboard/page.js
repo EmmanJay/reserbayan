@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const { requests, loading, refetchRequests, cancelRequest } = useRequests(user);
   const router = useRouter();
   
+  // Get user role for admin/superadmin redirects
+  const userRole = typeof window !== 'undefined' ? localStorage.getItem('role') : null;
+  
   // Modals state
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -361,13 +364,26 @@ export default function DashboardPage() {
                 </div>
                 {recentRequests.length > 0 && (
                   <div className="mt-8 text-center">
-                    <Link
-                      href="/requests"
-                      className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-                    >
-                      <span>View All Requests</span>
-                      <ArrowRight className="w-5 h-5" />
-                    </Link>
+                    {(userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') ? (
+                      <button
+                        onClick={() => {
+                          const managementPath = userRole === 'SUPER_ADMIN' ? '/superadmin/management' : '/admin/management';
+                          router.push(`${managementPath}?tab=document-requests`);
+                        }}
+                        className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                      >
+                        <span>View All Requests</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                    ) : (
+                      <Link
+                        href="/requests"
+                        className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                      >
+                        <span>View All Requests</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
