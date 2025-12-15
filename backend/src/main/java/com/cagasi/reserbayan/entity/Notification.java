@@ -1,8 +1,13 @@
 package com.cagasi.reserbayan.entity;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +17,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+class IntegerSerializer extends JsonSerializer<Integer> {
+    @Override
+    public void serialize(Integer value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeNumber(value);
+    }
+}
 
 @Entity
 @Table(name = "notifications")
@@ -29,7 +41,7 @@ public class Notification {
     private String title;
     private String message;
     private String type; // "REQUEST_APPROVED", "REQUEST_REJECTED", etc.
-    private boolean isRead = false;
+    private Integer isRead = 0;
 
     // Additional data field to store rejection reasons or other extra information
     @Column(columnDefinition = "TEXT")
@@ -79,11 +91,16 @@ public class Notification {
     }
 
     public boolean isRead() {
-        return isRead;
+        return isRead != null && isRead == 1;
     }
 
     public void setRead(boolean read) {
-        isRead = read;
+        isRead = read ? 1 : 0;
+    }
+
+    // Direct getter for JSON serialization (returns Integer instead of boolean)
+    public Integer getIsRead() {
+        return isRead;
     }
 
     public String getAdditionalData() {

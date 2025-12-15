@@ -238,7 +238,13 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                 </div>
                 <div>
                   <span className="text-gray-500">Address:</span>
-                  <span className="ml-2 font-medium">{user.address}</span>
+                  <span className="ml-2 font-medium">
+                    {user.addressLine1 && `${user.addressLine1}, `}
+                    {user.barangay && `${user.barangay}, `}
+                    {user.city && `${user.city}`}
+                    {user.province && `, ${user.province}`}
+                    {user.region && `, ${user.region}`}
+                  </span>
                 </div>
               </div>
             </div>
