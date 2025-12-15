@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, Plus, ArrowRight, Clock, CheckCircle, XCircle, AlertCircle, Calendar, Megaphone, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { FileText, Plus, ArrowRight, Calendar, Megaphone, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
@@ -12,6 +12,7 @@ import RequestModal from '@/app/components/requests/RequestModal'; // Detail Vie
 import RequestFormModal from '@/app/components/requests/RequestFormModal'; // Create View
 import AccountActivityModal from '@/app/components/AccountActivityModal';
 import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
+import { StatusBadge } from '@/app/components/ui/status-badge';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -102,25 +103,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'approved': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'rejected': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'completed': return <CheckCircle className="w-4 h-4 text-blue-500" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-500" />;
-      default: return <AlertCircle className="w-4 h-4 text-gray-500" />;
-    }
-  };
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'approved': return 'text-green-600 bg-green-50';
-      case 'rejected': return 'text-red-600 bg-red-50';
-      case 'completed': return 'text-blue-600 bg-blue-50';
-      case 'pending': return 'text-yellow-600 bg-yellow-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
 
   if (!user) {
     return null;
@@ -346,14 +329,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <div className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${
-                        user.status?.toLowerCase() === 'approved' ? 'text-green-600 bg-green-50' :
-                        user.status?.toLowerCase() === 'pending' ? 'text-yellow-600 bg-yellow-50' :
-                        'text-red-600 bg-red-50'
-                      }`}>
-                        {getStatusIcon(user.status)}
-                        <span className="capitalize">{user.status}</span>
-                      </div>
+                      <StatusBadge status={user.status} size="md" />
                     </motion.div>
                   )}
 
@@ -379,10 +355,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                       </div>
-                      <div className={`flex items-center space-x-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${getStatusColor(request.status)}`}>
-                        {getStatusIcon(request.status)}
-                        <span className="capitalize">{request.status}</span>
-                      </div>
+                      <StatusBadge status={request.status} size="md" />
                     </motion.div>
                   ))}
                 </div>

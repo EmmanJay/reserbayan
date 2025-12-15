@@ -1,37 +1,8 @@
 import { FileText, Calendar } from 'lucide-react';
+import { StatusBadge } from '@/app/components/ui/status-badge';
 
 function RequestCard({ request, onClick }) {
-  const getStatusIcon = (status) => {
-    const statusLower = status ? status.toLowerCase() : '';
-    switch (statusLower) {
-      case 'approved':
-        return <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
-      case 'completed':
-        return <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
-      case 'pending':
-        return <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
-      case 'rejected':
-        return <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✗</span></div>;
-      default:
-        return <div className="w-5 h-5 bg-gray-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
-    }
-  };
 
-  const getStatusColor = (status) => {
-    const statusLower = status ? status.toLowerCase() : '';
-    switch (statusLower) {
-      case 'approved':
-        return 'text-green-700 bg-green-100';
-      case 'completed':
-        return 'text-blue-700 bg-blue-100';
-      case 'pending':
-        return 'text-yellow-700 bg-yellow-100';
-      case 'rejected':
-        return 'text-red-700 bg-red-100';
-      default:
-        return 'text-gray-700 bg-gray-100';
-    }
-  };
 
   return (
     <div
@@ -61,10 +32,7 @@ function RequestCard({ request, onClick }) {
         </div>
 
         <div className="flex items-center gap-2 mb-4">
-          {getStatusIcon(request.status)}
-          <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${getStatusColor(request.status)} shadow-sm`}>
-            {request.status}
-          </span>
+          <StatusBadge status={request.status} size="md" />
         </div>
 
         <div className="space-y-3">

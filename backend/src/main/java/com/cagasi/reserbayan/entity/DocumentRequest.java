@@ -26,13 +26,10 @@ public class DocumentRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long requestId;
 
-    // Save the documentId from your JSON file
-    @Column(nullable = false)
-    private String documentId;
-
-    // Save the name from your JSON file
-    @Column(nullable = false)
-    private String documentName;
+    // NEW: Proper JPA relationship to DocumentType
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "document_type_id", nullable = false)
+    private DocumentType documentType;
 
     // Who requested it
     @JsonIgnore
@@ -70,19 +67,34 @@ public class DocumentRequest {
     }
 
     public String getDocumentId() {
-        return documentId;
+        return documentType != null ? documentType.getDocumentId() : null;
     }
 
     public void setDocumentId(String documentId) {
-        this.documentId = documentId;
+        // For backward compatibility - find and set the document type
+        // In practice, this should be handled by the service layer
+        if (documentId != null && documentType != null && !documentId.equals(documentType.getDocumentId())) {
+            throw new IllegalStateException("DocumentType relationship must be set instead of documentId directly");
+        }
     }
 
     public String getDocumentName() {
-        return documentName;
+        return documentType != null ? documentType.getDocumentName() : null;
     }
 
     public void setDocumentName(String documentName) {
-        this.documentName = documentName;
+        // For backward compatibility - document type should be set via relationship
+        if (documentName != null && documentType != null && !documentName.equals(documentType.getDocumentName())) {
+            throw new IllegalStateException("DocumentType relationship must be set instead of documentName directly");
+        }
+    }
+
+    public DocumentType getDocumentType() {
+        return documentType;
+    }
+
+    public void setDocumentType(DocumentType documentType) {
+        this.documentType = documentType;
     }
 
     public Resident getResident() {
