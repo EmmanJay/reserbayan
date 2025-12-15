@@ -24,10 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cagasi.reserbayan.dto.DocumentRequestDTO;
 import com.cagasi.reserbayan.dto.DocumentRequestUpdateDTO;
 import com.cagasi.reserbayan.entity.DocumentRequest;
+import com.cagasi.reserbayan.entity.DocumentType;
 import com.cagasi.reserbayan.entity.RequestAttachment;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.DocumentRequestRepository;
+import com.cagasi.reserbayan.repository.DocumentTypeRepository;
 import com.cagasi.reserbayan.repository.RequestAttachmentRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 
@@ -43,6 +45,9 @@ public class DocumentRequestController {
 
     @Autowired
     private DocumentRequestRepository documentRequestRepository;
+
+    @Autowired
+    private DocumentTypeRepository documentTypeRepository;
 
     @Autowired
     private RequestAttachmentRepository requestAttachmentRepository;
@@ -139,9 +144,12 @@ public class DocumentRequestController {
             Resident resident = residentRepository.findById(dto.getResidentId())
                     .orElseThrow(() -> new RuntimeException("Resident not found"));
 
+            // Find the DocumentType based on documentId for proper JPA relationship
+            DocumentType documentType = documentTypeRepository.findByDocumentId(dto.getDocumentId())
+                    .orElseThrow(() -> new RuntimeException("Document type not found"));
+
             DocumentRequest documentRequest = new DocumentRequest();
-            documentRequest.setDocumentId(dto.getDocumentId());
-            documentRequest.setDocumentName(dto.getDocumentName());
+            documentRequest.setDocumentType(documentType); // This will also set documentId and documentName via the setter
             documentRequest.setResident(resident);
             documentRequest.setDetails(dto.getDetails());
             documentRequest.setStatus("Pending");
@@ -423,6 +431,7 @@ public class DocumentRequestController {
     private DocumentRequestDTO convertToDTO(DocumentRequest request) {
         DocumentRequestDTO dto = new DocumentRequestDTO();
         dto.setRequestId(request.getRequestId());
+        // Use relationship data - now the single source of truth
         dto.setDocumentId(request.getDocumentId());
         dto.setDocumentName(request.getDocumentName());
         dto.setResidentId(request.getResident().getResidentId());

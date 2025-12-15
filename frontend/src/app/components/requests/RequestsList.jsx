@@ -1,37 +1,8 @@
 import { FileText } from 'lucide-react';
+import { StatusBadge } from '@/app/components/ui/status-badge';
 
 function RequestsList({ requests, onRequestClick }) {
-  const getStatusIcon = (status) => {
-    const statusLower = status ? status.toLowerCase() : '';
-    switch (statusLower) {
-      case 'approved':
-        return <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
-      case 'completed':
-        return <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
-      case 'pending':
-        return <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
-      case 'rejected':
-        return <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✗</span></div>;
-      default:
-        return <div className="w-4 h-4 bg-gray-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
-    }
-  };
 
-  const getStatusColor = (status) => {
-    const statusLower = status ? status.toLowerCase() : '';
-    switch (statusLower) {
-      case 'approved':
-        return 'text-green-700 bg-green-100';
-      case 'completed':
-        return 'text-blue-700 bg-blue-100';
-      case 'pending':
-        return 'text-yellow-700 bg-yellow-100';
-      case 'rejected':
-        return 'text-red-700 bg-red-100';
-      default:
-        return 'text-gray-700 bg-gray-100';
-    }
-  };
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -67,12 +38,7 @@ function RequestsList({ requests, onRequestClick }) {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(request.status)}
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                      {request.status}
-                    </span>
-                  </div>
+                  <StatusBadge status={request.status} size="sm" />
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
                   {new Date(request.submittedAt).toLocaleDateString('en-US', {

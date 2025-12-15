@@ -1,6 +1,7 @@
 package com.cagasi.reserbayan.entity;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,6 +32,7 @@ public class DocumentType {
     private String department;
 
     @OneToMany(mappedBy = "documentType", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DocumentRequest> documentRequests = new ArrayList<>();
 
     // Getters and Setters
     public Long getTypeId() {
@@ -153,4 +155,11 @@ public class DocumentType {
         this.uses = uses;
     }
 
+    public List<DocumentRequest> getDocumentRequests() {
+        return documentRequests;
+    }
+
+    public void setDocumentRequests(List<DocumentRequest> documentRequests) {
+        this.documentRequests = documentRequests;
+    }
 }
