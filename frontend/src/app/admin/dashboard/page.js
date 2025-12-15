@@ -548,10 +548,12 @@ export default function AdminDashboard() {
   };
 
   // Navigation Handlers - Admin specific
-  const handleManageResidents = () => router.push('/admin/management/residents');
+  const handleManageResidents = () => router.push('/admin/management?tab=resident-requests');
   const handleViewNotifications = () => router.push('/admin/notifications');
   const handleViewDocuments = () => router.push('/admin/documents');
   const handleViewAllAnnouncements = () => router.push('/admin/announcements');
+  const handleViewAllRequests = () => router.push('/admin/management?tab=document-requests');
+  const handleManageAllResidents = () => router.push('/admin/management');
 
   if (loading) {
     return (
@@ -623,7 +625,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <ActionButton icon={Users} label="Residents" onClick={handleManageResidents} />
+                <ActionButton icon={Users} label="Residents" onClick={handleManageAllResidents} />
                 <ActionButton icon={Bell} label="Notifications" onClick={handleViewNotifications} />
               </div>
             </div>
@@ -665,7 +667,7 @@ export default function AdminDashboard() {
 
             {/* 3. MAIN GRID CONTENT - Hidden Container for Height Alignment */}
             <div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   
                 {/* LEFT COLUMN: Post Announcement & Recent Requests (Takes up 2/3) */}
                 <div className="lg:col-span-2 space-y-6">
@@ -797,7 +799,10 @@ export default function AdminDashboard() {
                             <p className="text-xs text-slate-500 mt-0.5">Latest document submissions</p>
                           </div>
                         </div>
-                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                        <button 
+                          onClick={handleViewAllRequests}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                        >
                           View All Requests
                         </button>
                       </div>
@@ -857,68 +862,7 @@ export default function AdminDashboard() {
                    </div>
                 </div>
 
-                {/* RIGHT COLUMN: Pending Accounts (Takes up 1/3) */}
-                <div className="space-y-6">
-                  <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full min-h-[600px]">
-                    <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-amber-50 rounded-lg text-amber-600">
-                          <UserPlus className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-800">Pending Accounts</h3>
-                          <p className="text-xs text-slate-500 mt-0.5">New resident signups</p>
-                        </div>
-                      </div>
-                      {stats.pendingResidents > 0 && (
-                        <span className="bg-red-50 text-red-600 text-[10px] font-bold px-2 py-1 rounded-full border border-red-100">
-                          {stats.pendingResidents}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                      {pendingAccounts.map((account) => (
-                        <motion.div
-                          key={account.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="group p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all bg-white cursor-pointer relative"
-                          onClick={() => handleViewAccountDetails(account)}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center font-bold text-sm shadow-lg">
-                                {account.name.charAt(0)}
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-slate-900 leading-tight">{account.name}</h4>
-                                <p className="text-xs text-slate-500 mt-0.5">{account.email}</p>
-                              </div>
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full">{account.date}</span>
-                          </div>
-                          {/* Buttons removed from here */}
-                        </motion.div>
-                      ))}
-                      {pendingAccounts.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-400 pb-8">
-                          <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                             <Check className="w-6 h-6 opacity-40" />
-                          </div>
-                          <p className="text-sm font-medium text-slate-600">All caught up!</p>
-                          <p className="text-xs">No pending approvals</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 border-t border-slate-100 bg-slate-50/50 rounded-b-xl">
-                        <button onClick={handleManageResidents} className="w-full flex items-center justify-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-600 py-2 transition-colors">
-                          View All Residents <ArrowRight className="w-3 h-3" />
-                        </button>
-                    </div>
-                  </div>
-                </div>
-
+                
               </div>
             </div>
           </div>

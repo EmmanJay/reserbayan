@@ -550,9 +550,10 @@ export default function SuperAdminDashboard() {
   // Navigation Handlers
   const handleAddAdmin = () => router.push('/superadmin/management/admins');
   const handleAddDocument = () => router.push('/superadmin/documents/add');
-  const handleManageResidents = () => router.push('/superadmin/management/residents');
+  const handleManageResidents = () => router.push('/superadmin/management?tab=resident-requests');
   const handleViewNotifications = () => router.push('/superadmin/notifications');
   const handleViewAllAnnouncements = () => router.push('/superadmin/announcements');
+  const handleViewAllRequests = () => router.push('/superadmin/management?tab=document-requests');
 
   if (loading) {
     return (
@@ -800,7 +801,10 @@ export default function SuperAdminDashboard() {
                             <p className="text-xs text-slate-500 mt-0.5">Latest document submissions</p>
                           </div>
                         </div>
-                        <button className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                        <button 
+                          onClick={handleViewAllRequests}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                        >
                           View All Requests
                         </button>
                       </div>
