@@ -296,6 +296,33 @@ public class SuperAdminController {
         return ResponseEntity.ok(savedRequest);
     }
 
+    @PutMapping("/requests/{id}/complete")
+    public ResponseEntity<?> completeDocumentRequest(@PathVariable Long id) {
+        DocumentRequest request = documentRequestRepository.findById(id).orElse(null);
+        if (request == null || !request.getStatus().equals("Approved")) {
+            return ResponseEntity.notFound().build();
+        }
+        request.setStatus("Completed");
+        request.setUpdatedAt(java.time.LocalDateTime.now());
+        DocumentRequest savedRequest = documentRequestRepository.save(request);
+
+        // Log the status change
+        StatusLog statusLog = new StatusLog();
+        statusLog.setDocumentRequest(savedRequest);
+        statusLog.setStatus("Completed");
+        statusLog.setTimestamp(java.time.LocalDateTime.now());
+        statusLogRepository.save(statusLog);
+
+        // Create notification for the resident
+        notificationService.createNotification(
+                request.getResident(),
+                "Document Request Completed",
+                "Your request for '" + request.getDocumentName() + "' has been completed and is ready for pickup.",
+                "REQUEST_COMPLETED");
+
+        return ResponseEntity.ok(savedRequest);
+    }
+
     // Resident Management
     @GetMapping("/residents")
     public ResponseEntity<?> getAllResidents() {

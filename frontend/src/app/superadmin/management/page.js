@@ -24,13 +24,16 @@ export default function SuperAdminManagementPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [buttonRect, setButtonRect] = useState(null);
+  const [sitioFilter, setSitioFilter] = useState('');
+  const [availableSitios, setAvailableSitios] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
   const itemsPerPage = 10;
 
   // Modals and states
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [addAdminModal, setAddAdminModal] = useState(false);
-  const [newAdminUsername, setNewAdminUsername] = useState('');
   const [viewInfoModal, setViewInfoModal] = useState(null);
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [selectedResident, setSelectedResident] = useState(null);
@@ -48,7 +51,7 @@ export default function SuperAdminManagementPage() {
     const role = localStorage.getItem('role');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    if (!token || role !== 'SUPER_ADMIN') {
+    if (!token || (role !== 'SUPER_ADMIN' && role !== 'ADMIN')) {
       router.push('/');
       return;
     }
@@ -56,6 +59,12 @@ export default function SuperAdminManagementPage() {
     setUser(user);
     setRole(role);
     setLoading(false);
+
+    // Set default tab based on role
+    const defaultTab = role === 'ADMIN' ? 'residents' : 'administrators';
+    if (activeTab === 'administrators' && role === 'ADMIN') {
+      setActiveTab(defaultTab);
+    }
 
     fetchData(activeTab);
   }, [router, activeTab]);
@@ -107,9 +116,19 @@ export default function SuperAdminManagementPage() {
       if (!response.ok) throw new Error(`Failed to fetch ${tab}`);
       let data = await response.json();
 
-      // Filter document requests to show only pending ones
-      if (tab === 'document-requests') {
-        data = data.filter(item => item.status === 'Pending');
+      // Extract unique sitios for residents tab
+      if (tab === 'residents') {
+        const uniqueSitios = [...new Set(data.map(item => item.sitio).filter(sitio => sitio && sitio.trim() !== ''))].sort();
+        setAvailableSitios(uniqueSitios);
+      } else {
+        setAvailableSitios([]);
+        setSitioFilter('');
+      }
+
+      // Clear document request filters when not on document-requests tab
+      if (tab !== 'document-requests') {
+        setStatusFilter('');
+        setSortOrder('asc');
       }
 
       setData(data);
@@ -127,6 +146,9 @@ export default function SuperAdminManagementPage() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchQuery('');
+    setSitioFilter('');
+    setStatusFilter('');
+    setSortOrder('asc');
     setCurrentPage(1);
     setOpenDropdownId(null);
   };
@@ -284,29 +306,48 @@ export default function SuperAdminManagementPage() {
   };
 
   const handleAddAdmin = async () => {
-    if (!newAdminUsername.trim()) {
-      alert('Please enter a username');
-      return;
-    }
-
-    const newAdmin = {
-      username: newAdminUsername.trim(),
-      password: 'Admin123',
-      role: 'ADMIN',
-      status: 'ACTIVE',
-      firstName: newAdminUsername.trim(),
-      middleName: '',
-      lastName: '',
-      residentEmail: `${newAdminUsername.trim()}@reserbayan.com`,
-      phoneNumber: '',
-      address: '',
-      position: '',
-      proofOfEmploymentPath: ''
-    };
-
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/superadmin/admins', {
+
+      // Fetch existing admins
+      const fetchResponse = await fetch('http://localhost:8080/api/superadmin/admins', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
+      if (!fetchResponse.ok) throw new Error('Failed to fetch admins');
+      const admins = await fetchResponse.json();
+
+      // Filter out default admin and superadmin
+      const filteredAdmins = admins.filter(admin => admin.username !== 'admin' && admin.username !== 'superadmin');
+
+      // Extract Admin numbers
+      const adminNumbers = filteredAdmins
+        .map(admin => {
+          if (!admin.username) return 0;
+          const match = admin.username.match(/^Admin(\d+)$/);
+          return match ? parseInt(match[1]) : 0;
+        })
+        .filter(num => num > 0);
+
+      const nextNum = adminNumbers.length > 0 ? Math.max(...adminNumbers) + 1 : 1;
+      const username = `Admin${nextNum}`;
+
+      const newAdmin = {
+        username,
+        password: 'Admin123',
+        role: 'ADMIN',
+        status: 'ACTIVE',
+        firstName: username,
+        middleName: '',
+        lastName: '',
+        residentEmail: `${username}@reserbayan.com`,
+        phoneNumber: '',
+        address: '',
+        position: '',
+        proofOfEmploymentPath: ''
+      };
+
+      // Create the new admin
+      const createResponse = await fetch('http://localhost:8080/api/superadmin/admins', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -315,8 +356,8 @@ export default function SuperAdminManagementPage() {
         body: JSON.stringify(newAdmin),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json();
         throw new Error(errorData.error || 'Failed to add admin');
       }
 
@@ -325,12 +366,11 @@ export default function SuperAdminManagementPage() {
       setNotificationModal({
         type: 'success',
         title: 'Administrator Added',
-        message: 'Administrator added successfully with default password: Admin123',
+        message: `Administrator successfully created with username ${username} and password Admin123`,
         autoClose: true,
-        autoCloseDelay: 4000
+        autoCloseDelay: 5000
       });
       setAddAdminModal(false);
-      setNewAdminUsername('');
     } catch (err) {
       setNotificationModal({
         type: 'error',
@@ -435,6 +475,47 @@ export default function SuperAdminManagementPage() {
 
     setIsViewDetailsModalOpen(false);
     setOpenDropdownId(null);
+  };
+
+  const handleCompleteDocument = async (item) => {
+    const displayName = item.resident ?
+      [item.resident.firstName, item.resident.lastName].filter(name => name && name.trim()).join(' ').trim() || 'Unknown Resident' :
+      'Unknown Resident';
+
+    setConfirmationModal({
+      type: 'complete',
+      title: 'Confirm Document Completion',
+      message: `Are you sure you want to mark the document request for ${displayName} as completed? This indicates the document has been claimed.`,
+      confirmText: 'Mark as Completed',
+      confirmButtonClass: 'bg-blue-600 hover:bg-blue-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`http://localhost:8080/api/superadmin/requests/${item.requestId}/complete`, {
+            method: 'PUT',
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+            } : {},
+          });
+          if (!response.ok) throw new Error('Failed to complete document request');
+
+          fetchData(activeTab);
+          setNotificationModal({
+            type: 'success',
+            title: 'Document Request Completed',
+            message: 'Document request has been marked as completed successfully',
+            autoClose: true,
+            autoCloseDelay: 3000
+          });
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Completion Failed',
+            message: 'Error completing document request: ' + err.message
+          });
+        }
+      }
+    });
   };
 
   const handleRejectionSubmit = async (rejectionReason) => {
@@ -559,6 +640,7 @@ export default function SuperAdminManagementPage() {
     });
   };
 
+
   const handleMakeSuperAdmin = async (item) => {
     setConfirmationModal({
       type: 'make-superadmin',
@@ -624,9 +706,9 @@ export default function SuperAdminManagementPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
           <div className="flex space-x-1">
             {[
-              { id: 'administrators', label: 'Administrators', icon: Shield, color: 'blue' },
+              ...(role === 'SUPER_ADMIN' ? [{ id: 'administrators', label: 'Administrators', icon: Shield, color: 'blue' }] : []),
               { id: 'residents', label: 'Residents', icon: Users, color: 'green' },
-              { id: 'resident-requests', label: 'Resident Requests', icon: Users, color: 'orange' },
+              ...(role === 'SUPER_ADMIN' ? [{ id: 'resident-requests', label: 'Pending Accounts', icon: Users, color: 'orange' }] : []),
               { id: 'document-requests', label: 'Document Requests', icon: FileText, color: 'purple' }
             ].map((tab) => (
               <button
@@ -666,7 +748,7 @@ export default function SuperAdminManagementPage() {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              {activeTab === 'administrators' && (
+              {activeTab === 'administrators' && role === 'SUPER_ADMIN' && (
                 <button
                   onClick={() => setAddAdminModal(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
@@ -674,6 +756,42 @@ export default function SuperAdminManagementPage() {
                   <Plus size={16} />
                   Add Administrator
                 </button>
+              )}
+              {activeTab === 'document-requests' && (
+                <>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                  >
+                    <option value="asc">Name A-Z</option>
+                    <option value="desc">Name Z-A</option>
+                  </select>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </>
+              )}
+              {activeTab === 'residents' && availableSitios.length > 0 && (
+                <select
+                  value={sitioFilter}
+                  onChange={(e) => setSitioFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+                >
+                  <option value="">All Sitios</option>
+                  {availableSitios.map((sitio) => (
+                    <option key={sitio} value={sitio}>
+                      {sitio}
+                    </option>
+                  ))}
+                </select>
               )}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -718,6 +836,17 @@ export default function SuperAdminManagementPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {data
                     .filter((item) => {
+                      // Apply sitio filter if residents tab and sitio filter is selected
+                      if (activeTab === 'residents' && sitioFilter && sitioFilter.trim() !== '') {
+                        if (item.sitio !== sitioFilter) return false;
+                      }
+
+                      // Apply status filter if document-requests tab and status filter is selected
+                      if (activeTab === 'document-requests' && statusFilter && statusFilter.trim() !== '') {
+                        if (item.status !== statusFilter) return false;
+                      }
+
+                      // Apply search query filter
                       if (!searchQuery.trim()) return true;
                       const query = searchQuery.toLowerCase();
                       return (
@@ -726,12 +855,43 @@ export default function SuperAdminManagementPage() {
                         item.middleName?.toLowerCase().includes(query) ||
                         item.residentEmail?.toLowerCase().includes(query) ||
                         item.phoneNumber?.toLowerCase().includes(query) ||
-                        item.sitio?.toLowerCase().includes(query)
+                        item.sitio?.toLowerCase().includes(query) ||
+                        item.documentName?.toLowerCase().includes(query) ||
+                        item.resident?.firstName?.toLowerCase().includes(query) ||
+                        item.resident?.lastName?.toLowerCase().includes(query)
                       );
+                    })
+                    .sort((a, b) => {
+                      // Apply sorting for document requests
+                      if (activeTab === 'document-requests') {
+                        const nameA = `${a.resident?.firstName || ''} ${a.resident?.lastName || ''}`.toLowerCase();
+                        const nameB = `${b.resident?.firstName || ''} ${b.resident?.lastName || ''}`.toLowerCase();
+                        if (sortOrder === 'asc') {
+                          return nameA.localeCompare(nameB);
+                        } else {
+                          return nameB.localeCompare(nameA);
+                        }
+                      }
+                      // Default sorting for other tabs
+                      const nameA = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
+                      const nameB = `${b.firstName || ''} ${b.lastName || ''}`.toLowerCase();
+                      if (sortOrder === 'asc') {
+                        return nameA.localeCompare(nameB);
+                      } else {
+                        return nameB.localeCompare(nameA);
+                      }
                     })
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map((item, index) => (
-                      <tr key={`${activeTab}-${item.requestId || item.residentId}-${index}`} className="hover:bg-gray-50">
+                      <tr
+                        key={`${activeTab}-${item.requestId || item.residentId}-${index}`}
+                        onClick={() => handleViewInfo(item)}
+                        className="hover:bg-gray-100 cursor-pointer transition-colors"
+                        role="row"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleViewInfo(item); } }}
+                        aria-label={`View details for ${activeTab === 'document-requests' ? item.documentName : [item.firstName, item.lastName].filter(n => n).join(' ')}`}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
@@ -778,9 +938,13 @@ export default function SuperAdminManagementPage() {
                             </span>
                           ) : (
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              item.status === 'ACTIVE' || item.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                              item.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                              // Using a temporary variable to normalize status case for simpler check
+                              ['COMPLETED', 'Completed'].includes(item.status) ? 'bg-green-100 text-green-800' :
+                              ['PENDING', 'Pending'].includes(item.status) ? 'bg-yellow-100 text-yellow-800' :
+                              ['APPROVED', 'Approved'].includes(item.status) ? 'bg-blue-100 text-blue-800' :
+                              ['REJECTED', 'Rejected'].includes(item.status) ? 'bg-red-100 text-red-800' :
+                              ['CANCELLED', 'Cancelled'].includes(item.status) ? 'bg-gray-200 text-gray-800' :
+                              'bg-gray-100 text-gray-800' // General fallback (e.g., if status is undefined)
                             }`}>
                               {item.status || 'N/A'}
                             </span>
@@ -934,28 +1098,45 @@ export default function SuperAdminManagementPage() {
                               <Eye size={16} />
                               View Details
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleAccept(item);
-                                setOpenDropdownId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded flex items-center gap-2"
-                            >
-                              <CheckCircle size={16} />
-                              Approve
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleReject(item);
-                                setOpenDropdownId(null);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded flex items-center gap-2"
-                            >
-                              <XCircle size={16} />
-                              Reject
-                            </button>
+                            {item.status === 'Pending' && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAccept(item);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm text-green-700 hover:bg-green-50 rounded flex items-center gap-2"
+                                >
+                                  <CheckCircle size={16} />
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReject(item);
+                                    setOpenDropdownId(null);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded flex items-center gap-2"
+                                >
+                                  <XCircle size={16} />
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                            {item.status === 'Approved' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCompleteDocument(item);
+                                  setOpenDropdownId(null);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm text-blue-700 hover:bg-blue-50 rounded flex items-center gap-2"
+                              >
+                                <CheckCircle size={16} />
+                                Complete
+                              </button>
+                            )}
                           </>
                         )}
                         <button
@@ -1065,32 +1246,18 @@ export default function SuperAdminManagementPage() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Username *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAdminUsername}
-                    onChange={(e) => setNewAdminUsername(e.target.value)}
-                    placeholder="Enter username"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    autoFocus
-                  />
-                </div>
-
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
                     <strong>Default Settings:</strong>
                   </p>
                   <p className="text-sm text-blue-700 mt-1">
-                    Password: Admin123 (can be changed later)
+                    Password: Admin123
                   </p>
                   <p className="text-sm text-blue-700">
-                    Name: {newAdminUsername} (can be updated later)
+                    Username and Name: Auto-generated (Admin1, Admin2, etc.)
                   </p>
                   <p className="text-sm text-blue-700">
-                    Email: {newAdminUsername}@reserbayan.com (temporary)
+                    Email: AdminX@reserbayan.com (temporary)
                   </p>
                   <p className="text-sm text-blue-700">
                     Role: ADMIN, Status: ACTIVE
@@ -1111,7 +1278,6 @@ export default function SuperAdminManagementPage() {
                 <button
                   onClick={() => {
                     setAddAdminModal(false);
-                    setNewAdminUsername('');
                   }}
                   className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
@@ -1215,16 +1381,21 @@ export default function SuperAdminManagementPage() {
           isOpen={isViewDetailsModalOpen}
           onClose={() => setIsViewDetailsModalOpen(false)}
           requestDetails={selectedResident}
-          onApprove={(requestId) => {
+          onApprove={selectedResident?.status === 'Pending' ? (requestId) => {
             const item = data.find(d => d.requestId === requestId);
             if (item) handleAccept(item);
             setIsViewDetailsModalOpen(false);
-          }}
-          onReject={(requestId) => {
+          } : null}
+          onReject={selectedResident?.status === 'Pending' ? (requestId) => {
             const item = data.find(d => d.requestId === requestId);
             if (item) handleReject(item);
             setIsViewDetailsModalOpen(false);
-          }}
+          } : null}
+          onComplete={selectedResident?.status === 'Approved' ? (requestId) => {
+            const item = data.find(d => d.requestId === requestId);
+            if (item) handleCompleteDocument(item);
+            setIsViewDetailsModalOpen(false);
+          } : null}
         />
       ) : (
         <ViewDetailsModal
@@ -1238,16 +1409,6 @@ export default function SuperAdminManagementPage() {
           onReject={() => { handleReject(selectedResident); setIsViewDetailsModalOpen(false); }}
         />
       )}
-      <ViewDetailsModal
-        isOpen={isViewDetailsModalOpen}
-        onClose={() => setIsViewDetailsModalOpen(false)}
-        resident={modalType === 'document-requests' ? null : selectedResident}
-        documentRequest={modalType === 'document-requests' ? selectedResident : null}
-        title={modalType === 'document-requests' ? 'Document Request Details' : 'Resident Details'}
-        showActions={modalType === 'document-requests' || modalType === 'resident-requests'}
-        onApprove={() => handleAccept(selectedResident)}
-        onReject={() => handleReject(selectedResident)}
-      />
 
       <RejectionReasonModal
         isOpen={!!rejectionModal}

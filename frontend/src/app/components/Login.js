@@ -142,12 +142,9 @@ export default function SignUpContainer({ onClose }) {
 
           // 3. Redirect logic (Redirecting to dashboard for residents)
           console.log('User role:', data.role); // Debug logging
-          if (data.role === 'SUPER_ADMIN') {
+          if (data.role === 'SUPER_ADMIN' || data.role === 'ADMIN') {
              console.log('Redirecting to superadmin dashboard');
              window.location.href = '/superadmin/dashboard';
-          } else if (data.role === 'ADMIN') {
-             console.log('Redirecting to admin dashboard');
-             window.location.href = '/admin/dashboard';
           } else {
              console.log('Redirecting to user dashboard');
              window.location.href = '/dashboard';
