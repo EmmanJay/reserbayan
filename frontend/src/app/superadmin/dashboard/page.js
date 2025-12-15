@@ -532,7 +532,7 @@ export default function SuperAdminDashboard() {
     const role = localStorage.getItem('role');
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
 
-    if (!token || role !== 'SUPER_ADMIN') {
+    if (!token || (role !== 'SUPER_ADMIN' && role !== 'ADMIN')) {
       router.push('/');
       return;
     }

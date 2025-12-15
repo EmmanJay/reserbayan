@@ -61,7 +61,7 @@ export default function UserNavbar() {
 
         {/* Desktop Navigation (after user logs in) */}
         <nav className="hidden md:flex items-center space-x-8">
-          {role === 'SUPER_ADMIN' ? (
+          {role === 'SUPER_ADMIN' || role === 'ADMIN' ? (
             <>
               <Link href="/superadmin/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
                 <LayoutDashboard size={18} />
@@ -166,7 +166,7 @@ export default function UserNavbar() {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-8 py-4 space-y-4">
-            {role === 'SUPER_ADMIN' ? (
+            {role === 'SUPER_ADMIN' || role === 'ADMIN' ? (
               <>
                 <Link href="/superadmin/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
                   <LayoutDashboard size={18} />

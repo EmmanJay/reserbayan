@@ -10,7 +10,8 @@ export default function RequestDetailsModal({
   requestDetails,
   loading = false,
   onApprove,
-  onReject
+  onReject,
+  onComplete
 }) {
   const [isDownloading, setIsDownloading] = useState({});
   const [attachments, setAttachments] = useState([]);
@@ -124,9 +125,11 @@ export default function RequestDetailsModal({
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'pending':
-        return 'bg-amber-100 text-amber-800 border-amber-200';
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'approved':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+        return 'bg-blue-200 text-blue-900 border-blue-300';
+      case 'completed':
+        return 'bg-green-100 text-green-800 border-green-200';
       case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
       default:
@@ -366,7 +369,7 @@ export default function RequestDetailsModal({
         {/* Footer Actions */}
         {!loading && (
           <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
-            {/* Action buttons - only show for pending requests */}
+            {/* Action buttons based on status */}
             {requestDetails?.status === 'Pending' && (
               <>
                 <button
@@ -384,6 +387,24 @@ export default function RequestDetailsModal({
                   Approve Request
                 </button>
               </>
+            )}
+            {requestDetails?.status === 'Approved' && onComplete && (
+              <button
+                onClick={() => onComplete(requestDetails.id || requestDetails.requestId)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Complete Request
+              </button>
+            )}
+            {/* For completed requests, show close button only */}
+            {requestDetails?.status === 'Completed' && (
+              <button
+                onClick={onClose}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-gray-600 text-white hover:bg-gray-700"
+              >
+                Close
+              </button>
             )}
           </div>
         )}
