@@ -81,11 +81,21 @@ export default function SuperAdminManagementPage() {
   useEffect(() => {
     if (!loading) {
       const tabParam = searchParams.get('tab');
+      const actionParam = searchParams.get('action');
+      
       if (tabParam && ['administrators', 'residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
         if (activeTab !== tabParam) {
           setActiveTab(tabParam);
           fetchData(tabParam, false);
         }
+      }
+      
+      // Handle action parameter - if action=addAdmin and we're on administrators tab, open the modal
+      if (actionParam === 'addAdmin' && activeTab === 'administrators') {
+        setAddAdminModal(true);
+        // Clean up the URL by removing the action parameter
+        const newUrl = `/superadmin/management?tab=${activeTab}`;
+        router.push(newUrl, { scroll: false });
       }
     }
   }, [searchParams, loading, activeTab]);

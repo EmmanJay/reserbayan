@@ -548,9 +548,9 @@ export default function SuperAdminDashboard() {
   };
 
   // Navigation Handlers
-  const handleAddAdmin = () => router.push('/superadmin/management/admins');
+  const handleAddAdmin = () => router.push('/superadmin/management?tab=administrators&action=addAdmin');
   const handleAddDocument = () => router.push('/superadmin/documents/add');
-  const handleManageResidents = () => router.push('/superadmin/management?tab=resident-requests');
+  const handleManageResidents = () => router.push('/superadmin/management?tab=residents');
   const handleViewNotifications = () => router.push('/superadmin/notifications');
   const handleViewAllAnnouncements = () => router.push('/superadmin/announcements');
   const handleViewAllRequests = () => router.push('/superadmin/management?tab=document-requests');
