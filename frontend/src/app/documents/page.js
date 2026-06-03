@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   ArrowRight,
   BadgeCheck,
@@ -21,7 +22,7 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
+  Tags,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
@@ -157,7 +158,7 @@ function CategoryCornerBadge({ category }) {
     <span
       title={category || 'General'}
       aria-label={category || 'General'}
-      className="absolute left-0 top-0 z-20 inline-flex h-11 w-11 items-start justify-start rounded-br-[2.5rem] bg-gradient-to-br from-blue-600/16 via-sky-300/16 to-transparent p-2.5 text-blue-700/55 ring-1 ring-blue-100/50"
+      className="absolute left-0 top-0 z-0 inline-flex h-11 w-11 items-start justify-start rounded-br-[2.5rem] bg-gradient-to-br from-blue-600/16 via-sky-300/16 to-transparent p-2.5 text-blue-700/55 ring-1 ring-blue-100/50"
     >
       <CategoryIcon className="h-4 w-4" />
     </span>
@@ -181,7 +182,7 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="relative z-[100]">
       <button
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
@@ -199,7 +200,7 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-blue-100 bg-white p-1.5 shadow-[0_18px_45px_rgba(15,23,42,0.16)] ring-1 ring-white/70">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[120] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.24)]">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -227,7 +228,7 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
   );
 }
 
-function DocumentCard({ doc, viewMode }) {
+function DocumentCard({ doc, viewMode, href }) {
   const requirementsCount = doc.details?.requirements?.length || 0;
   const processingTime = doc.details?.processingTime || 'Timeline to be confirmed';
 
@@ -239,7 +240,7 @@ function DocumentCard({ doc, viewMode }) {
         transition={{ duration: 0.2, ease: 'easeOut' }}
       >
         <Link
-          href={`/documents/${doc.id}?from=grid`}
+          href={href}
           className="group grid min-h-[7.25rem] grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-[0_12px_30px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_20px_44px_rgba(37,99,235,0.12)]"
         >
           <div className="[&>div]:h-12 [&>div]:w-12 [&_svg]:h-6 [&_svg]:w-6">
@@ -288,7 +289,7 @@ function DocumentCard({ doc, viewMode }) {
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       <Link
-        href={`/documents/${doc.id}?from=grid`}
+        href={href}
         className="group relative flex h-full min-h-[9.5rem] items-center gap-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pl-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_46px_rgba(37,99,235,0.13)]"
       >
         <CategoryCornerBadge category={doc.details?.category} />
@@ -327,16 +328,21 @@ function DocumentCard({ doc, viewMode }) {
 
 export default function DocumentsGridPage() {
   const { documentsData, loading, error } = useDocumentTypes();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [processingFilter, setProcessingFilter] = useState('All');
-  const [sortBy, setSortBy] = useState('recommended');
-  const [viewMode, setViewMode] = useState('grid');
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [selectedCategory, setSelectedCategory] = useState(() => searchParams.get('category') || 'All');
+  const [processingFilter, setProcessingFilter] = useState(() => searchParams.get('timeline') || 'All');
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'recommended');
+  const [viewMode, setViewMode] = useState(() => searchParams.get('view') || 'grid');
 
   const categories = useMemo(() => [
     'All',
     ...new Set(documentsData.map((doc) => doc.details?.category).filter(Boolean)),
   ], [documentsData]);
+  const categoryOptions = useMemo(() => categories.map((category) => ({
+    value: category,
+    label: category === 'All' ? 'All categories' : category,
+  })), [categories]);
 
   const filteredDocuments = useMemo(() => {
     const normalizedSearchQuery = searchQuery.toLowerCase().trim();
@@ -360,6 +366,19 @@ export default function DocumentsGridPage() {
 
   const totalCategories = Math.max(categories.length - 1, 0);
   const activeFiltersCount = [selectedCategory !== 'All', processingFilter !== 'All', searchQuery.trim() !== ''].filter(Boolean).length;
+
+  const documentQueryString = useMemo(() => {
+    const params = new URLSearchParams();
+
+    params.set('from', 'grid');
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (processingFilter !== 'All') params.set('timeline', processingFilter);
+    if (sortBy !== 'recommended') params.set('sort', sortBy);
+    if (viewMode !== 'grid') params.set('view', viewMode);
+
+    return params.toString();
+  }, [processingFilter, searchQuery, selectedCategory, sortBy, viewMode]);
 
   if (loading) {
     return (
@@ -398,7 +417,7 @@ export default function DocumentsGridPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12, ease: 'easeOut' }}
         >
-          <div className="grid gap-4 lg:grid-cols-[1fr_220px_220px_auto]">
+          <div className="grid gap-4 lg:grid-cols-[1fr_210px_190px_190px_auto]">
             <label className="relative block">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <input
@@ -410,6 +429,14 @@ export default function DocumentsGridPage() {
                 suppressHydrationWarning={true}
               />
             </label>
+
+            <CustomDropdown
+              icon={Tags}
+              options={categoryOptions}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              ariaLabel="Filter documents by category"
+            />
 
             <CustomDropdown
               icon={Filter}
@@ -454,30 +481,6 @@ export default function DocumentsGridPage() {
               </button>
             </div>
           </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const isActive = selectedCategory === category;
-              const { icon: CategoryIcon, activeClassName, className } = getCategoryConfig(category);
-
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => setSelectedCategory(category)}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 transition-all ${
-                    isActive
-                      ? `bg-gradient-to-r ${activeClassName} ring-transparent shadow-lg`
-                      : `${className} bg-white hover:-translate-y-0.5 hover:shadow-md`
-                  }`}
-                  suppressHydrationWarning={true}
-                >
-                  {category === 'All' ? <Sparkles className="h-4 w-4" /> : <CategoryIcon className="h-4 w-4" />}
-                  {category}
-                </button>
-              );
-            })}
-          </div>
         </motion.section>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -521,7 +524,12 @@ export default function DocumentsGridPage() {
             transition={{ duration: 0.5, delay: 0.18, ease: 'easeOut' }}
           >
             {filteredDocuments.map((doc) => (
-              <DocumentCard key={doc.id} doc={doc} viewMode={viewMode} />
+              <DocumentCard
+                key={doc.id}
+                doc={doc}
+                viewMode={viewMode}
+                href={`/documents/${doc.id}?${documentQueryString}`}
+              />
             ))}
           </motion.div>
         )}

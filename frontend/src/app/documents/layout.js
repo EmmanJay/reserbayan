@@ -1,155 +1,338 @@
-'use client'; // 👈 Must be a client component for search/filter state
+'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import {
+  ArrowLeft,
+  Banknote,
+  BriefcaseBusiness,
+  Building2,
+  ChevronDown,
+  Clock3,
+  FileCheck2,
+  FileText,
+  Filter,
+  Grid3X3,
+  Home,
+  PanelLeftOpen,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Tags,
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useDocumentTypes } from '@/hooks/useDocumentTypes';
-import { Search, FileText, LayoutGrid, PanelLeftOpen } from 'lucide-react'; // Import icons
 
-// This component is the new, stateful sidebar
-function DocumentSidebar({ isOpen, onClose }) {
-  const { documentsData } = useDocumentTypes();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [isFadingOut, setIsFadingOut] = useState(false);
-  const [user, setUser] = useState(null);
-  const pathname = usePathname(); // Hook to get the current URL
-  const searchParams = useSearchParams();
+const categoryStyles = {
+  'Financial Assistance': { icon: Banknote },
+  Residency: { icon: Home },
+  Clearance: { icon: ShieldCheck },
+  'Permits & Tax': { icon: BriefcaseBusiness },
+  'Infrastructure & Zoning': { icon: Building2 },
+};
+
+const sortOptions = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'name-asc', label: 'Name A-Z' },
+  { value: 'name-desc', label: 'Name Z-A' },
+  { value: 'time-asc', label: 'Fastest processing' },
+  { value: 'requirements-asc', label: 'Fewest requirements' },
+];
+
+const processingFilters = [
+  { value: 'All', label: 'Any timeline' },
+  { value: 'quick', label: 'Same day' },
+  { value: 'multi-day', label: 'Multi-day' },
+  { value: 'variable', label: 'Variable' },
+];
+
+function getCategoryIcon(category) {
+  return categoryStyles[category]?.icon || FileText;
+}
+
+function getProcessingMinutes(processingTime = '') {
+  const normalizedProcessingTime = processingTime.toLowerCase().replace(/\s+/g, ' ').trim();
+
+  if (!normalizedProcessingTime || normalizedProcessingTime.includes('varies')) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const numbers = normalizedProcessingTime.match(/\d+/g)?.map(Number) || [];
+  const highestNumber = numbers.length ? Math.max(...numbers) : 0;
+
+  if (normalizedProcessingTime.includes('working day') || normalizedProcessingTime.includes('day')) {
+    return highestNumber * 24 * 60;
+  }
+
+  if (normalizedProcessingTime.includes('hour')) {
+    return highestNumber * 60;
+  }
+
+  return highestNumber;
+}
+
+function getProcessingBucket(processingTime = '') {
+  if (processingTime.toLowerCase().includes('varies')) {
+    return 'variable';
+  }
+
+  return getProcessingMinutes(processingTime) <= 24 * 60 ? 'quick' : 'multi-day';
+}
+
+function sortDocuments(documents, sortBy) {
+  return [...documents].sort((firstDocument, secondDocument) => {
+    if (sortBy === 'name-asc') {
+      return firstDocument.name.localeCompare(secondDocument.name);
+    }
+
+    if (sortBy === 'name-desc') {
+      return secondDocument.name.localeCompare(firstDocument.name);
+    }
+
+    if (sortBy === 'time-asc') {
+      return getProcessingMinutes(firstDocument.details?.processingTime) - getProcessingMinutes(secondDocument.details?.processingTime);
+    }
+
+    if (sortBy === 'requirements-asc') {
+      return (firstDocument.details?.requirements?.length || 0) - (secondDocument.details?.requirements?.length || 0);
+    }
+
+    return 0;
+  });
+}
+
+function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((option) => option.value === value) || options[0];
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
     }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // --- Get categories and filter documents ---
-  const categories = [
+  return (
+    <div ref={dropdownRef} className="relative z-[100]">
+      <button
+        type="button"
+        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
+        className={`flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3 text-left text-sm font-bold text-slate-700 transition-all ${
+          isOpen
+            ? 'border-blue-400 bg-white ring-4 ring-blue-100'
+            : 'border-slate-200 bg-slate-50/90 hover:border-blue-200 hover:bg-white'
+        }`}
+      >
+        <Icon className="h-4 w-4 shrink-0 text-blue-500" />
+        <span className="min-w-0 flex-1 truncate">{selectedOption.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[120] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.24)]">
+          {options.map((option) => {
+            const isSelected = option.value === value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-semibold transition-all ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white'
+                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocumentSidebar({ isOpen, onClose }) {
+  const { documentsData } = useDocumentTypes();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [selectedCategory, setSelectedCategory] = useState(() => searchParams.get('category') || 'All');
+  const [processingFilter, setProcessingFilter] = useState(() => searchParams.get('timeline') || 'All');
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'recommended');
+
+  const categories = useMemo(() => [
     'All',
     ...new Set(documentsData.map((doc) => doc.details?.category).filter(Boolean)),
-  ];
+  ], [documentsData]);
+  const categoryOptions = useMemo(() => categories.map((category) => ({
+    value: category,
+    label: category === 'All' ? 'All categories' : category,
+  })), [categories]);
 
-  const filteredDocuments = documentsData.filter((doc) => {
-    const matchesCategory =
-      selectedCategory === 'All' || doc.details?.category === selectedCategory;
-    const matchesSearch =
-      doc.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredDocuments = useMemo(() => {
+    const normalizedSearchQuery = searchQuery.toLowerCase().trim();
+    const documents = documentsData.filter((doc) => {
+      const searchableText = [
+        doc.name,
+        doc.shortDescription,
+        doc.details?.category,
+        doc.details?.processingTime,
+      ].filter(Boolean).join(' ').toLowerCase();
 
-  // Check if coming from grid view and set animation state
-  useEffect(() => {
-    const from = searchParams.get('from');
-    if (from === 'grid' && !hasAnimated) {
-      setShouldAnimate(true);
-      setIsVisible(true);
-      setHasAnimated(true);
-      // Remove the query param from URL after setting animation
-      const url = new URL(window.location);
-      url.searchParams.delete('from');
-      window.history.replaceState({}, '', url);
-    } else if (!from && !hasAnimated) {
-      // If not coming from grid and hasn't animated, sidebar should be visible (no animation)
-      setShouldAnimate(false);
-      setIsVisible(true);
-      setHasAnimated(true); // Mark as animated to prevent future animations
-    }
-  }, [searchParams, hasAnimated]);
+      const matchesSearch = !normalizedSearchQuery || searchableText.includes(normalizedSearchQuery);
+      const matchesCategory = selectedCategory === 'All' || doc.details?.category === selectedCategory;
+      const matchesProcessing = processingFilter === 'All' || getProcessingBucket(doc.details?.processingTime) === processingFilter;
+
+      return matchesSearch && matchesCategory && matchesProcessing;
+    });
+
+    return sortDocuments(documents, sortBy);
+  }, [documentsData, processingFilter, searchQuery, selectedCategory, sortBy]);
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (processingFilter !== 'All') params.set('timeline', processingFilter);
+    if (sortBy !== 'recommended') params.set('sort', sortBy);
+
+    return params.toString();
+  }, [processingFilter, searchQuery, selectedCategory, sortBy]);
+
+  const backHref = queryString ? `/documents?${queryString}` : '/documents';
 
   return (
     <>
-      {/* Mobile Backdrop for closing */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/20 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
 
-      <nav
-        className={`bg-white border-r p-6 space-y-4 transition-all duration-300 lg:transition-opacity lg:duration-500 ${
+      <motion.nav
+        className={`border-r border-slate-200/80 bg-white/95 p-4 shadow-[14px_0_45px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-all duration-300 ${
           isOpen
-            ? 'fixed left-0 top-18 w-80 h-[calc(100vh-4.5rem)] z-50 transform translate-x-0 lg:static lg:z-auto lg:w-96 lg:flex-shrink-0 lg:transform-none lg:top-auto lg:h-auto'
-            : 'hidden lg:block lg:w-96 lg:flex-shrink-0 lg:relative'
-        } ${isVisible && !isFadingOut ? 'opacity-100' : 'opacity-0'}`}
-        style={shouldAnimate ? { animation: 'slideInFromLeft 0.6s ease-out 0.2s both' } : {}}
+            ? 'fixed left-0 top-18 z-50 h-[calc(100vh-4.5rem)] w-80 translate-x-0 lg:static lg:z-auto lg:h-auto lg:w-[22rem] lg:translate-x-0'
+            : 'hidden lg:block lg:w-[22rem] lg:shrink-0'
+        }`}
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
       >
-
-
-        {/* User Welcome Message */}
-        {user && (
-          <div className="px-4 py-3 bg-gray-100 rounded-lg mb-4">
-            <p className="text-sm text-gray-700">Welcome, <span className="font-semibold">{user.firstName} {user.lastName}</span></p>
-          </div>
-        )}
-
-        {/* 1. "Back to Grid" Button */}
         <Link
-          href="/documents" // Link back to your main grid page
-          className="flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-          onClick={onClose} // Close mobile sidebar when navigating
+          href={backHref}
+          onClick={onClose}
+          className="group flex items-center justify-between rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-bold text-white shadow-[0_14px_32px_rgba(37,99,235,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(37,99,235,0.3)]"
         >
-          <LayoutGrid className="w-5 h-5" />
-          Back to All Documents
+          <span className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+            Back to Documents
+          </span>
+          <Grid3X3 className="h-4 w-4 opacity-80" />
         </Link>
 
-      {/* 2. Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-        <input
-          type="text"
-          placeholder="Search Documents..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+        <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm">
+          <label className="relative block">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search documents"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50/90 pl-10 pr-3 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            />
+          </label>
 
-      {/* 3. Category Filter Dropdown */}
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        {categories.map((category) => (
-          <option key={category} value={category}>
-            {category}
-          </option>
-        ))}
-      </select>
+          <div className="mt-3 grid grid-cols-1 gap-2">
+            <CustomDropdown
+              icon={Tags}
+              options={categoryOptions}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              ariaLabel="Filter documents by category"
+            />
+            <CustomDropdown
+              icon={Filter}
+              options={processingFilters}
+              value={processingFilter}
+              onChange={setProcessingFilter}
+              ariaLabel="Filter documents by timeline"
+            />
+            <CustomDropdown
+              icon={SlidersHorizontal}
+              options={sortOptions}
+              value={sortBy}
+              onChange={setSortBy}
+              ariaLabel="Sort documents"
+            />
+          </div>
+        </div>
 
-      {/* 4. Document List */}
-      <ul className="space-y-1 overflow-y-auto h-[calc(100vh-280px)]">
-        {filteredDocuments.map((doc) => {
-          const isActive = pathname === `/documents/${doc.id}`;
-          return (
-            <li key={doc.id}>
-              <Link
-                href={`/documents/${doc.id}`}
-                onClick={onClose} // Close mobile sidebar when navigating
-                // Dynamically change style if this link is active
-                className={`flex items-center gap-3 p-3 rounded-md font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <FileText className="w-5 h-5 flex-shrink-0" />
-                <span className="truncate">{doc.name}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+        <div className="mt-4 flex items-center justify-between px-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+          <span>{filteredDocuments.length} documents</span>
+          <span>Filtered list</span>
+        </div>
+
+        <ul className="mt-2 h-[calc(100vh-23rem)] space-y-2 overflow-y-auto pr-1">
+          {filteredDocuments.map((doc) => {
+            const isActive = pathname === `/documents/${doc.id}`;
+            const CategoryIcon = getCategoryIcon(doc.details?.category);
+            const requirementsCount = doc.details?.requirements?.length || 0;
+            const href = queryString ? `/documents/${doc.id}?${queryString}` : `/documents/${doc.id}`;
+
+            return (
+              <li key={doc.id}>
+                <Link
+                  href={href}
+                  onClick={onClose}
+                  className={`group flex items-center gap-3 rounded-2xl border p-3 transition-all ${
+                    isActive
+                      ? 'border-blue-300 bg-blue-600 text-white shadow-[0_16px_34px_rgba(37,99,235,0.24)]'
+                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50'
+                  }`}
+                >
+                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                    isActive ? 'bg-white/15 text-white' : 'bg-blue-50 text-blue-700'
+                  }`}>
+                    <CategoryIcon className="h-5 w-5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-extrabold">{doc.name}</span>
+                    <span className={`mt-0.5 flex items-center gap-2 text-xs ${
+                      isActive ? 'text-blue-50' : 'text-slate-500'
+                    }`}>
+                      <Clock3 className="h-3.5 w-3.5" />
+                      {doc.details?.processingTime || 'TBD'}
+                      <FileCheck2 className="h-3.5 w-3.5" />
+                      {requirementsCount}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </motion.nav>
     </>
   );
 }
 
-// This is the main layout
 export default function DocumentsLayout({ children }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const pathname = usePathname();
@@ -157,35 +340,27 @@ export default function DocumentsLayout({ children }) {
 
   if (isDetailPage) {
     return (
-      // This div includes the navbar height (pt-18)
-      <div className="flex min-h-screen bg-[#FAFAFA] pt-18">
-
-        {/* The new stateful sidebar */}
+      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(47,135,195,0.13),transparent_30%),linear-gradient(180deg,#F8FBFF_0%,#FFFFFF_46%,#F6F8FC_100%)] pt-18">
         <DocumentSidebar
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
         />
 
-        {/* The 'children' prop is your detailed view page (page.js) */}
-        <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
-          {/* Mobile Menu Button */}
+        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
-            className={`lg:hidden fixed top-20 left-4 z-30 p-2 bg-white rounded-md shadow-md border transition-all duration-300 ${isMobileSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+            className={`fixed left-4 top-20 z-30 rounded-2xl border border-slate-200 bg-white p-2 shadow-md transition-all duration-300 lg:hidden ${isMobileSidebarOpen ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
           >
-            <PanelLeftOpen className="w-6 h-6" />
+            <PanelLeftOpen className="h-6 w-6" />
           </button>
 
-          {/* We center the content in a max-width container */}
-          <div className="max-w-7xl mx-auto">
+          <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </main>
-
       </div>
     );
   }
 
-  // For the grid page, just return children without layout
   return children;
 }
