@@ -463,7 +463,7 @@ export default function SignUpContainer({ onClose }) {
           }),
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (data.success) {
           localStorage.setItem("token", data.token);
@@ -482,10 +482,10 @@ export default function SignUpContainer({ onClose }) {
              window.location.href = '/dashboard';
           }
         } else {
-          setLoginError(data.message || "Login failed");
+          setLoginError(data.message || "Account not found or password is incorrect. Please check your login details.");
         }
       } catch (error) {
-        setNotificationModal({ type: 'error', title: 'Network Error', message: 'Please try again.' });
+        setLoginError("We could not connect to the server. Please try again in a moment.");
       } finally {
         setLoading(false);
       }
@@ -642,7 +642,7 @@ export default function SignUpContainer({ onClose }) {
             alt="ReserBayan logo"
             width={48}
             height={48}
-            className="h-12 w-12 rounded-xl object-contain"
+            className="h-12 w-12 object-contain"
             priority
           />
           <span className="text-2xl font-bold text-[#1E2566]">ReserBayan</span>
@@ -702,7 +702,16 @@ export default function SignUpContainer({ onClose }) {
               </div>
             </motion.div>
 
-            {loginError && (<motion.div variants={fieldVariants} className="text-center mt-2"><p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{loginError}</p></motion.div>)}
+            {loginError && (
+              <motion.div
+                variants={fieldVariants}
+                className="mt-1 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left shadow-sm"
+                role="alert"
+                aria-live="polite"
+              >
+                <p className="text-sm font-semibold leading-6 text-red-700">{loginError}</p>
+              </motion.div>
+            )}
             
             <motion.div variants={fieldVariants} className="pt-4">
               <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
