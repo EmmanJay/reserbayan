@@ -1,38 +1,146 @@
 [
   {
-    "id": "q1",
+    "id": "getting-started-1",
+    "category": "getting_started",
+    "icon": "HelpCircle",
+    "question": "What is ReserBayan?",
+    "preview": "ReserBayan is an online barangay document request system.",
+    "answer": "ReserBayan is an online platform that helps residents request barangay documents, check requirements, submit information, and track request updates without relying only on physical queues."
+  },
+  {
+    "id": "getting-started-2",
+    "category": "getting_started",
+    "icon": "Building2",
+    "question": "Who can use the system?",
+    "preview": "Residents can create an account and request available barangay documents.",
+    "answer": "The system is intended for residents who need barangay documents and services. Administrators and superadmins use separate dashboards to manage requests, resident verification, documents, announcements, and records."
+  },
+  {
+    "id": "getting-started-3",
+    "category": "getting_started",
     "icon": "FileText",
     "question": "What documents can I request through ReserBayan?",
-    "answer": "You can request a variety of barangay documents, including Cedula (Community Tax Certificate), Barangay Certificate, Certificate of Indigency, and First Time Jobseeker Certificates. We are continuously working to add more services."
+    "preview": "Common certificates, clearances, IDs, permits, and tax-related documents are listed.",
+    "answer": "Available documents may include Barangay Certificate, Barangay Clearance, Certificate of Indigency, Certificate of Residency, Cedula, First-Time Job Seeker, Solo Parent ID, PWD ID assistance, and permit-related documents. The visible document catalog shows the current list of available services."
   },
   {
-    "id": "q2",
-    "icon": "Clock",
-    "question": "How long is the processing time?",
-    "answer": "Our goal is to provide on-the-day to 24-hour processing for most requests submitted during business hours. Processing times may vary depending on the document type and verification requirements."
+    "id": "account-1",
+    "category": "account",
+    "icon": "UserCheck",
+    "question": "Why do I need to create an account before requesting a document?",
+    "preview": "An account helps verify identity and keeps requests connected to the correct resident.",
+    "answer": "A resident account allows the barangay to verify your identity, contact information, address, and submitted requests. This helps prevent duplicate or invalid requests and keeps your document history organized."
   },
   {
-    "id": "q3",
-    "icon": "Eye",
-    "question": "How can I track the status of my request?",
-    "answer": "You can track the status of your document in real-time through your user dashboard. You will receive notifications as your request moves from 'Pending' to 'In Progress' and finally to 'Ready for Pick-up' or 'Out for Delivery'."
+    "id": "account-2",
+    "category": "account",
+    "icon": "ShieldCheck",
+    "question": "What do I need to prepare for account verification?",
+    "preview": "Prepare personal information, address details, and a valid ID image.",
+    "answer": "You need to provide your name, gender, date of birth, phone number, address details, email, password, and a valid government-issued ID image. The ID helps the barangay confirm that the account belongs to a real resident."
   },
   {
-    "id": "q4",
-    "icon": "DollarSign",
-    "question": "Is this service free?",
-    "answer": "Using the ReserBayan platform to submit your request is free. However, standard government fees for each document (like the fee for a Cedula or Barangay Certificate) still apply. You can see the total cost before confirming your request."
+    "id": "account-3",
+    "category": "account",
+    "icon": "XCircle",
+    "question": "What happens if my account application is rejected?",
+    "preview": "You will receive a notification with the reason and may reapply.",
+    "answer": "If your account application is rejected, you will receive a notification showing the reason. You can review the issue, correct your information or uploaded ID, and submit another application for verification."
   },
   {
-    "id": "q5",
-    "icon": "CheckSquare",
+    "id": "requests-1",
+    "category": "requests",
+    "icon": "ClipboardCheck",
     "question": "What do I need to prepare before requesting a document?",
-    "answer": "Requirements vary by document. Generally, you will need a valid government-issued ID for verification. Some documents, like a Certificate of Indigency, may require you to provide additional information about your household status. All requirements will be clearly listed on the request form."
+    "preview": "Requirements depend on the selected document.",
+    "answer": "Requirements vary by document. The document detail page shows the processing time, required checklist items, and any additional information needed before you submit the request."
   },
   {
-    "id": "q6",
+    "id": "requests-2",
+    "category": "requests",
+    "icon": "FileText",
+    "question": "Can I upload supporting files with my request?",
+    "preview": "Yes, upload the required files shown in the request form.",
+    "answer": "Yes. If a document requires proof or supporting files, the request form will ask you to upload them. Make sure the files are clear, readable, and match the requested requirement."
+  },
+  {
+    "id": "requests-3",
+    "category": "requests",
     "icon": "XCircle",
     "question": "Can I cancel a request?",
-    "answer": "You can cancel a request as long as it is still in the 'Pending' status. Once the barangay has begun processing your document ('In Progress' status), it can no longer be cancelled."
+    "preview": "Cancellation is usually allowed only while the request is still pending.",
+    "answer": "You can cancel a request while it is still pending. Once the barangay starts processing or has completed the request, cancellation may no longer be available."
+  },
+  {
+    "id": "requests-4",
+    "category": "requests",
+    "icon": "RefreshCw",
+    "question": "Can I reapply if my document request is rejected?",
+    "preview": "Yes, rejected requests can be reviewed and requested again.",
+    "answer": "Yes. If your document request is rejected, the notification or request details will show the reason. You may reapply by starting another request for the same document after correcting the issue."
+  },
+  {
+    "id": "processing-1",
+    "category": "processing",
+    "icon": "Clock",
+    "question": "How long is the processing time?",
+    "preview": "Processing depends on the document and barangay review.",
+    "answer": "Processing time depends on the type of document and the information that needs to be reviewed. The document card or detail page shows the estimated processing time, such as minutes, hours, days, or varied processing."
+  },
+  {
+    "id": "processing-2",
+    "category": "processing",
+    "icon": "Eye",
+    "question": "How can I track the status of my request?",
+    "preview": "Track requests from your resident dashboard and notifications.",
+    "answer": "You can track your request from your dashboard and notification center. Status updates may include pending, in progress, approved, rejected, completed, ready for release, or other barangay-defined updates."
+  },
+  {
+    "id": "processing-3",
+    "category": "processing",
+    "icon": "CreditCard",
+    "question": "Is the service free?",
+    "preview": "Using the system is free, but official document fees may still apply.",
+    "answer": "Using ReserBayan to submit and track requests is free. However, standard barangay or government fees for specific documents may still apply depending on the requested document."
+  },
+  {
+    "id": "processing-4",
+    "category": "processing",
+    "icon": "CheckCircle",
+    "question": "How will I know when my document is approved or ready?",
+    "preview": "You will receive status updates and notifications.",
+    "answer": "The system sends notifications when important updates happen, such as approval, rejection, completion, or release instructions. You can also check your request details from your account."
+  },
+  {
+    "id": "notifications-1",
+    "category": "notifications",
+    "icon": "Bell",
+    "question": "Where do notifications appear?",
+    "preview": "Notifications appear in the bell dropdown in the navbar.",
+    "answer": "Notifications appear in the notification center opened from the bell icon in the navbar. The badge shows unread notifications, and you can mark notifications as read or delete them."
+  },
+  {
+    "id": "notifications-2",
+    "category": "notifications",
+    "icon": "Bell",
+    "question": "Will I see the reason if my account or document is rejected?",
+    "preview": "Yes, rejection notifications include a preview and full reason.",
+    "answer": "Yes. Rejection notifications include a preview of the reason. Opening the notification shows the full message so you know what to fix before reapplying."
+  },
+  {
+    "id": "notifications-3",
+    "category": "notifications",
+    "icon": "ShieldCheck",
+    "question": "Is my uploaded information secure?",
+    "preview": "Uploaded details are used for verification and request processing.",
+    "answer": "Your uploaded information is used for account verification and document request processing. Administrators should only access the information needed to review your account or request."
+  },
+  {
+    "id": "notifications-4",
+    "category": "notifications",
+    "icon": "CheckCircle",
+    "question": "What should I do if I entered incorrect information?",
+    "preview": "Correct it before submitting, or reapply if the request was rejected.",
+    "answer": "Review your details carefully before submitting. If an account or document request is rejected because of incorrect information, read the rejection reason and submit a corrected application or request."
   }
 ]
