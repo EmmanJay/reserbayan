@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
-import { X, Mail, Lock, Phone, FileText, CheckCircle, Eye, EyeOff, Calendar } from 'lucide-react';
+import { X, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Calendar, ChevronDown } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 
 // --- Sorted and Title Cased Sitios ---
@@ -16,8 +15,343 @@ const SITIO_OPTIONS = [
   "Sagrada", "Sto. Niño", "Sunrise", "Upper Tabucanal", "Villa Bayabas"
 ];
 
+const GENDER_OPTIONS = [
+  { value: 'Male', label: 'Male' },
+  { value: 'Female', label: 'Female' },
+];
+
+const REGION_OPTIONS = [{ value: 'Region VII', label: 'Region VII' }];
+const PROVINCE_OPTIONS = [{ value: 'Cebu', label: 'Cebu' }];
+const CITY_OPTIONS = [{ value: 'Cebu City', label: 'Cebu City' }];
+const BARANGAY_OPTIONS = [{ value: 'Pardo (Pob.)', label: 'Pardo (Pob.)' }];
+const SITIO_SELECT_OPTIONS = SITIO_OPTIONS.map((option) => ({ value: option, label: option }));
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+function formatDateForInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function formatDateForDisplay(value) {
+  if (!value) return 'mm/dd/yyyy';
+  const [year, month, day] = value.split('-');
+  return `${month}/${day}/${year}`;
+}
+
+function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
+  const pickerRef = useRef(null);
+  const maxDateObject = new Date(`${maxDate}T00:00:00`);
+  const selectedDate = value ? new Date(`${value}T00:00:00`) : null;
+  const [isOpen, setIsOpen] = useState(false);
+  const [viewDate, setViewDate] = useState(selectedDate || maxDateObject);
+  const [pickerMode, setPickerMode] = useState('days');
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setViewDate(selectedDate);
+    }
+  }, [value]);
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const startYear = maxDateObject.getFullYear() - 100;
+  const years = Array.from({ length: 101 }, (_, index) => maxDateObject.getFullYear() - index);
+  const firstDayOfMonth = new Date(year, month, 1);
+  const firstCalendarDate = new Date(firstDayOfMonth);
+  firstCalendarDate.setDate(firstCalendarDate.getDate() - firstDayOfMonth.getDay());
+
+  const calendarDays = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(firstCalendarDate);
+    date.setDate(firstCalendarDate.getDate() + index);
+    return date;
+  });
+
+  const changeMonth = (offset) => {
+    setPickerMode('days');
+    setViewDate((currentDate) => new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
+  };
+
+  const updateMonth = (monthIndex) => {
+    setViewDate((currentDate) => new Date(currentDate.getFullYear(), monthIndex, 1));
+    setPickerMode('days');
+  };
+
+  const updateYear = (selectedYear) => {
+    setViewDate((currentDate) => {
+      const nextMonth = selectedYear === maxDateObject.getFullYear()
+        ? Math.min(currentDate.getMonth(), maxDateObject.getMonth())
+        : currentDate.getMonth();
+
+      return new Date(selectedYear, nextMonth, 1);
+    });
+    setPickerMode('months');
+  };
+
+  return (
+    <div ref={pickerRef} className="relative">
+      <input
+        tabIndex={-1}
+        aria-hidden="true"
+        value={value}
+        required={required}
+        onChange={() => {}}
+        className="pointer-events-none absolute h-px w-px opacity-0"
+      />
+      <button
+        id={id}
+        type="button"
+        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        aria-expanded={isOpen}
+        className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-gradient-to-r from-white to-blue-50/40 px-4 text-left text-base shadow-sm outline-none transition-all ${
+          isOpen
+            ? 'border-blue-400 ring-4 ring-blue-100'
+            : 'border-slate-200 hover:border-blue-200'
+        } ${value ? 'text-slate-900' : 'text-slate-400'}`}
+      >
+        <Calendar className="h-5 w-5 shrink-0 text-blue-500" />
+        <span className="flex-1">{formatDateForDisplay(value)}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[90] w-[19rem] overflow-hidden rounded-3xl bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
+          <div className="flex items-center justify-between">
+            <button type="button" onClick={() => changeMonth(-1)} className="rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-700">
+              <ChevronDown className="h-5 w-5 rotate-90" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPickerMode((currentMode) => currentMode === 'days' ? 'months' : 'days')}
+              className="rounded-full px-3 py-1.5 text-sm font-extrabold text-slate-800 transition-all hover:bg-blue-50 hover:text-blue-700"
+            >
+              {MONTH_NAMES[month]} {year}
+            </button>
+            <button type="button" onClick={() => changeMonth(1)} className="rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-700">
+              <ChevronDown className="h-5 w-5 -rotate-90" />
+            </button>
+          </div>
+
+          {pickerMode === 'days' && (
+            <>
+              <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400">
+                {WEEKDAY_LABELS.map((weekday) => (
+                  <span key={weekday} className="py-1">{weekday}</span>
+                ))}
+              </div>
+
+              <div className="mt-1 grid grid-cols-7 gap-1">
+                {calendarDays.map((date) => {
+                  const dateValue = formatDateForInput(date);
+                  const isCurrentMonth = date.getMonth() === month;
+                  const isSelected = value === dateValue;
+                  const isDisabled = date > maxDateObject;
+
+                  return (
+                    <button
+                      key={dateValue}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => {
+                        onChange(dateValue);
+                        setIsOpen(false);
+                      }}
+                      className={`h-9 rounded-xl text-sm font-semibold transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          : isDisabled
+                            ? 'cursor-not-allowed text-slate-300'
+                            : isCurrentMonth
+                              ? 'text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                              : 'text-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {date.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {pickerMode === 'months' && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setPickerMode('years')}
+                className="mb-3 w-full rounded-2xl bg-blue-50 px-3 py-2 text-sm font-extrabold text-blue-700 transition-all hover:bg-blue-100"
+              >
+                Change year: {year}
+              </button>
+              <div className="grid grid-cols-3 gap-2">
+                {MONTH_NAMES.map((monthName, monthIndex) => {
+                  const isDisabled = year === maxDateObject.getFullYear() && monthIndex > maxDateObject.getMonth();
+                  const isSelected = monthIndex === month;
+
+                  return (
+                    <button
+                      key={monthName}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => updateMonth(monthIndex)}
+                      className={`rounded-2xl px-3 py-2 text-sm font-bold transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          : isDisabled
+                            ? 'cursor-not-allowed bg-slate-50 text-slate-300'
+                            : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                      }`}
+                    >
+                      {monthName.slice(0, 3)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {pickerMode === 'years' && (
+            <div className="mt-4 max-h-72 overflow-y-auto pr-1">
+              <div className="grid grid-cols-4 gap-2">
+                {years.map((yearOption) => {
+                  const isSelected = yearOption === year;
+
+                  return (
+                    <button
+                      key={yearOption}
+                      type="button"
+                      disabled={yearOption < startYear}
+                      onClick={() => updateYear(yearOption)}
+                      className={`rounded-2xl px-3 py-2 text-sm font-bold transition-all ${
+                        isSelected
+                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                      }`}
+                    >
+                      {yearOption}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {pickerMode === 'days' && (
+          <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3">
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="rounded-full px-3 py-1.5 text-sm font-bold text-slate-500 hover:bg-slate-50"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onChange(maxDate);
+                setIsOpen(false);
+              }}
+              className="rounded-full bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700 hover:bg-blue-100"
+            >
+              Today
+            </button>
+          </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CustomSelect({ id, value, onChange, placeholder, options, required = false }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+  const selectedOption = options.find((option) => option.value === value);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={selectRef} className="relative">
+      <input
+        tabIndex={-1}
+        aria-hidden="true"
+        value={value}
+        required={required}
+        onChange={() => {}}
+        className="pointer-events-none absolute h-px w-px opacity-0"
+      />
+      <button
+        id={id}
+        type="button"
+        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        aria-expanded={isOpen}
+        className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-base shadow-sm outline-none transition-all ${
+          isOpen
+            ? 'border-blue-400 ring-4 ring-blue-100'
+            : 'border-slate-200 hover:border-blue-200'
+        } ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}
+      >
+        <span className="min-w-0 flex-1 truncate">{selectedOption?.label || placeholder}</span>
+        <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.45rem)] z-[80] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_22px_55px_rgba(15,23,42,0.18)]">
+          {options.map((option) => {
+            const isSelected = option.value === value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white'
+                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SignUpContainer({ onClose }) {
-  const router = useRouter();
+  const fileInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState('login'); 
   const [employmentFile, setEmploymentFile] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -58,15 +392,17 @@ export default function SignUpContainer({ onClose }) {
 
   // --- STYLES ---
   const inputHeight = `h-12`; 
-  const inputStyle = `pl-11 text-base ${inputHeight} bg-white`; 
+  const inputStyle = `pl-11 text-base ${inputHeight} bg-white rounded-2xl border-slate-200 shadow-sm focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-blue-400`; 
   const iconStyle = `absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`; 
   const labelStyle = `block text-base font-medium text-gray-700 mb-2.5`; 
   
-  const dropdownStyle = (value) => `
-    w-full border border-gray-200 rounded-lg px-4 ${inputHeight} text-base 
-    focus:outline-none focus:ring-2 focus:ring-ring focus:border-input bg-white
-    ${value ? 'text-black' : 'text-gray-400'}
-  `;
+  const clearEmploymentFile = () => {
+    setEmploymentFile(null);
+    setFileError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   // --- VALIDATION HELPERS ---
   const validatePassword = (pwd) => {
@@ -165,6 +501,10 @@ export default function SignUpContainer({ onClose }) {
         setNotificationModal({ type: 'warning', title: 'Invalid Phone Number', message: 'Please enter a valid Philippine mobile number (e.g., 0917xxxxxxx).' });
         setLoading(false); return;
       }
+      if (!employmentFile) {
+        setNotificationModal({ type: 'warning', title: 'Valid ID Required', message: 'Please upload a valid government-issued ID image.' });
+        setLoading(false); return;
+      }
       if (fileError) {
         setNotificationModal({ type: 'warning', title: 'Invalid File', message: fileError });
         setLoading(false); return;
@@ -215,6 +555,11 @@ export default function SignUpContainer({ onClose }) {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
+    if (!file) {
+      clearEmploymentFile();
+      return;
+    }
+
     if (file) {
       // Validate file type
       const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
@@ -260,25 +605,6 @@ export default function SignUpContainer({ onClose }) {
       
       <style jsx>{`
         div::-webkit-scrollbar { display: none; }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            background: transparent;
-            bottom: 0;
-            color: transparent;
-            cursor: pointer;
-            height: auto;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: auto;
-        }
-        select {
-          appearance: none;
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-          background-position: right 0.75rem center;
-          background-repeat: no-repeat;
-          background-size: 1.25em 1.25em;
-        }
       `}</style>
 
       <button onClick={onClose} className={`absolute top-6 right-6 transition-colors text-gray-400 hover:text-gray-600`} aria-label="Close form">
@@ -368,111 +694,87 @@ export default function SignUpContainer({ onClose }) {
           <div className="grid grid-cols-2 gap-5">
             <div>
               <label htmlFor="birthdate" className={labelStyle}>Date of Birth</label>
-              <div className="relative group">
-                <Calendar className={`${iconStyle} pointer-events-none z-10`} />
-                <Input 
-                  id="birthdate" 
-                  type="date" 
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  max={maxDate}
-                  required 
-                  className={`${inputStyle} w-full cursor-pointer appearance-none ${birthDate ? 'text-black' : 'text-gray-400'}`}
-                />
-              </div>
+              <CustomDatePicker
+                id="birthdate"
+                value={birthDate}
+                onChange={setBirthDate}
+                maxDate={maxDate}
+                required
+              />
             </div>
             <div>
               <label htmlFor="gender" className={labelStyle}>Gender</label>
-              <div className="relative">
-                <select 
-                  id="gender" 
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  required
-                  className={dropdownStyle(gender)}
-                >
-                  <option value="" disabled>Select</option>
-                  <option value="Male" className="text-black">Male</option>
-                  <option value="Female" className="text-black">Female</option>
-                </select>
-              </div>
+              <CustomSelect
+                id="gender"
+                value={gender}
+                onChange={setGender}
+                placeholder="Select"
+                options={GENDER_OPTIONS}
+                required
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-5">
              <div>
               <label htmlFor="region" className={labelStyle}>Region</label>
-              <select 
+              <CustomSelect
                 id="region"
                 value={region}
-                onChange={(e) => setRegion(e.target.value)}
+                onChange={setRegion}
+                placeholder="Select Region"
+                options={REGION_OPTIONS}
                 required
-                className={dropdownStyle(region)}
-              >
-                <option value="" disabled>Select Region</option>
-                <option value="Region VII">Region VII</option>
-              </select>
+              />
             </div>
             <div>
               <label htmlFor="province" className={labelStyle}>Province</label>
-              <select 
+              <CustomSelect
                 id="province"
                 value={province}
-                onChange={(e) => setProvince(e.target.value)}
+                onChange={setProvince}
+                placeholder="Select Province"
+                options={PROVINCE_OPTIONS}
                 required
-                className={dropdownStyle(province)}
-              >
-                <option value="" disabled>Select Province</option>
-                <option value="Cebu">Cebu</option>
-              </select>
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-5">
              <div>
               <label htmlFor="city" className={labelStyle}>City/Municipality</label>
-              <select 
+              <CustomSelect
                 id="city"
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={setCity}
+                placeholder="Select City"
+                options={CITY_OPTIONS}
                 required
-                className={dropdownStyle(city)}
-              >
-                <option value="" disabled>Select City</option>
-                <option value="Cebu City">Cebu City</option>
-              </select>
+              />
             </div>
             <div>
               <label htmlFor="barangay" className={labelStyle}>Barangay</label>
-              <select 
+              <CustomSelect
                 id="barangay"
                 value={barangay}
-                onChange={(e) => setBarangay(e.target.value)}
+                onChange={setBarangay}
+                placeholder="Select Barangay"
+                options={BARANGAY_OPTIONS}
                 required
-                className={dropdownStyle(barangay)}
-              >
-                <option value="" disabled>Select Barangay</option>
-                <option value="Pardo (Pob.)">Pardo (Pob.)</option>
-              </select>
+              />
             </div>
           </div>
 
           <div>
             <label htmlFor="sitio" className={labelStyle}>Sitio</label>
-            <div className="relative">
-              <select 
-                id="sitio" 
-                value={sitio}
-                onChange={(e) => setSitio(e.target.value)}
-                required
-                className={dropdownStyle(sitio)}
-              >
-                <option value="" disabled>Select Sitio</option>
-                {SITIO_OPTIONS.map((option) => (
-                  <option key={option} value={option} className="text-black">{option}</option>
-                ))}
-              </select>
-            </div>
+            <CustomSelect
+              id="sitio"
+              value={sitio}
+              onChange={setSitio}
+              placeholder="Select Sitio"
+              options={SITIO_SELECT_OPTIONS}
+              required
+            />
           </div>
 
           <div>
@@ -535,8 +837,41 @@ export default function SignUpContainer({ onClose }) {
             <label htmlFor="file-upload" className={`block text-base font-medium flex items-center gap-2 text-gray-700 mb-2.5`}>
               <FileText className="w-5 h-5" /> Valid ID Document {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
-            <div className="relative">
-              <input id="file-upload" type="file" accept="image/png,image/jpeg,image/jpg" onChange={handleFileChange} required className={`border border-gray-300 rounded-lg p-2.5 w-full text-base file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#004AAD] file:text-white hover:file:bg-[#003A88] transition-colors ${inputHeight}`} />
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/50 p-4 shadow-sm">
+              <input
+                ref={fileInputRef}
+                id="file-upload"
+                type="file"
+                accept="image/png,image/jpeg,image/jpg"
+                onChange={handleFileChange}
+                className="sr-only"
+              />
+              <div className="flex flex-col items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#004AAD] px-6 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#003A88]"
+                >
+                  {employmentFile ? 'Replace Image' : 'Choose File'}
+                </button>
+
+                {employmentFile && (
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-white px-4 py-3 shadow-inner">
+                    <FileText className="h-5 w-5 shrink-0 text-blue-600" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
+                      {employmentFile.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearEmploymentFile}
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-red-50 hover:text-red-600"
+                      aria-label="Remove selected valid ID image"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <p className={`text-sm ml-1 text-gray-500 mt-2`}>Upload a valid government-issued ID (PNG, JPG, JPEG only)</p>
             {fileError && (<p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-100">{fileError}</p>)}

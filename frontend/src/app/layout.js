@@ -5,6 +5,7 @@ import "./globals.css";
 import ClientLayout from '@/app/components/ClientLayout';
 import AuthModal from '@/app/components/auth/AuthModal';
 import { UserProvider } from '@/contexts/UserContext';
+import { RequestDrawerProvider } from '@/contexts/RequestDrawerContext';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,12 +28,14 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <UserProvider>
-          <ClientLayout>
-            {/* 'children' will be your homepage or any other page */}
-            <main>
-              {children}
-            </main>
-          </ClientLayout>
+          <RequestDrawerProvider>
+            <ClientLayout>
+              {/* 'children' will be your homepage or any other page */}
+              <main>
+                {children}
+              </main>
+            </ClientLayout>
+          </RequestDrawerProvider>
 
           {/* Global Auth Modal */}
           <AuthModal />

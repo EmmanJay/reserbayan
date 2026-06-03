@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import SignUpContainer from './SignUpContainer';
 
 export default function AuthModal() {
@@ -44,13 +45,27 @@ export default function AuthModal() {
     setIsOpen(false);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-[650px] w-full max-h-[90vh] overflow-y-auto">
-        <SignUpContainer onClose={handleClose} />
-      </div>
-    </div>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/20 p-4 backdrop-blur-md"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+        >
+          <motion.div
+            className="w-full max-w-[650px]"
+            initial={{ opacity: 0, y: 28, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 18, scale: 0.96 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+          >
+            <SignUpContainer onClose={handleClose} />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
