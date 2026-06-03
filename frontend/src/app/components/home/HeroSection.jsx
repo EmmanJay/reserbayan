@@ -167,7 +167,7 @@ export default function HeroSection() {
               />
             </div>
           ) : (
-            <div className="w-full max-w-[650px] transition-opacity duration-500 ease-in-out">
+            <div className="w-full max-w-[820px] transition-opacity duration-500 ease-in-out">
               <SignUpContainer onClose={handleCloseSignUp} />
             </div>
           )}
