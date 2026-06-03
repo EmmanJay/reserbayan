@@ -1,12 +1,102 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/app/components/ui/button';
-import { FileText, ClipboardCheck, Clock, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import {
+  ArrowRight,
+  Building2,
+  CheckCircle,
+  ClipboardCheck,
+  Clock,
+  FileText,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
+
+const fadeUpProps = {
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.25 },
+  transition: { duration: 0.55, ease: 'easeOut' },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.38, ease: 'easeOut' } },
+};
+
+const serviceSteps = [
+  {
+    icon: FileText,
+    title: 'Browse documents',
+    text: 'Find the barangay document you need from one organized catalog.',
+  },
+  {
+    icon: ClipboardCheck,
+    title: 'Check requirements',
+    text: 'Review required details before starting your online request.',
+  },
+  {
+    icon: Clock,
+    title: 'Submit online',
+    text: 'Send your request and supporting files through a secure form.',
+  },
+  {
+    icon: CheckCircle,
+    title: 'Track progress',
+    text: 'Monitor status updates from submission through release.',
+  },
+];
+
+const purposeCards = [
+  {
+    icon: ShieldCheck,
+    title: 'Vision',
+    text: 'A barangay service experience where residents can access essential documents with clarity, fairness, and confidence.',
+  },
+  {
+    icon: Building2,
+    title: 'Mission',
+    text: 'To support local governance with reliable digital processing that reduces queues and keeps residents informed.',
+  },
+];
+
+function MotifBackground() {
+  const motifRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: motifRef,
+    offset: ['start end', 'end start'],
+  });
+  const motifY = useTransform(scrollYProgress, [0, 1], ['-18px', '24px']);
+
+  return (
+    <div ref={motifRef} className="pointer-events-none absolute inset-0 overflow-hidden">
+      <motion.div
+        style={{ y: motifY }}
+        className="absolute -right-16 top-14 h-56 w-56 rounded-full bg-sky-200/35 blur-3xl"
+      />
+      <motion.div
+        style={{ y: motifY }}
+        className="absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-blue-100/60 blur-3xl"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(30,37,102,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(30,37,102,0.045)_1px,transparent_1px)] bg-[size:42px_42px]" />
+    </div>
+  );
+}
 
 function HorizontalImageCarousel({ images }) {
   const carouselRef = useRef(null);
@@ -15,44 +105,41 @@ function HorizontalImageCarousel({ images }) {
     offset: ['start end', 'end start'],
   });
 
-  const x = useTransform(scrollYProgress, [0.1, 0.9], ['0%', '-200%']);
+  const x = useTransform(scrollYProgress, [0.08, 0.92], ['0%', '-190%']);
 
   return (
-    <section
-      ref={carouselRef}
-      className="py-12 md:py-16 bg-gray-50 overflow-hidden relative z-10"
-    >
-      <div className="max-w-6xl mx-auto px-6">
-        <motion.h2
-          className="font-montserrat text-4xl md:text-5xl font-extrabold text-blue-900 text-center mb-12 leading-tight tracking-tight"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }} // Fixed y: 0.5 to y: 0
-          transition={{ duration: 0.7 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          All Your Documents.
-          <br />
-          One Secure Platform.
-        </motion.h2>
+    <section ref={carouselRef} className="relative overflow-hidden bg-slate-50 py-10 md:py-12">
+      <MotifBackground />
+      <div className="relative z-10 mx-auto max-w-6xl px-5 md:px-8">
+        <motion.div className="mb-7 flex flex-col gap-2 md:flex-row md:items-end md:justify-between" {...fadeUpProps}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2F87C3]">Document Gallery</p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E2566] md:text-3xl">
+              Official documents, easier to review
+            </h2>
+          </div>
+          <p className="max-w-lg text-sm leading-6 text-slate-600">
+            A quick preview of common barangay documents residents can request through ReserBayan.
+          </p>
+        </motion.div>
 
         <motion.div
           className="flex gap-4"
           style={{ x }}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.55, delay: 0.1 }}
         >
           {images.map((src, index) => (
-            <div key={index} className="flex-shrink-0 w-1/2 md:w-1/3">
-              <div className="relative aspect-square bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div key={`${src}-${index}`} className="w-[58%] flex-shrink-0 sm:w-[42%] lg:w-[29%]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-[0_18px_45px_rgba(30,37,102,0.11)]">
                 <Image
                   src={src}
                   alt={`Document preview ${index + 1}`}
                   fill
-                  sizes="(max-width: 768px) 50vw, 33vw"
-                  style={{ objectFit: 'cover', objectPosition: 'top' }}
+                  sizes="(max-width: 640px) 58vw, (max-width: 1024px) 42vw, 29vw"
+                  className="object-cover object-top"
                 />
               </div>
             </div>
@@ -68,253 +155,205 @@ export default function AboutSection() {
     '/documents/certificate-of-indigency.png',
     '/documents/barangay-clearance.png',
     '/documents/first-time-jobseeker.png',
-    '/documents/certificate-of-indigency.png',
-    '/documents/barangay-clearance.png',
+    '/documents/barangay-business-permit.png',
+    '/documents/barangay-certificate.png',
     '/documents/first-time-jobseeker.png',
     '/documents/certificate-of-indigency.png',
     '/documents/barangay-clearance.png',
-    '/documents/first-time-jobseeker.png',
+    '/documents/barangay-certificate.png',
+    '/documents/certificate-of-indigency.png',
   ];
 
-
-
-  const fadeUpProps = {
-    initial: { opacity: 0, y: 20 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, amount: 0.3 },
-    transition: { duration: 0.6, ease: 'easeOut' },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1,
-      },
-    },
-  };
-
-  const staggerItem = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
-  };
-
   return (
-    <div className="bg-[#FAF9F6] min-h-screen">
-      {/* Header Section */}
-      <section className="pt-24 pb-16 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl md:text-5xl font-montserrat font-extrabold leading-tight bg-gradient-to-r from-[#1E2566] via-[#2F87C3] to-[#1E2566] bg-clip-text text-transparent mb-8 mt-8 animate-fade-in">
-            About ReserBayan
-          </h1>
-          <motion.p
-            className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 max-w-3xl mx-auto leading-relaxed mb-4"
+    <div className="min-h-screen bg-[#F8FBFF] font-[family-name:var(--font-inter)] text-slate-900">
+      <section className="relative overflow-hidden px-5 pb-10 pt-24 md:px-8 md:pb-12 md:pt-28">
+        <MotifBackground />
+        <div className="relative z-10 mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
+          <motion.div
+            className="rounded-[2rem] border border-blue-100 bg-white/90 p-6 shadow-[0_24px_70px_rgba(30,37,102,0.12)] backdrop-blur md:p-8"
             {...fadeUpProps}
-            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Revolutionizing barangay document requests with digital innovation and community-focused solutions.
-          </motion.p>
-        </div>
-      </section>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#004AAD]">
+              <ShieldCheck className="h-4 w-4" />
+              Barangay Digital Services
+            </div>
+            <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight text-[#1E2566] md:text-5xl">
+              About ReserBayan
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
+              ReserBayan helps residents request barangay documents through a secure and transparent online process built for practical local service delivery.
+            </p>
 
-      {/* Description Section */}
-      <section className="py-20 px-6 md:px-12 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-            <motion.div
-              className="space-y-6 flex flex-col justify-center"
-              {...fadeUpProps}
-            >
-              <p className="text-xl leading-relaxed text-neutral-700 dark:text-neutral-300">
-                ReserBayan is a cutting-edge online platform designed to streamline the process of requesting essential barangay documents for Filipino residents.
-              </p>
-              <p className="text-lg leading-relaxed text-neutral-600 dark:text-neutral-400">
-                Born from the need to eliminate long queues and bureaucratic hurdles, our system empowers citizens with convenient, secure, and transparent access to government services.
-              </p>
-              <p className="text-lg leading-relaxed text-neutral-600 dark:text-neutral-400">
-                By leveraging digital technology, we bridge the gap between traditional administrative processes and modern expectations, ensuring that every resident can obtain necessary documents efficiently while promoting accountability and accessibility in local governance.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              className="relative flex items-center"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
-            >
-              <div className="bg-gradient-to-br from-[#1E2566] to-[#2F87C3] rounded-2xl p-8 text-white shadow-2xl w-full h-full flex items-center">
-                <div className="text-center w-full">
-                  <FileText className="w-16 h-16 mx-auto mb-4 text-white" />
-                  <h3 className="text-2xl font-bold mb-2">Digital Innovation</h3>
-                  <p className="text-gray-200">Transforming traditional processes into modern digital experiences</p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {[
+                ['Online requests', 'Submit anytime'],
+                ['Clear tracking', 'Know each status'],
+                ['Secure records', 'Protected files'],
+              ].map(([label, detail]) => (
+                <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-sm font-bold text-[#1E2566]">{label}</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">{detail}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <Link href="/documents">
+                <Button className="h-11 rounded-full bg-[#004AAD] px-6 text-sm font-bold text-white shadow-lg shadow-blue-900/15 hover:bg-[#003A88]">
+                  View Documents
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Button
+                onClick={() => window.dispatchEvent(new CustomEvent('showSignUp'))}
+                className="h-11 rounded-full border border-blue-100 bg-white px-6 text-sm font-bold text-[#1E2566] shadow-sm hover:bg-blue-50"
+              >
+                Create Resident Account
+              </Button>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-gradient-to-br from-[#10235F] via-[#1E5FA8] to-[#2F87C3] p-6 text-white shadow-[0_24px_70px_rgba(30,37,102,0.18)] md:p-7"
+            initial={{ opacity: 0, x: 24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.55, ease: 'easeOut' }}
+          >
+            <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-white/15" />
+            <div className="absolute right-8 top-10 h-20 w-20 rounded-full border border-white/15" />
+            <div className="relative">
+              <div className="mb-8 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-100">Service Snapshot</p>
+                  <h2 className="mt-2 text-2xl font-extrabold">Digital Barangay Service</h2>
+                </div>
+                <div className="rounded-2xl bg-white/15 p-3">
+                  <Building2 className="h-7 w-7" />
                 </div>
               </div>
-            </motion.div>
-          </div>
+
+              <div className="grid gap-3">
+                {[
+                  { icon: Users, label: 'Resident-focused', text: 'Designed for accessible public service' },
+                  { icon: FileText, label: 'Document-ready', text: 'Requirements and status in one place' },
+                  { icon: ShieldCheck, label: 'Accountable flow', text: 'Clear tracking from request to release' },
+                ].map(({ icon: Icon, label, text }) => (
+                  <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#1E2566]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">{label}</p>
+                      <p className="text-xs leading-5 text-blue-50">{text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 px-6 md:px-12 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2
-            className="text-4xl md:text-5xl font-montserrat font-bold text-center mb-16 text-neutral-800"
-            {...fadeUpProps}
-          >
-            How It Works
-          </motion.h2>
-          
+      <section className="px-5 py-8 md:px-8 md:py-10">
+        <div className="mx-auto max-w-6xl">
+          <motion.div className="mb-6 max-w-2xl" {...fadeUpProps}>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2F87C3]">How It Works</p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E2566] md:text-3xl">
+              A shorter path from request to release
+            </h2>
+          </motion.div>
+
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+            viewport={{ once: true, amount: 0.18 }}
           >
-            <motion.div
-              variants={staggerItem}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center group"
-            >
-              <div className="bg-[#004AAD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <FileText className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-neutral-800">Browse Documents</h3>
-              <p className="text-neutral-600 leading-relaxed">Explore available barangay documents and select what you need.</p>
-            </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center group"
-            >
-              <div className="bg-[#004AAD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <ClipboardCheck className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-neutral-800">Learn Requirements</h3>
-              <p className="text-neutral-600 leading-relaxed">Review the specific requirements and documents needed for your request.</p>
-            </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center group"
-            >
-              <div className="bg-[#004AAD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Clock className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-neutral-800">Submit a Request</h3>
-              <p className="text-neutral-600 leading-relaxed">Upload required documents and submit your request online.</p>
-            </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-center group"
-            >
-              <div className="bg-[#004AAD] w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                <CheckCircle className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-neutral-800">Track Status</h3>
-              <p className="text-neutral-600 leading-relaxed">Monitor your request progress in real-time from submission to completion.</p>
-            </motion.div>
+            {serviceSteps.map(({ icon: Icon, title, text }, index) => (
+              <motion.div
+                key={title}
+                variants={staggerItem}
+                className="group rounded-2xl border border-blue-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(30,37,102,0.11)]"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-[#004AAD] transition-colors group-hover:bg-[#004AAD] group-hover:text-white">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-extrabold text-slate-300">0{index + 1}</span>
+                </div>
+                <h3 className="text-base font-extrabold text-[#1E2566]">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
       <HorizontalImageCarousel images={carouselImages} />
 
-      {/* Vision & Mission Section */}
-      <section className="py-20 px-6 md:px-12 bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" {...fadeUpProps}>
-            <h2 className="text-4xl md:text-5xl font-montserrat font-bold text-neutral-800 mb-4">Our Purpose</h2>
-            <p className="text-xl text-neutral-600 max-w-2xl mx-auto">Driving innovation in local governance through technology and community empowerment</p>
+      <section className="relative overflow-hidden px-5 py-10 md:px-8 md:py-12">
+        <MotifBackground />
+        <div className="relative z-10 mx-auto grid max-w-6xl gap-5 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <motion.div {...fadeUpProps}>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#2F87C3]">Our Purpose</p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#1E2566] md:text-3xl">
+              Built for residents and accountable service
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              The platform supports local offices with a cleaner request flow while helping residents understand what to prepare and when to expect updates.
+            </p>
           </motion.div>
-          
+
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-16"
+            className="grid gap-4 md:grid-cols-2"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <motion.div
-              variants={staggerItem}
-              className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="flex items-center mb-6">
-                <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] w-12 h-12 rounded-full flex items-center justify-center mr-4">
-                  <CheckCircle className="w-6 h-6 text-white" />
+            {purposeCards.map(({ icon: Icon, title, text }) => (
+              <motion.div key={title} variants={staggerItem} className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#004AAD] to-[#2F87C3] text-white">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-[#1E2566]">{title}</h3>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-montserrat font-bold text-neutral-800">Vision</h2>
-              </div>
-              <p className="text-lg leading-relaxed text-neutral-700 dark:text-neutral-300">
-                The platform aims to modernize barangay services by making government support accessible to all Filipino residents. We envision a future where digital innovation eliminates barriers, fosters transparency, and promotes efficient processes that serve the community's needs effectively.
-              </p>
-            </motion.div>
-
-            <motion.div
-              variants={staggerItem}
-              className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="flex items-center mb-6">
-                <div className="bg-gradient-to-r from-[#2F87C3] to-[#1E2566] w-12 h-12 rounded-full flex items-center justify-center mr-4">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <h2 className="text-3xl md:text-4xl font-montserrat font-bold text-neutral-800">Mission</h2>
-              </div>
-              <p className="text-lg leading-relaxed text-neutral-700 dark:text-neutral-300">
-                To empower citizens through digital processing of barangay documents, providing fast, reliable, and optimized service delivery. We are committed to reducing time spent in physical queues and enhancing the overall experience of accessing essential government services.
-              </p>
-            </motion.div>
+                <p className="text-sm leading-6 text-slate-600">{text}</p>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="py-24 px-6 md:px-12 bg-gradient-to-r from-[#0B1D4E] via-[#1E2566] to-[#0B1D4E] text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <motion.h2
-            className="text-4xl md:text-5xl font-montserrat font-bold mb-8"
-            {...fadeUpProps}
-          >
-            Ready to Get Started?
-          </motion.h2>
-          
-          <motion.p
-            className="text-xl md:text-2xl mb-12 text-gray-200 max-w-3xl mx-auto leading-relaxed"
-            {...fadeUpProps}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Explore our collection of barangay documents and experience the convenience of digital processing today.
-          </motion.p>
-          
-          <motion.div
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.5 }}
-          >
-            <motion.div variants={staggerItem}>
-              <Link href="/documents">
-                <Button className="bg-gradient-to-r from-[#004AAD] to-[#2F87C3] hover:from-[#003A88] hover:to-[#1E2566] text-white px-10 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  View Documents
-                </Button>
-              </Link>
-            </motion.div>
-            
-            <motion.div variants={staggerItem}>
-              <Button
-                onClick={() => window.dispatchEvent(new CustomEvent('showSignUp'))}
-                className="bg-white text-[#0B1D4E] hover:bg-gray-100 px-10 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-2 border-white hover:border-gray-200"
-              >
-                Sign Up
+      <section className="px-5 pb-12 md:px-8 md:pb-14">
+        <motion.div
+          className="mx-auto flex max-w-6xl flex-col gap-4 rounded-[1.75rem] border border-blue-100 bg-white p-5 shadow-[0_18px_45px_rgba(30,37,102,0.09)] md:flex-row md:items-center md:justify-between md:p-6"
+          {...fadeUpProps}
+        >
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#2F87C3]">Start Here</p>
+            <h2 className="mt-2 text-2xl font-extrabold text-[#1E2566]">Ready to request a document?</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Browse available services, review requirements, and begin with a resident account.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href="/documents">
+              <Button className="h-11 rounded-full bg-[#004AAD] px-6 text-sm font-bold text-white hover:bg-[#003A88]">
+                View Documents
               </Button>
-            </motion.div>
-          </motion.div>
-        </div>
+            </Link>
+            <Button
+              onClick={() => window.dispatchEvent(new CustomEvent('showSignUp'))}
+              className="h-11 rounded-full bg-slate-100 px-6 text-sm font-bold text-[#1E2566] hover:bg-blue-50"
+            >
+              Sign Up
+            </Button>
+          </div>
+        </motion.div>
       </section>
     </div>
   );
