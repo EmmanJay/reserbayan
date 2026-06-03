@@ -155,12 +155,13 @@ export default function AboutSection() {
     '/documents/certificate-of-indigency.png',
     '/documents/barangay-clearance.png',
     '/documents/first-time-jobseeker.png',
-    '/documents/certificate-of-indigency.png',
-    '/documents/barangay-clearance.png',
+    '/documents/barangay-business-permit.png',
+    '/documents/barangay-certificate.png',
     '/documents/first-time-jobseeker.png',
     '/documents/certificate-of-indigency.png',
     '/documents/barangay-clearance.png',
-    '/documents/first-time-jobseeker.png',
+    '/documents/barangay-certificate.png',
+    '/documents/certificate-of-indigency.png',
   ];
 
   return (
