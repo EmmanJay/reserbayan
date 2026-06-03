@@ -10,6 +10,12 @@ public class DocumentRequestDTO {
     private String documentName; // from your JSON file
     private Long residentId; // from logged-in user
     private String residentName;
+    private String residentFirstName;
+    private String residentMiddleName;
+    private String residentLastName;
+    private String residentEmail;
+    private String residentPhoneNumber;
+    private String residentAddress;
     private String details; // purpose
     private String status;
     private String submittedAt;
@@ -57,6 +63,54 @@ public class DocumentRequestDTO {
 
     public void setResidentName(String residentName) {
         this.residentName = residentName;
+    }
+
+    public String getResidentFirstName() {
+        return residentFirstName;
+    }
+
+    public void setResidentFirstName(String residentFirstName) {
+        this.residentFirstName = residentFirstName;
+    }
+
+    public String getResidentMiddleName() {
+        return residentMiddleName;
+    }
+
+    public void setResidentMiddleName(String residentMiddleName) {
+        this.residentMiddleName = residentMiddleName;
+    }
+
+    public String getResidentLastName() {
+        return residentLastName;
+    }
+
+    public void setResidentLastName(String residentLastName) {
+        this.residentLastName = residentLastName;
+    }
+
+    public String getResidentEmail() {
+        return residentEmail;
+    }
+
+    public void setResidentEmail(String residentEmail) {
+        this.residentEmail = residentEmail;
+    }
+
+    public String getResidentPhoneNumber() {
+        return residentPhoneNumber;
+    }
+
+    public void setResidentPhoneNumber(String residentPhoneNumber) {
+        this.residentPhoneNumber = residentPhoneNumber;
+    }
+
+    public String getResidentAddress() {
+        return residentAddress;
+    }
+
+    public void setResidentAddress(String residentAddress) {
+        this.residentAddress = residentAddress;
     }
 
     public String getDetails() {

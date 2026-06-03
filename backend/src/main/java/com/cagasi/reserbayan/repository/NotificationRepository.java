@@ -11,4 +11,5 @@ import com.cagasi.reserbayan.entity.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByResident_ResidentIdOrderByCreatedAtDesc(Long residentId);
     List<Notification> findByResident_ResidentIdAndIsReadEqualsOrderByCreatedAtDesc(Long residentId, Integer isRead);
+    void deleteByResident_ResidentId(Long residentId);
 }

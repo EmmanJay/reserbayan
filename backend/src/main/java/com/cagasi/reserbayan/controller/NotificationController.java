@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,6 +45,18 @@ public class NotificationController {
     @PutMapping("/resident/{residentId}/read-all")
     public ResponseEntity<?> markAllAsRead(@PathVariable Long residentId) {
         notificationService.markAllAsRead(residentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<?> deleteNotification(@PathVariable Long notificationId) {
+        notificationService.deleteNotification(notificationId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/resident/{residentId}")
+    public ResponseEntity<?> deleteNotificationsByResident(@PathVariable Long residentId) {
+        notificationService.deleteNotificationsByResident(residentId);
         return ResponseEntity.ok().build();
     }
 }
