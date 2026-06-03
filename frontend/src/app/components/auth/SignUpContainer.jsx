@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { X, Mail, Lock, FileText, CheckCircle, Eye, EyeOff, Calendar, ChevronDown } from 'lucide-react';
@@ -121,7 +123,7 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
         aria-expanded={isOpen}
-        className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-gradient-to-r from-white to-blue-50/40 px-4 text-left text-base shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full items-center gap-3 rounded-2xl border bg-gradient-to-r from-white to-blue-50/40 px-4 text-left text-base shadow-sm outline-none transition-all ${
           isOpen
             ? 'border-blue-400 ring-4 ring-blue-100'
             : 'border-slate-200 hover:border-blue-200'
@@ -311,7 +313,7 @@ function CustomSelect({ id, value, onChange, placeholder, options, required = fa
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
         aria-expanded={isOpen}
-        className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-base shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-base shadow-sm outline-none transition-all ${
           isOpen
             ? 'border-blue-400 ring-4 ring-blue-100'
             : 'border-slate-200 hover:border-blue-200'
@@ -391,10 +393,10 @@ export default function SignUpContainer({ onClose }) {
   const [fileError, setFileError] = useState('');
 
   // --- STYLES ---
-  const inputHeight = `h-12`; 
+  const inputHeight = `h-11`; 
   const inputStyle = `pl-11 text-base ${inputHeight} bg-white rounded-2xl border-slate-200 shadow-sm focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-blue-400`; 
   const iconStyle = `absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`; 
-  const labelStyle = `block text-base font-medium text-gray-700 mb-2.5`; 
+  const labelStyle = `block text-base font-medium text-gray-700 mb-2`; 
   
   const clearEmploymentFile = () => {
     setEmploymentFile(null);
@@ -599,9 +601,31 @@ export default function SignUpContainer({ onClose }) {
   }, []);
 
   const maxDate = new Date().toISOString().split("T")[0];
+  const formVariants = {
+    hidden: { opacity: 0, y: 10 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.2,
+        ease: 'easeOut',
+        staggerChildren: 0.035,
+        delayChildren: 0.02,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -6,
+      transition: { duration: 0.14, ease: 'easeIn' },
+    },
+  };
+  const fieldVariants = {
+    hidden: { opacity: 0, y: 8 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+  };
 
   return (
-    <div className={`bg-white border-gray-200 border rounded-2xl shadow-2xl p-8 md:p-12 w-full max-w-[680px] mx-auto md:mx-0 relative min-h-[600px] max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className={`bg-white border-gray-200 border rounded-2xl shadow-2xl p-6 md:p-7 w-full max-w-[820px] mx-auto md:mx-0 relative max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       
       <style jsx>{`
         div::-webkit-scrollbar { display: none; }
@@ -611,18 +635,39 @@ export default function SignUpContainer({ onClose }) {
         <X size={28} />
       </button>
 
-      {/* --- REDUCED GAP: mb-10 to mb-6 --- */}
-      <div className="flex justify-center gap-10 mb-6 font-semibold text-xl flex-shrink-0">
+      <div className="mb-4 flex flex-col items-center justify-center gap-2 pr-10 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/reserbayan-logo.png"
+            alt="ReserBayan logo"
+            width={48}
+            height={48}
+            className="h-12 w-12 rounded-xl object-contain"
+            priority
+          />
+          <span className="text-2xl font-bold text-[#1E2566]">ReserBayan</span>
+        </div>
+      </div>
+
+      <div className="flex justify-center gap-10 mb-5 font-semibold text-xl flex-shrink-0">
         <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Log In</button>
         <button onClick={() => setActiveTab('signup')} className={`pb-3 px-4 transition-colors ${activeTab === 'signup' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Sign Up</button>
       </div>
 
+      <AnimatePresence mode="wait">
       {/* --- LOGIN FORM: Vertically Centered with Tighter Spacing --- */}
       {activeTab === 'login' && (
-        <div className="flex flex-col justify-center flex-grow py-1">
+        <motion.div
+          key="login"
+          variants={formVariants}
+          initial="hidden"
+          animate="show"
+          exit="exit"
+          className="flex flex-col justify-center flex-grow py-1 max-w-[520px] w-full mx-auto"
+        >
           {/* Reduced space-y-8 to space-y-5 */}
           <form onSubmit={handleSubmit} className="space-y-5">
-             <div className="space-y-1">
+             <motion.div variants={fieldVariants} className="space-y-1">
               <label htmlFor="login-email" className={labelStyle}>Email or Username</label>
               <div className="relative">
                 <Mail className={iconStyle} />
@@ -636,9 +681,9 @@ export default function SignUpContainer({ onClose }) {
                   required 
                 />
               </div>
-            </div>
+            </motion.div>
             
-            <div className="space-y-1">
+            <motion.div variants={fieldVariants} className="space-y-1">
               <label htmlFor="login-password" className={labelStyle}>Password</label>
               <div className="relative">
                 <Lock className={iconStyle} />
@@ -655,68 +700,90 @@ export default function SignUpContainer({ onClose }) {
                   {showLoginPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </div>
+            </motion.div>
 
-            {loginError && (<div className="text-center mt-2"><p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{loginError}</p></div>)}
+            {loginError && (<motion.div variants={fieldVariants} className="text-center mt-2"><p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{loginError}</p></motion.div>)}
             
-            <div className="pt-6">
+            <motion.div variants={fieldVariants} className="pt-4">
               <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
                 {loading ? "Logging in..." : "Log In"}
               </Button>
-            </div>
+            </motion.div>
             
-            <div className="text-center pt-6">
+            <motion.div variants={fieldVariants} className="text-center pt-4">
               <p className={`text-base text-gray-500`}>Don't have an account? <button type="button" onClick={() => setActiveTab('signup')} className="text-[#004AAD] font-bold hover:underline ml-1">Sign Up</button></p>
-            </div>
+            </motion.div>
           </form>
-        </div>
+        </motion.div>
       )}
 
       {/* --- SIGN UP FORM --- */}
       {activeTab === 'signup' && (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="first-name" className={labelStyle}>First Name</label>
-              <Input id="first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputStyle} required />
+        <motion.form
+          key="signup"
+          variants={formVariants}
+          initial="hidden"
+          animate="show"
+          exit="exit"
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <div className="space-y-4">
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="first-name" className={labelStyle}>First Name</label>
+                <Input id="first-name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" className={inputStyle} required />
+              </motion.div>
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="middle-name" className={labelStyle}>Middle Name <span className={`text-gray-400 font-normal ml-1`}>(Optional)</span></label>
+                <Input id="middle-name" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="Middle name" className={inputStyle} />
+              </motion.div>
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="last-name" className={labelStyle}>Last Name</label>
+                <Input id="last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputStyle} required />
+              </motion.div>
             </div>
-            <div>
-              <label htmlFor="last-name" className={labelStyle}>Last Name</label>
-              <Input id="last-name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" className={inputStyle} required />
+
+            <div className="space-y-4">
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="gender" className={labelStyle}>Gender</label>
+                <CustomSelect
+                  id="gender"
+                  value={gender}
+                  onChange={setGender}
+                  placeholder="Select"
+                  options={GENDER_OPTIONS}
+                  required
+                />
+              </motion.div>
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="birthdate" className={labelStyle}>Date of Birth</label>
+                <CustomDatePicker
+                  id="birthdate"
+                  value={birthDate}
+                  onChange={setBirthDate}
+                  maxDate={maxDate}
+                  required
+                />
+              </motion.div>
+              <motion.div variants={fieldVariants}>
+                <label htmlFor="phone" className={labelStyle}>Phone Number</label>
+                <Input 
+                  id="phone" 
+                  type="tel" 
+                  placeholder="0917xxxxxxx" 
+                  value={phone} 
+                  onChange={handlePhoneChange}
+                  className={`${inputStyle} ${phoneError ? 'border-red-500 focus:border-red-500' : ''}`} 
+                  required 
+                />
+                {phoneError && (<p className="text-sm text-red-600 mt-2">{phoneError}</p>)}
+              </motion.div>
             </div>
           </div>
 
-          <div>
-            <label htmlFor="middle-name" className={labelStyle}>Middle Name <span className={`text-gray-400 font-normal ml-1`}>(Optional)</span></label>
-            <Input id="middle-name" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="Middle name" className={inputStyle} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="birthdate" className={labelStyle}>Date of Birth</label>
-              <CustomDatePicker
-                id="birthdate"
-                value={birthDate}
-                onChange={setBirthDate}
-                maxDate={maxDate}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="gender" className={labelStyle}>Gender</label>
-              <CustomSelect
-                id="gender"
-                value={gender}
-                onChange={setGender}
-                placeholder="Select"
-                options={GENDER_OPTIONS}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-5">
-             <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+             <motion.div variants={fieldVariants}>
               <label htmlFor="region" className={labelStyle}>Region</label>
               <CustomSelect
                 id="region"
@@ -726,8 +793,8 @@ export default function SignUpContainer({ onClose }) {
                 options={REGION_OPTIONS}
                 required
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fieldVariants}>
               <label htmlFor="province" className={labelStyle}>Province</label>
               <CustomSelect
                 id="province"
@@ -737,11 +804,11 @@ export default function SignUpContainer({ onClose }) {
                 options={PROVINCE_OPTIONS}
                 required
               />
-            </div>
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-2 gap-5">
-             <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+             <motion.div variants={fieldVariants}>
               <label htmlFor="city" className={labelStyle}>City/Municipality</label>
               <CustomSelect
                 id="city"
@@ -751,8 +818,8 @@ export default function SignUpContainer({ onClose }) {
                 options={CITY_OPTIONS}
                 required
               />
-            </div>
-            <div>
+            </motion.div>
+            <motion.div variants={fieldVariants}>
               <label htmlFor="barangay" className={labelStyle}>Barangay</label>
               <CustomSelect
                 id="barangay"
@@ -762,47 +829,35 @@ export default function SignUpContainer({ onClose }) {
                 options={BARANGAY_OPTIONS}
                 required
               />
-            </div>
+            </motion.div>
           </div>
 
-          <div>
-            <label htmlFor="sitio" className={labelStyle}>Sitio</label>
-            <CustomSelect
-              id="sitio"
-              value={sitio}
-              onChange={setSitio}
-              placeholder="Select Sitio"
-              options={SITIO_SELECT_OPTIONS}
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+            <motion.div variants={fieldVariants}>
+              <label htmlFor="sitio" className={labelStyle}>Sitio</label>
+              <CustomSelect
+                id="sitio"
+                value={sitio}
+                onChange={setSitio}
+                placeholder="Select Sitio"
+                options={SITIO_SELECT_OPTIONS}
+                required
+              />
+            </motion.div>
+
+            <motion.div variants={fieldVariants}>
+              <label htmlFor="address-line-1" className={labelStyle}>Address Line 1</label>
+              <Input id="address-line-1" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="House No., Street Name, etc." className={inputStyle} required />
+            </motion.div>
           </div>
 
-          <div>
-            <label htmlFor="address-line-1" className={labelStyle}>Address Line 1</label>
-            <Input id="address-line-1" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="House No., Street Name, etc." className={inputStyle} required />
-          </div>
-
-          <div>
-            <label htmlFor="phone" className={labelStyle}>Phone Number</label>
-            <Input 
-              id="phone" 
-              type="tel" 
-              placeholder="0917xxxxxxx" 
-              value={phone} 
-              onChange={handlePhoneChange}
-              className={`${inputStyle} ${phoneError ? 'border-red-500 focus:border-red-500' : ''}`} 
-              required 
-            />
-            {phoneError && (<p className="text-sm text-red-600 mt-2">{phoneError}</p>)}
-          </div>
-
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="email" className={labelStyle}>Email Address</label>
             <Input id="email" type="email" placeholder="Enter your email" value={email} onChange={handleEmailChange} className={`${inputStyle} ${emailError ? 'border-red-500 focus:border-red-500' : ''}`} required />
             {emailError && (<p className="text-sm text-red-600 mt-2">{emailError}</p>)}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="password" className={labelStyle}>Password</label>
             <div className="relative">
               <Lock className={iconStyle} />
@@ -819,9 +874,9 @@ export default function SignUpContainer({ onClose }) {
                 <p className={`flex items-center gap-2 ${/[^A-Za-z0-9\s]/.test(password) ? 'text-green-600' : 'text-gray-500'}`}>{/[^A-Za-z0-9\s]/.test(password) ? '✓' : '•'} One special character</p>
               </div>
             )}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="confirm-password" className={labelStyle}>Confirm Password</label>
             <div className="relative">
               <Lock className={iconStyle} />
@@ -831,9 +886,9 @@ export default function SignUpContainer({ onClose }) {
               </button>
             </div>
             {confirmPassword && password !== confirmPassword && (<p className="text-sm text-red-600 mt-2">Passwords do not match</p>)}
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div variants={fieldVariants}>
             <label htmlFor="file-upload" className={`block text-base font-medium flex items-center gap-2 text-gray-700 mb-2.5`}>
               <FileText className="w-5 h-5" /> Valid ID Document {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
@@ -856,7 +911,7 @@ export default function SignUpContainer({ onClose }) {
                 </button>
 
                 {employmentFile && (
-                  <div className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-white px-4 py-3 shadow-inner">
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-white px-4 py-2.5 shadow-inner">
                     <FileText className="h-5 w-5 shrink-0 text-blue-600" />
                     <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
                       {employmentFile.name}
@@ -875,19 +930,20 @@ export default function SignUpContainer({ onClose }) {
             </div>
             <p className={`text-sm ml-1 text-gray-500 mt-2`}>Upload a valid government-issued ID (PNG, JPG, JPEG only)</p>
             {fileError && (<p className="text-sm text-red-600 mt-2 bg-red-50 p-2 rounded border border-red-100">{fileError}</p>)}
-          </div>
+          </motion.div>
 
-          <div className="pt-8">
+          <motion.div variants={fieldVariants} className="pt-3">
             <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="text-center pt-4 pb-2">
+          <motion.div variants={fieldVariants} className="text-center pt-1 pb-1">
             <p className={`text-base text-gray-500`}>Already have an account? <button type="button" onClick={() => setActiveTab('login')} className="text-[#004AAD] font-bold hover:underline ml-1">Log In</button></p>
-          </div>
-        </form>
+          </motion.div>
+        </motion.form>
       )}
+      </AnimatePresence>
 
       <NotificationModal isOpen={!!notificationModal} onClose={() => setNotificationModal(null)} type={notificationModal?.type} title={notificationModal?.title} message={notificationModal?.message} autoClose={notificationModal?.autoClose} autoCloseDelay={notificationModal?.autoCloseDelay} />
     </div>
