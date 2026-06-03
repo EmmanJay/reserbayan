@@ -2,23 +2,105 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Menu, X, LogOut, User, FileText, Bell, ClipboardList, ChevronDown, LayoutDashboard, Megaphone } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Bell,
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Megaphone,
+  Menu,
+  User,
+  X,
+} from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
+import NotificationDrawer from '@/app/components/notifications/NotificationDrawer';
+
+const roleNavItems = {
+  SUPER_ADMIN: [
+    { href: '/superadmin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/superadmin/documents', label: 'Documents', icon: User },
+    { href: '/superadmin/management', label: 'Management', icon: ClipboardList },
+    { href: '/superadmin/announcements', label: 'Announcements', icon: Megaphone },
+  ],
+  ADMIN: [
+    { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/documents', label: 'Documents', icon: User },
+    { href: '/admin/management', label: 'Management', icon: ClipboardList },
+    { href: '/admin/announcements', label: 'Announcements', icon: Megaphone },
+  ],
+  RESIDENT: [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/documents', label: 'Documents', icon: FileText },
+    { href: '/requests', label: 'Requests', icon: ClipboardList },
+    { href: '/announcements', label: 'Announcements', icon: Megaphone },
+  ],
+};
+
+function getNavRole(role) {
+  if (role === 'SUPER_ADMIN' || role === 'ADMIN') return role;
+  return 'RESIDENT';
+}
+
+function NavLink({ href, label, icon: Icon, pathname, onClick }) {
+  const active = pathname === href || pathname?.startsWith(`${href}/`);
+  const activeClass = active
+    ? 'text-[#1E2566] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]'
+    : 'text-gray-700 hover:text-[#1E2566] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-gray-300';
+
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`relative flex items-center gap-2 px-3 py-2 font-semibold transition-all duration-300 ${activeClass}`}
+    >
+      <Icon size={18} />
+      {label}
+    </Link>
+  );
+}
+
+function NotificationBellButton({ unreadCount, onClick, className = '' }) {
+  const badgeLabel = unreadCount > 99 ? '99+' : unreadCount;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative rounded-xl p-2 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E2566] ${className}`}
+      aria-label="Open notifications"
+    >
+      <Bell className="h-5 w-5" />
+      {unreadCount > 0 && (
+        <span className="absolute -right-1 -top-1 flex min-w-[1.15rem] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-extrabold leading-none text-white ring-2 ring-white">
+          {badgeLabel}
+        </span>
+      )}
+    </button>
+  );
+}
 
 export default function UserNavbar() {
   const { user } = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
+  const dropdownRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const pathname = usePathname();
-  const dropdownRef = useRef(null);
   const [role, setRole] = useState(null);
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const navRole = getNavRole(role);
+  const navItems = useMemo(() => roleNavItems[navRole], [navRole]);
+  const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Profile' : 'Profile';
 
   useEffect(() => {
-    const role = localStorage.getItem('role');
-    setRole(role);
+    setRole(localStorage.getItem('role'));
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,24 +112,35 @@ export default function UserNavbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('notifications') === 'open') {
+      setNotificationDrawerOpen(true);
+      params.delete('notifications');
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    }
+  }, [pathname, router]);
+
   const performLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('userType');
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    // Dispatch custom event to update navbar wrapper
     window.dispatchEvent(new CustomEvent('userLogout'));
     window.location.href = '/';
   };
 
-  const handleLogout = () => {
-    setShowLogoutConfirm(true);
+  const openNotifications = () => {
+    setNotificationDrawerOpen(true);
+    setIsOpen(false);
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
-      <div className="px-8 py-4 flex items-center justify-between">
-        {/* Logo and Brand */}
+    <header className="fixed left-0 right-0 top-0 z-50 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center space-x-2">
           <Image
             src="/reserbayan-logo.png"
@@ -59,242 +152,114 @@ export default function UserNavbar() {
           <span className="text-xl font-semibold text-gray-900">ReserBayan</span>
         </div>
 
-        {/* Desktop Navigation (after user logs in) */}
-        <nav className="hidden md:flex items-center space-x-8">
-          {role === 'SUPER_ADMIN' ? (
-            <>
-              <Link href="/superadmin/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <LayoutDashboard size={18} />
-                Dashboard
-              </Link>
-              <Link href="/superadmin/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <User size={18} />
-                Documents
-              </Link>
-              <Link href="/superadmin/management" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/management' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/management' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <ClipboardList size={18} />
-                Management
-              </Link>
-              <Link href="/superadmin/notifications" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Bell size={18} />
-                Notifications
-              </Link>
-              <Link href="/superadmin/announcements" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/superadmin/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Megaphone size={18} />
-                Announcements
-              </Link>
-            </>
-          ) : role === 'ADMIN' ? (
-            <>
-              <Link href="/admin/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/admin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <LayoutDashboard size={18} />
-                Dashboard
-              </Link>
-              <Link href="/admin/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/admin/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <User size={18} />
-                Documents
-              </Link>
-              <Link href="/admin/management" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/admin/management' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/management' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <ClipboardList size={18} />
-                Management
-              </Link>
-              <Link href="/admin/notifications" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/admin/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Bell size={18} />
-                Notifications
-              </Link>
-              <Link href="/admin/announcements" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/admin/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Megaphone size={18} />
-                Announcements
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link href="/dashboard" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <LayoutDashboard size={18} />
-                Dashboard
-              </Link>
-              <Link href="/documents" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <FileText size={18} />
-                Documents
-              </Link>
-              <Link href="/requests" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <ClipboardList size={18} />
-                Requests
-              </Link>
-              <Link href="/notifications" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Bell size={18} />
-                Notifications
-              </Link>
-              <Link href="/announcements" className={`relative px-3 py-2 font-semibold flex items-center gap-2 transition-all duration-300 ${pathname === '/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                <Megaphone size={18} />
-                Announcements
-              </Link>
-            </>
-          )}
+        <nav className="hidden items-center space-x-8 md:flex">
+          {navItems.map((item) => (
+            <NavLink key={item.href} {...item} pathname={pathname} />
+          ))}
         </nav>
 
-        {/* Desktop Profile Dropdown */}
-        <div className="hidden md:flex items-center relative">
-          {user && (
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center space-x-2 text-gray-700 hover:text-[#1E2566] transition-colors px-3 py-2 rounded-lg hover:bg-gray-50"
-            >
-              {user.profilePicture ? (
-                <img src={user.profilePicture} alt="Profile" className="w-5 h-5 rounded-full object-cover" />
-              ) : (
-                <User className="w-5 h-5" />
-              )}
-              <span className="font-medium">{user.firstName} {user.lastName}</span>
-              <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-          )}
+        <div className="hidden items-center gap-2 md:flex">
+          <NotificationBellButton unreadCount={unreadCount} onClick={openNotifications} />
 
-          {/* Dropdown Menu */}
-          {dropdownOpen && user && (
-            <div ref={dropdownRef} className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-              <Link
-                href="/profile"
-                className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1E2566] transition-colors first:rounded-t-lg"
-                onClick={() => setDropdownOpen(false)}
-              >
-                <User className="w-4 h-4" />
-                <span>View Profile</span>
-              </Link>
+          <div className="relative" ref={dropdownRef}>
+            {user && (
               <button
-                onClick={() => {
-                  handleLogout();
-                  setDropdownOpen(false);
-                }}
-                className="flex items-center space-x-2 w-full px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors rounded-b-lg"
+                type="button"
+                onClick={() => setDropdownOpen((open) => !open)}
+                className="flex items-center space-x-2 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#1E2566]"
               >
-                <LogOut className="w-4 h-4" />
-                <span>Logout</span>
+                {user.profilePicture ? (
+                  <img src={user.profilePicture} alt="Profile" className="h-5 w-5 rounded-full object-cover" />
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
+                <span className="font-medium">{displayName}</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
               </button>
-            </div>
-          )}
+            )}
+
+            {dropdownOpen && user && (
+              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 px-4 py-3 text-gray-700 transition-colors first:rounded-t-lg hover:bg-gray-50 hover:text-[#1E2566]"
+                  onClick={() => setDropdownOpen(false)}
+                >
+                  <User className="h-4 w-4" />
+                  <span>View Profile</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogoutConfirm(true);
+                    setDropdownOpen(false);
+                  }}
+                  className="flex w-full items-center space-x-2 rounded-b-lg px-4 py-3 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <NotificationBellButton unreadCount={unreadCount} onClick={openNotifications} />
+          <button type="button" onClick={() => setIsOpen((open) => !open)} aria-label="Toggle menu">
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
-          <div className="px-8 py-4 space-y-4">
-            {role === 'SUPER_ADMIN' ? (
-              <>
-                <Link href="/superadmin/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <LayoutDashboard size={18} />
-                  Dashboard
-                </Link>
-                <Link href="/superadmin/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <User size={18} />
-                  Documents
-                </Link>
-                <Link href="/superadmin/management" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/management' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/management' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <ClipboardList size={18} />
-                  Management
-                </Link>
-                <Link href="/superadmin/notifications" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Bell size={18} />
-                  Notifications
-                </Link>
-                <Link href="/superadmin/announcements" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/superadmin/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/superadmin/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Megaphone size={18} />
-                  Announcements
-                </Link>
-              </>
-            ) : role === 'ADMIN' ? (
-              <>
-                <Link href="/admin/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/admin/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <LayoutDashboard size={18} />
-                  Dashboard
-                </Link>
-                <Link href="/admin/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/admin/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <User size={18} />
-                  Documents
-                </Link>
-                <Link href="/admin/management" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/admin/management' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/management' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <ClipboardList size={18} />
-                  Management
-                </Link>
-                <Link href="/admin/notifications" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/admin/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Bell size={18} />
-                  Notifications
-                </Link>
-                <Link href="/admin/announcements" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/admin/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/admin/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Megaphone size={18} />
-                  Announcements
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/dashboard" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/dashboard' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/dashboard' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <LayoutDashboard size={18} />
-                  Dashboard
-                </Link>
-                <Link href="/documents" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <FileText size={18} />
-                  Documents
-                </Link>
-                <Link href="/requests" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/requests' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/requests' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <ClipboardList size={18} />
-                  Requests
-                </Link>
-                <Link href="/notifications" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/notifications' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/notifications' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Bell size={18} />
-                  Notifications
-                </Link>
-                <Link href="/announcements" className={`flex items-center gap-2 relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/announcements' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/announcements' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
-                  <Megaphone size={18} />
-                  Announcements
-                </Link>
-              </>
-            )}
-            {/* Mobile Profile Dropdown */}
+        <div className="border-t border-gray-200 bg-white md:hidden">
+          <div className="space-y-4 px-8 py-4">
+            {navItems.map((item) => (
+              <NavLink key={item.href} {...item} pathname={pathname} onClick={() => setIsOpen(false)} />
+            ))}
+
             {user && (
-              <div ref={dropdownRef} className="space-y-2">
+              <div className="space-y-2" ref={dropdownRef}>
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center justify-between w-full px-3 py-2 text-gray-700 hover:text-[#1E2566] hover:bg-gray-50 rounded-lg transition-colors"
+                  type="button"
+                  onClick={() => setDropdownOpen((open) => !open)}
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#1E2566]"
                 >
                   <div className="flex items-center space-x-2">
                     {user.profilePicture ? (
-                      <img src={user.profilePicture} alt="Profile" className="w-5 h-5 rounded-full object-cover" />
+                      <img src={user.profilePicture} alt="Profile" className="h-5 w-5 rounded-full object-cover" />
                     ) : (
-                      <User className="w-5 h-5" />
+                      <User className="h-5 w-5" />
                     )}
-                    <span className="font-medium">{user.firstName} {user.lastName}</span>
+                    <span className="font-medium">{displayName}</span>
                   </div>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
-                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                  <div className="overflow-hidden rounded-lg bg-gray-50">
                     <Link
                       href="/profile"
-                      className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#1E2566] transition-colors"
-                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-3 text-gray-700 transition-colors hover:bg-gray-100 hover:text-[#1E2566]"
+                      onClick={() => {
+                        setDropdownOpen(false);
+                        setIsOpen(false);
+                      }}
                     >
-                      <User className="w-4 h-4" />
+                      <User className="h-4 w-4" />
                       <span>View Profile</span>
                     </Link>
                     <button
+                      type="button"
                       onClick={() => {
-                        handleLogout();
+                        setShowLogoutConfirm(true);
                         setDropdownOpen(false);
+                        setIsOpen(false);
                       }}
-                      className="flex items-center space-x-2 w-full px-4 py-3 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+                      className="flex w-full items-center space-x-2 px-4 py-3 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="h-4 w-4" />
                       <span>Logout</span>
                     </button>
                   </div>
@@ -305,29 +270,38 @@ export default function UserNavbar() {
         </div>
       )}
 
-      {/* Logout Confirmation Modal */}
+      <NotificationDrawer
+        isOpen={notificationDrawerOpen}
+        onClose={() => setNotificationDrawerOpen(false)}
+        role={navRole}
+        user={user}
+        onUnreadCountChange={setUnreadCount}
+      />
+
       {showLogoutConfirm && (
-        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl border border-gray-200">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center backdrop-blur-md">
+          <div className="mx-4 max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-2xl">
             <div className="text-center">
-              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
                 <LogOut className="h-8 w-8 text-red-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Confirm Logout</h3>
-              <p className="text-gray-600 mb-8">Are you sure you want to log out? You'll need to sign in again to access your account.</p>
+              <h3 className="mb-2 text-xl font-semibold text-gray-900">Confirm Logout</h3>
+              <p className="mb-8 text-gray-600">Are you sure you want to log out? You&apos;ll need to sign in again to access your account.</p>
               <div className="flex space-x-4">
                 <button
+                  type="button"
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                  className="flex-1 rounded-lg bg-gray-200 px-6 py-3 font-semibold text-gray-800 transition-colors hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     performLogout();
                     setShowLogoutConfirm(false);
                   }}
-                  className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                  className="flex-1 rounded-lg bg-red-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-red-600"
                 >
                   Log Out
                 </button>

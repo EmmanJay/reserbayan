@@ -23,6 +23,7 @@ import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.entity.ResidentStatus;
 import com.cagasi.reserbayan.repository.ResidentRepository;
+import com.cagasi.reserbayan.service.AdminNotificationService;
 import com.cagasi.reserbayan.service.AuthService;
 
 @RestController
@@ -34,6 +35,9 @@ public class AuthController {
 
     @Autowired
     private ResidentRepository residentRepository;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
@@ -94,6 +98,15 @@ public class AuthController {
                 // We NO LONGER manually map fields here (e.g. resident.setFirstName...)
                 // We pass the whole DTO to the service.
                 Resident savedResident = authService.registerResident(registerRequest, registerRequest.getValidId());
+
+                adminNotificationService.createNotification(
+                        "New Account Verification",
+                        savedResident.getFirstName() + " " + savedResident.getLastName()
+                                + " submitted an account verification request.",
+                        "ACCOUNT_VERIFICATION_CREATED",
+                        AdminNotificationService.CATEGORY_VERIFICATION,
+                        AdminNotificationService.TARGET_RESIDENT_REQUEST,
+                        savedResident.getResidentId());
 
                 response.put("success", true);
                 response.put("user", savedResident);
@@ -217,6 +230,15 @@ public class AuthController {
             }
 
             Resident updatedResident = residentRepository.save(existingResident);
+
+            adminNotificationService.createNotification(
+                    "Account Verification Resubmitted",
+                    updatedResident.getFirstName() + " " + updatedResident.getLastName()
+                            + " resubmitted account verification requirements.",
+                    "ACCOUNT_VERIFICATION_RESUBMITTED",
+                    AdminNotificationService.CATEGORY_VERIFICATION,
+                    AdminNotificationService.TARGET_RESIDENT_REQUEST,
+                    updatedResident.getResidentId());
 
             response.put("success", true);
             response.put("user", updatedResident);

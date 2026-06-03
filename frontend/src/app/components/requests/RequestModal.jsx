@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, XCircle, Paperclip, ExternalLink, Edit2, Save, Trash2, Plus, RotateCcw, Send } from 'lucide-react';
+import { FileText, Calendar, XCircle, Paperclip, Edit2, Save, Trash2, Plus, RotateCcw, Mail, MapPin, Phone, User } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 
 function RequestModal({ request, user, onClose, cancelRequest, approveRequest, rejectRequest, onReRequest, onUpdateRequest }) {
@@ -26,6 +26,28 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
   if (!displayRequest) return null;
 
   // --- HELPERS ---
+  const residentFullName = displayRequest.residentName
+    || displayRequest.residentFullName
+    || displayRequest.resident?.fullName
+    || [displayRequest.residentFirstName || displayRequest.resident?.firstName, displayRequest.residentMiddleName, displayRequest.residentLastName || displayRequest.resident?.lastName]
+      .filter(Boolean)
+      .join(' ')
+    || 'N/A';
+  const residentEmail = displayRequest.residentEmail || displayRequest.resident?.email || 'N/A';
+  const residentPhoneNumber = displayRequest.residentPhoneNumber || displayRequest.resident?.phoneNumber || 'N/A';
+  const residentAddress = displayRequest.residentAddress || displayRequest.resident?.address || 'N/A';
+  const processingTime = displayRequest.processingTime
+    || displayRequest.processing_time
+    || displayRequest.estimatedProcessingTime
+    || displayRequest.document?.processingTime
+    || displayRequest.documentType?.processingTime;
+  const infoItems = [
+    { label: 'Name', value: residentFullName, icon: User },
+    { label: 'Contact Number', value: residentPhoneNumber, icon: Phone },
+    { label: 'Email', value: residentEmail, icon: Mail },
+    { label: 'Address', value: residentAddress, icon: MapPin },
+  ];
+
   const getStatusIcon = (status) => {
     const statusLower = status ? status.toLowerCase() : '';
     switch (statusLower) {
@@ -159,12 +181,17 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
   };
 
   const handleRejectRequest = async () => {
-    if (window.confirm('Are you sure you want to reject this request?')) {
+    const rejectionReason = window.prompt('Enter the rejection reason for this request:');
+    if (rejectionReason?.trim()) {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`http://localhost:8080/api/document-requests/${displayRequest.requestId}/reject`, {
           method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ rejectionReason: rejectionReason.trim() }),
         });
         if (res.ok) {
             setNotification({
@@ -300,16 +327,16 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
 
-      <div className="relative mx-auto p-2 sm:p-4 max-w-5xl h-full flex items-center justify-center">
-        <div className="bg-white rounded-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
+      <div className="relative mx-auto flex h-full max-w-7xl items-center justify-center p-2">
+        <div className="w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl max-h-[97vh] sm:max-h-[94vh]">
          
-        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white sticky top-0 z-10">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md">
                 <FileText className="w-5 h-5" aria-hidden="true" />
               </div>
-              <h2 id="modal-title" className="font-montserrat font-bold text-2xl text-blue-900">
+              <h2 id="modal-title" className="font-montserrat text-2xl font-bold text-blue-900">
                 {isEditing ? 'Edit Request' : 'Request Details'}
               </h2>
             </div>
@@ -323,214 +350,199 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
           </div>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="space-y-3 p-3 sm:p-4">
           {!isEditing && (
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {getStatusIcon(displayRequest.status)}
-                    <div>
-                      <p className="text-sm text-blue-700 font-medium">Current Status</p>
-                      <p className="text-lg font-bold text-blue-900">{displayRequest.status}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-blue-700">Request ID</p>
-                    <p className="text-lg font-bold text-blue-900">#{displayRequest.requestId}</p>
-                  </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)_150px]">
+              <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-3">
+                {getStatusIcon(displayRequest.status)}
+                <div>
+                  <p className="text-xs font-medium text-blue-700">Current Status</p>
+                  <p className="text-base font-bold text-blue-900">{displayRequest.status}</p>
                 </div>
               </div>
-          )}
-
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-            <div className="lg:col-span-2 space-y-6">
-               
-              <div>
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" aria-hidden="true" />
-                  Document Information
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-                   <p className="text-sm font-medium text-gray-500">Document Name</p>
-                   <p className="text-xl text-gray-900 font-bold mt-1">{displayRequest.documentName}</p>
+              <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-3">
+                <Calendar className="h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-green-800">Submitted</p>
+                  <p className="truncate text-xs text-green-700">
+                    {new Date(displayRequest.submittedAt).toLocaleDateString('en-US', {
+                      timeZone: 'Asia/Manila', month: 'long', day: 'numeric', year: 'numeric'
+                    })}
+                    {' • '}
+                    {new Date(displayRequest.submittedAt).toLocaleTimeString('en-US', {
+                      timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit'
+                    })}
+                  </p>
+                  {displayRequest.updatedAt && (
+                    <p className="truncate text-xs text-blue-700">
+                      Updated {new Date(displayRequest.updatedAt).toLocaleDateString('en-US', {
+                        timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric'
+                      })}
+                    </p>
+                  )}
                 </div>
               </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900">Purpose & Details</h3>
-                    {!isEditing && user !== null && displayRequest.status === 'Pending' && (
-                        <button 
-                            onClick={() => setIsEditing(true)}
-                            className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold"
-                        >
-                            <Edit2 className="w-3 h-3" /> Edit Details
-                        </button>
-                    )}
-                </div>
-
-                {isEditing ? (
-                    <textarea 
-                        className="w-full p-4 border-2 border-blue-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                        rows="5"
-                        value={editDetails}
-                        onChange={(e) => setEditDetails(e.target.value)}
-                    />
-                ) : (
-                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-lg border border-gray-200">
-                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{displayRequest.details}</p>
-                    </div>
-                )}
-              </div>
-
-              <div>
-                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                   <Paperclip className="w-5 h-5 text-blue-600" aria-hidden="true" />
-                   Attached Requirements
-                 </h3>
-
-                 {displayRequest.attachments && displayRequest.attachments.length > 0 && (
-                   <div className="grid gap-3 sm:grid-cols-2 mb-4">
-                     {displayRequest.attachments
-                        .filter(f => !filesToRemove.includes(f.id))
-                        .map((file) => (
-                       <div 
-                         key={file.id} 
-                         className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg group"
-                       >
-                         <button 
-                             onClick={() => handleDownloadAttachment(file)}
-                             disabled={isDownloading[file.id]}
-                             className="flex items-center gap-3 overflow-hidden flex-1 hover:bg-gray-50 rounded-lg p-1 -m-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                             title="Click to download"
-                         >
-                           <div className="bg-blue-50 p-2 rounded-md">
-                             <FileText className="w-5 h-5 text-blue-600" />
-                           </div>
-                           <div className="overflow-hidden">
-                             <p className="text-sm font-medium text-gray-700 truncate">
-                                 {file.fileName}
-                             </p>
-                             <p className="text-xs text-gray-500">
-                               {isDownloading[file.id] ? 'Downloading...' : 'Click to download'}
-                             </p>
-                           </div>
-                         </button>
-                         
-                         {isEditing && (
-                             <button 
-                                onClick={() => removeExistingFile(file.id)}
-                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full"
-                             >
-                                 <Trash2 className="w-4 h-4" />
-                             </button>
-                         )}
-                       </div>
-                     ))}
-                   </div>
-                 )}
-
-                 {isEditing && (
-                     <div className="mt-4">
-                         <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50 flex flex-col items-center justify-center">
-                             <input
-                                 type="file"
-                                 id="edit-upload"
-                                 multiple
-                                 onChange={handleFileSelect}
-                                 className="hidden"
-                             />
-                             <label htmlFor="edit-upload" className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
-                                 <Plus className="w-6 h-6" />
-                                 <span className="text-sm">Click to add more files</span>
-                             </label>
-                         </div>
-                         {newFiles.length > 0 && (
-                             <div className="mt-3 space-y-2">
-                                 {newFiles.map((file, index) => (
-                                     <div key={index} className="flex items-center justify-between bg-green-50 p-2 rounded-lg border border-green-100">
-                                         <span className="text-sm text-green-800 px-2 truncate">{file.name} (New)</span>
-                                         <button onClick={() => removeNewFile(index)} className="text-green-600 p-1">
-                                             <XCircle className="w-4 h-4" />
-                                         </button>
-                                     </div>
-                                 ))}
-                             </div>
-                         )}
-                     </div>
-                 )}
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-right">
+                <p className="text-xs font-medium text-blue-700">Request ID</p>
+                <p className="text-base font-bold text-blue-900">#{displayRequest.requestId}</p>
               </div>
             </div>
+          )}
 
-            <div className="space-y-6">
-              
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+            <div className="space-y-2">
               <div>
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" aria-hidden="true" />
-                  Timeline
+                <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
+                  <FileText className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  Document Information
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5 flex-shrink-0" aria-hidden="true"></div>
-                    <div>
-                      <p className="text-sm font-bold text-green-800">Submitted</p>
-                      <p className="text-xs text-green-700 mt-1">
-                        {new Date(displayRequest.submittedAt).toLocaleDateString('en-US', {
-                             timeZone: 'Asia/Manila', month: 'long', day: 'numeric', year: 'numeric'
-                        })}
-                      </p>
-                      <p className="text-xs text-green-600">
-                        {new Date(displayRequest.submittedAt).toLocaleTimeString('en-US', {
-                             timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
+                <div className={`grid gap-2 ${processingTime ? 'md:grid-cols-[minmax(0,1fr)_180px]' : ''}`}>
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Document Name</p>
+                    <p className="mt-1 text-base font-bold text-gray-900">{displayRequest.documentName}</p>
                   </div>
-                  
-                  {displayRequest.updatedAt && (
-                    <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" aria-hidden="true"></div>
-                      <div>
-                        <p className="text-sm font-bold text-blue-800">Last Updated</p>
-                        <p className="text-xs text-blue-700 mt-1">
-                            {new Date(displayRequest.updatedAt).toLocaleDateString('en-US', {
-                                 timeZone: 'Asia/Manila', month: 'long', day: 'numeric', year: 'numeric'
-                            })}
-                        </p>
-                        <p className="text-xs text-blue-600">
-                            {new Date(displayRequest.updatedAt).toLocaleTimeString('en-US', {
-                                 timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit'
-                            })}
-                        </p>
-                      </div>
+                  {processingTime && (
+                    <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Processing Time</p>
+                      <p className="mt-1 text-base font-bold text-gray-900">{processingTime}</p>
                     </div>
                   )}
                 </div>
               </div>
 
               <div>
-                <h3 className="font-bold text-gray-900 mb-4">Additional Information</h3>
-                <div className="bg-gray-50 p-4 rounded-lg space-y-3 border border-gray-100">
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted Date</span>
-                    <p className="text-sm font-medium text-gray-700 mt-1">
-                        {new Date(displayRequest.submittedAt).toLocaleDateString('en-US', { 
-                             timeZone: 'Asia/Manila',
-                             weekday: 'long', 
-                             year: 'numeric', 
-                             month: 'long', 
-                             day: 'numeric' 
-                        })}
-                    </p>
-                  </div>
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-900">Purpose & Details</h3>
+                  {!isEditing && user !== null && displayRequest.status === 'Pending' && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                    >
+                      <Edit2 className="w-3 h-3" /> Edit Details
+                    </button>
+                  )}
                 </div>
+
+                {isEditing ? (
+                  <textarea
+                    className="w-full rounded-lg border-2 border-blue-100 bg-white p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    rows="3"
+                    value={editDetails}
+                    onChange={(e) => setEditDetails(e.target.value)}
+                  />
+                ) : (
+                  <div className="rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-3">
+                    <p className="line-clamp-3 text-gray-700 leading-relaxed whitespace-pre-wrap">{displayRequest.details}</p>
+                  </div>
+                )}
               </div>
 
+              <div>
+                <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
+                  <Paperclip className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  Attached Requirements
+                </h3>
+
+                {displayRequest.attachments && displayRequest.attachments.length > 0 ? (
+                  <div className="mb-1 grid gap-2 sm:grid-cols-2">
+                    {displayRequest.attachments
+                      .filter(f => !filesToRemove.includes(f.id))
+                      .map((file) => (
+                        <div
+                          key={file.id}
+                          className="group flex items-center justify-between rounded-lg border border-gray-200 bg-white p-2"
+                        >
+                          <button
+                            onClick={() => handleDownloadAttachment(file)}
+                            disabled={isDownloading[file.id]}
+                            className="flex flex-1 items-center gap-3 overflow-hidden rounded-lg p-1 -m-1 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            title="Click to download"
+                          >
+                            <div className="rounded-md bg-blue-50 p-2">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="truncate text-sm font-medium text-gray-700">
+                                {file.fileName}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {isDownloading[file.id] ? 'Downloading...' : 'Click to download'}
+                              </p>
+                            </div>
+                          </button>
+
+                          {isEditing && (
+                            <button
+                              onClick={() => removeExistingFile(file.id)}
+                              className="rounded-full p-2 text-red-400 hover:bg-red-50 hover:text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="mb-2 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 text-sm font-medium text-gray-500">
+                    No attached requirements.
+                  </div>
+                )}
+
+                {isEditing && (
+                  <div className="mt-3">
+                    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-3">
+                      <input
+                        type="file"
+                        id="edit-upload"
+                        multiple
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <label htmlFor="edit-upload" className="flex cursor-pointer flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
+                        <Plus className="w-6 h-6" />
+                        <span className="text-sm">Click to add more files</span>
+                      </label>
+                    </div>
+                    {newFiles.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {newFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between rounded-lg border border-green-100 bg-green-50 p-2">
+                            <span className="truncate px-2 text-sm text-green-800">{file.name} (New)</span>
+                            <button onClick={() => removeNewFile(index)} className="p-1 text-green-600">
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
+
+            <aside className="space-y-2">
+              <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
+                <User className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                Resident Basic Information
+              </h3>
+              <div className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-2">
+                {infoItems.map(({ label, value, icon: Icon }) => (
+                  <div key={label} className="flex min-w-0 items-start gap-2 rounded-lg bg-white p-2 ring-1 ring-gray-100">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50">
+                      <Icon className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
+                      <p className="truncate text-sm font-bold text-gray-900" title={value}>{value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </aside>
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 rounded-b-2xl">
+        <div className="flex justify-end gap-3 rounded-b-2xl border-t border-gray-200 bg-gray-50 p-3 sm:p-4">
           
           {isEditing ? (
              <>
@@ -541,14 +553,14 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                         setNewFiles([]);
                         setFilesToRemove([]);
                     }}
-                    className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+                    className="rounded-lg border border-gray-300 bg-white px-5 py-2 font-medium text-gray-700 hover:bg-gray-50"
                     disabled={isSaving}
                 >
                     Cancel Edit
                 </button>
                 <button
                     onClick={handleSaveChanges}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
+                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white hover:bg-blue-700"
                     disabled={isSaving}
                 >
                     {isSaving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Changes</>}
@@ -556,10 +568,10 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
              </>
           ) : (
              <>
-                 {user !== null && (displayRequest.status === 'Cancelled') && ( 
+                 {user !== null && ['cancelled', 'rejected'].includes(displayRequest.status?.toLowerCase()) && ( 
                      <button
                         onClick={handleReRequest}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm flex items-center gap-2"
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
                      >
                         <RotateCcw className="w-4 h-4" /> Re-Request
                      </button>
@@ -569,13 +581,13 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                     <>
                     <button
                         onClick={handleRejectRequest}
-                        className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
+                        className="rounded-lg bg-red-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-red-700"
                     >
                         Reject Request
                     </button>
                     <button
                         onClick={handleApproveRequest}
-                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+                        className="rounded-lg bg-green-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-green-700"
                     >
                         Approve Request
                     </button>
@@ -585,7 +597,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                  {user !== null && displayRequest.status?.toLowerCase() === 'pending' && (
                     <button
                     onClick={handleCancelRequest}
-                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm"
+                    className="rounded-lg bg-red-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-red-700"
                     >
                     Cancel Request
                     </button>
@@ -593,7 +605,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
 
                  <button
                     onClick={onClose}
-                    className="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-sm"
+                    className="rounded-lg border border-gray-300 bg-white px-5 py-2 font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
                  >
                     Close
                  </button>

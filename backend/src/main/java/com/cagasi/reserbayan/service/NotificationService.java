@@ -21,12 +21,25 @@ public class NotificationService {
     }
 
     public Notification createNotification(Resident resident, String title, String message, String type, String additionalData) {
+        return createNotification(resident, title, message, type, additionalData, null, null);
+    }
+
+    public Notification createNotification(
+            Resident resident,
+            String title,
+            String message,
+            String type,
+            String additionalData,
+            String targetType,
+            Long targetId) {
         Notification notification = new Notification();
         notification.setResident(resident);
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setType(type);
         notification.setAdditionalData(additionalData);
+        notification.setTargetType(targetType);
+        notification.setTargetId(targetId);
         return notificationRepository.save(notification);
     }
 
@@ -83,6 +96,15 @@ public class NotificationService {
             notification.setRead(true);
         }
         notificationRepository.saveAll(unreadNotifications);
+    }
+
+    public void deleteNotification(Long notificationId) {
+        notificationRepository.deleteById(notificationId);
+    }
+
+    @Transactional
+    public void deleteNotificationsByResident(Long residentId) {
+        notificationRepository.deleteByResident_ResidentId(residentId);
     }
     
     // Verification method to check database state directly

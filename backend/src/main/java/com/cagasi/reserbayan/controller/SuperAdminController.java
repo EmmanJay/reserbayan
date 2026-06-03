@@ -37,6 +37,7 @@ import com.cagasi.reserbayan.repository.DocumentTypeRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
 import com.cagasi.reserbayan.repository.StatusLogRepository;
 import com.cagasi.reserbayan.service.AnnouncementService;
+import com.cagasi.reserbayan.service.AdminNotificationService;
 import com.cagasi.reserbayan.service.NotificationService;
 
 @RestController
@@ -66,6 +67,9 @@ public class SuperAdminController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     // Summary & Analytics
     @GetMapping("/summary")
@@ -256,7 +260,10 @@ public class SuperAdminController {
                 request.getResident(),
                 "Document Request Approved",
                 "Your request for '" + request.getDocumentName() + "' has been approved.",
-                "REQUEST_APPROVED");
+                "REQUEST_APPROVED",
+                null,
+                AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                savedRequest.getRequestId());
 
         return ResponseEntity.ok(savedRequest);
     }
@@ -293,7 +300,9 @@ public class SuperAdminController {
                 "Document Request Rejected",
                 notificationMessage,
                 "REQUEST_REJECTED",
-                rejectionReason);
+                rejectionReason,
+                AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                savedRequest.getRequestId());
 
         return ResponseEntity.ok(savedRequest);
     }
@@ -320,7 +329,10 @@ public class SuperAdminController {
                 request.getResident(),
                 "Document Request Completed",
                 "Your request for '" + request.getDocumentName() + "' has been completed and is ready for pickup.",
-                "REQUEST_COMPLETED");
+                "REQUEST_COMPLETED",
+                null,
+                AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                savedRequest.getRequestId());
 
         return ResponseEntity.ok(savedRequest);
     }
@@ -372,8 +384,18 @@ public class SuperAdminController {
         // Assuming there's a verification status or field, for now just update status
         // to APPROVED
         resident.setStatus(ResidentStatus.APPROVED);
-        residentRepository.save(resident);
-        return ResponseEntity.ok(resident);
+        Resident savedResident = residentRepository.save(resident);
+
+        notificationService.createNotification(
+                savedResident,
+                "Account Verified",
+                "Your account has been approved and verified.",
+                "ACCOUNT_APPROVED",
+                null,
+                AdminNotificationService.TARGET_RESIDENT_REQUEST,
+                savedResident.getResidentId());
+
+        return ResponseEntity.ok(savedResident);
     }
 
     @GetMapping("/residents/{id}/password")
@@ -430,7 +452,9 @@ public class SuperAdminController {
                 "Account Registration Rejected",
                 notificationMessage,
                 "ACCOUNT_REJECTED",
-                rejectionReason);
+                rejectionReason,
+                AdminNotificationService.TARGET_RESIDENT_REQUEST,
+                resident.getResidentId());
 
         return ResponseEntity.ok(resident);
     }

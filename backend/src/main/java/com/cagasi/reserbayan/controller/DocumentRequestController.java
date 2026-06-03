@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ import com.cagasi.reserbayan.repository.ResidentRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import com.cagasi.reserbayan.service.AdminNotificationService;
 import com.cagasi.reserbayan.service.NotificationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -54,6 +56,12 @@ public class DocumentRequestController {
 
     @Autowired
     private ResidentRepository residentRepository;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     // Define the folder where files will be saved
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
@@ -156,6 +164,15 @@ public class DocumentRequestController {
             documentRequest.setSubmittedAt(java.time.LocalDateTime.now());
 
             DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            adminNotificationService.createNotification(
+                    "New Document Request",
+                    resident.getFirstName() + " " + resident.getLastName() + " requested "
+                            + savedRequest.getDocumentName() + ".",
+                    "DOCUMENT_REQUEST_CREATED",
+                    AdminNotificationService.CATEGORY_REQUESTS,
+                    AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                    savedRequest.getRequestId());
 
             // Handle file uploads
             if (files != null && !files.isEmpty()) {
@@ -260,6 +277,14 @@ public class DocumentRequestController {
             }
 
             DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+            adminNotificationService.createNotification(
+                    "Document Request Updated",
+                    savedRequest.getResident().getFirstName() + " " + savedRequest.getResident().getLastName()
+                            + " updated requirements for " + savedRequest.getDocumentName() + ".",
+                    "DOCUMENT_REQUEST_UPDATED",
+                    AdminNotificationService.CATEGORY_REQUESTS,
+                    AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                    savedRequest.getRequestId());
             DocumentRequestDTO savedDto = convertToDTO(savedRequest);
             return ResponseEntity.ok(savedDto);
 
@@ -378,7 +403,16 @@ public class DocumentRequestController {
 
             documentRequest.setStatus("Approved");
             documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
-            documentRequestRepository.save(documentRequest);
+            DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            notificationService.createNotification(
+                    savedRequest.getResident(),
+                    "Document Request Approved",
+                    "Your request for '" + savedRequest.getDocumentName() + "' has been approved.",
+                    "REQUEST_APPROVED",
+                    null,
+                    "DOCUMENT_REQUEST",
+                    savedRequest.getRequestId());
 
             return ResponseEntity.ok("Request approved successfully");
         } catch (Exception e) {
@@ -387,7 +421,10 @@ public class DocumentRequestController {
     }
 
     @PutMapping("/{id}/reject")
-    public ResponseEntity<String> rejectDocumentRequest(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<String> rejectDocumentRequest(
+            @PathVariable Long id,
+            @RequestBody(required = false) Map<String, String> body,
+            HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -398,8 +435,20 @@ public class DocumentRequestController {
                     .orElseThrow(() -> new RuntimeException("Document request not found"));
 
             documentRequest.setStatus("Rejected");
+            if (body != null && body.get("rejectionReason") != null) {
+                documentRequest.setRejectionReason(body.get("rejectionReason"));
+            }
             documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
-            documentRequestRepository.save(documentRequest);
+            DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            notificationService.createNotification(
+                    savedRequest.getResident(),
+                    "Document Request Rejected",
+                    "Your request for '" + savedRequest.getDocumentName() + "' has been rejected.",
+                    "REQUEST_REJECTED",
+                    savedRequest.getRejectionReason(),
+                    "DOCUMENT_REQUEST",
+                    savedRequest.getRequestId());
 
             return ResponseEntity.ok("Request rejected successfully");
         } catch (Exception e) {
@@ -420,7 +469,16 @@ public class DocumentRequestController {
 
             documentRequest.setStatus("Cancelled");
             documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
-            documentRequestRepository.save(documentRequest);
+            DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            adminNotificationService.createNotification(
+                    "Document Request Cancelled",
+                    savedRequest.getResident().getFirstName() + " " + savedRequest.getResident().getLastName()
+                            + " cancelled " + savedRequest.getDocumentName() + ".",
+                    "DOCUMENT_REQUEST_CANCELLED",
+                    AdminNotificationService.CATEGORY_REQUESTS,
+                    AdminNotificationService.TARGET_DOCUMENT_REQUEST,
+                    savedRequest.getRequestId());
 
             return ResponseEntity.ok("Request cancelled successfully");
         } catch (Exception e) {
@@ -436,6 +494,12 @@ public class DocumentRequestController {
         dto.setDocumentName(request.getDocumentName());
         dto.setResidentId(request.getResident().getResidentId());
         dto.setResidentName(request.getResident().getFirstName() + " " + request.getResident().getLastName());
+        dto.setResidentFirstName(request.getResident().getFirstName());
+        dto.setResidentMiddleName(request.getResident().getMiddleName());
+        dto.setResidentLastName(request.getResident().getLastName());
+        dto.setResidentEmail(request.getResident().getResidentEmail());
+        dto.setResidentPhoneNumber(request.getResident().getPhoneNumber());
+        dto.setResidentAddress(formatResidentAddress(request.getResident()));
         dto.setDetails(request.getDetails());
         dto.setStatus(request.getStatus());
         dto.setSubmittedAt(request.getSubmittedAt().toString());
@@ -451,6 +515,20 @@ public class DocumentRequestController {
         dto.setAttachmentCount(attachments.size());
 
         return dto;
+    }
+
+    private String formatResidentAddress(Resident resident) {
+        return List.of(
+                        resident.getAddressLine1(),
+                        resident.getSitio(),
+                        resident.getBarangay(),
+                        resident.getCity(),
+                        resident.getProvince(),
+                        resident.getRegion())
+                .stream()
+                .filter(value -> value != null && !value.isBlank())
+                .reduce((first, second) -> first + ", " + second)
+                .orElse(null);
     }
 
     private RequestAttachment convertAttachmentToDTO(RequestAttachment attachment) {

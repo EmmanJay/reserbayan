@@ -6,7 +6,7 @@ import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, 
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
 import ViewDetailsModal from '@/app/components/ViewDetailsModal';
-import RequestDetailsModal from '@/app/components/RequestDetailsModal';
+import RequestModal from '@/app/components/requests/RequestModal';
 import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 import { motion } from 'framer-motion';
 
@@ -301,19 +301,35 @@ export default function AdminManagementPage() {
     }
   };
 
-  const handleViewInfo = (resident) => {
-    // Transform data structure for RequestDetailsModal compatibility
-    let transformedResident = resident;
+  const handleViewInfo = async (resident) => {
     if (activeTab === 'document-requests') {
-      // Convert nested resident object to string format expected by RequestDetailsModal
-      const fullName = `${resident.resident?.firstName || ''} ${resident.resident?.lastName || ''}`.trim();
-      transformedResident = {
-        ...resident,
-        resident: fullName || 'Unknown Resident',
-        email: resident.resident?.email || resident.residentEmail || 'N/A'
-      };
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:8080/api/document-requests/${resident.requestId}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        });
+
+        if (response.ok) {
+          const requestDetails = await response.json();
+          setSelectedResident({
+            ...resident,
+            ...requestDetails,
+            resident: resident.resident,
+            residentFirstName: resident.residentFirstName,
+            residentLastName: resident.residentLastName,
+            residentFullName: resident.residentFullName,
+            residentEmail: resident.residentEmail,
+          });
+        } else {
+          setSelectedResident(resident);
+        }
+      } catch (error) {
+        console.error('Failed to load request details:', error);
+        setSelectedResident(resident);
+      }
+    } else {
+      setSelectedResident(resident);
     }
-    setSelectedResident(transformedResident);
     setModalType(activeTab);
     setIsViewDetailsModalOpen(true);
   };
@@ -987,26 +1003,18 @@ export default function AdminManagementPage() {
 
       {/* Conditional Modal Rendering */}
       {modalType === 'document-requests' ? (
-        <RequestDetailsModal
-          isOpen={isViewDetailsModalOpen}
-          onClose={() => setIsViewDetailsModalOpen(false)}
-          requestDetails={selectedResident}
-          onApprove={selectedResident?.status === 'Pending' ? (requestId) => {
-            const item = data.find(d => d.requestId === requestId);
-            if (item) handleAccept(item);
-            setIsViewDetailsModalOpen(false);
-          } : null}
-          onReject={selectedResident?.status === 'Pending' ? (requestId) => {
-            const item = data.find(d => d.requestId === requestId);
-            if (item) handleReject(item);
-            setIsViewDetailsModalOpen(false);
-          } : null}
-          onComplete={selectedResident?.status === 'Approved' ? (requestId) => {
-            const item = data.find(d => d.requestId === requestId);
-            if (item) handleCompleteDocument(item);
-            setIsViewDetailsModalOpen(false);
-          } : null}
-        />
+        isViewDetailsModalOpen && selectedResident && (
+          <RequestModal
+            request={selectedResident}
+            user={null}
+            onClose={() => {
+              setIsViewDetailsModalOpen(false);
+              fetchData(activeTab);
+            }}
+            cancelRequest={async () => ({ success: false, error: 'Not supported in admin view' })}
+            onUpdateRequest={() => fetchData(activeTab)}
+          />
+        )
       ) : (
         <ViewDetailsModal
           isOpen={isViewDetailsModalOpen}
