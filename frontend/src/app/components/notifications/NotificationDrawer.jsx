@@ -539,7 +539,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
               onClick={onClose}
             />
             <motion.aside
-              className="fixed right-6 top-[62px] z-[61] flex max-h-[calc(100vh-80px)] w-[430px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)] max-sm:left-3 max-sm:right-3 max-sm:top-[60px] max-sm:w-auto"
+              className="fixed right-6 top-[62px] z-[61] flex max-h-[calc(100vh-80px)] w-[430px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)] max-sm:left-3 max-sm:right-3 max-sm:top-[60px] max-sm:w-auto"
               initial={{ y: -8, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -8, opacity: 0, scale: 0.98 }}
@@ -549,7 +549,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
               <div className="border-b border-slate-100 bg-white px-5 pb-3 pt-5">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <h2 className="font-montserrat text-xl font-extrabold text-slate-950">Notifications</h2>
+                    <h2 className="text-xl font-extrabold text-slate-950">Notifications</h2>
                     <p className="mt-1 text-xs font-semibold text-slate-500">
                       {unreadCount} unread message{unreadCount === 1 ? '' : 's'}
                     </p>
@@ -559,7 +559,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                       type="button"
                       onClick={toggleSelectMode}
                       disabled={notifications.length === 0}
-                      className="rounded-full border border-slate-200 px-4 py-2 text-xs font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-full border border-slate-200 px-4 py-2 text-xs font-extrabold text-slate-700 transition hover:border-[#c2cbea] hover:text-[#122361] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {selectMode ? 'Done' : 'Select'}
                     </button>
@@ -576,7 +576,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                         type="button"
                         onClick={() => setActiveFilter(filter.value)}
                         className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-extrabold transition ${
-                          activeFilter === filter.value ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                          activeFilter === filter.value ? 'bg-[#eef3ff] text-[#122361]' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
                         {filter.label}
@@ -607,8 +607,8 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                         <article
                           key={notificationId}
                           className={`group rounded-2xl p-2.5 transition ${
-                            unread ? 'bg-blue-50/55' : 'bg-white'
-                          } ${selected ? 'ring-1 ring-blue-200' : 'hover:bg-slate-50'}`}
+                            unread ? 'bg-[#eef3ff]/55' : 'bg-white'
+                          } ${selected ? 'ring-1 ring-[#c2cbea]' : 'hover:bg-slate-50'}`}
                         >
                           <button
                             type="button"
@@ -625,17 +625,17 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                                 aria-checked={selected}
                                 aria-label={selected ? 'Selected notification' : 'Select notification'}
                                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                                  selected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'
+                                  selected ? 'border-[#243b8e] bg-[#243b8e] text-white' : 'border-slate-300 bg-white'
                                 }`}
                               >
                                 {selected && <Check className="h-3 w-3" />}
                               </span>
                             )}
                             <span className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                              unread ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
+                              unread ? 'bg-[#d8def2] text-[#122361]' : 'bg-slate-100 text-slate-500'
                             }`}>
                               <Icon className="h-4 w-4" />
-                              {unread && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-blue-600" />}
+                              {unread && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-[#243b8e]" />}
                             </span>
                             <span className="min-w-0 flex-1">
                               <span className="block line-clamp-1 text-sm font-extrabold text-slate-900">{notification.title}</span>
@@ -648,7 +648,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                               <span className="mt-1.5 flex items-center justify-between text-[11px] font-semibold text-slate-400">
                                 <span>{formatDateTime(notification.createdAt)}</span>
                                 {unread && (
-                                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
+                                  <span className="rounded-full bg-[#eef3ff] px-2 py-0.5 text-[10px] font-extrabold text-[#122361]">
                                     Unread
                                   </span>
                                 )}
@@ -676,7 +676,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                             onClick={() => setCurrentPage(page)}
                             className={`h-7 min-w-[28px] rounded-full px-2 text-xs font-extrabold transition ${
                               isActive
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-[#243b8e] text-white'
                                 : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                             }`}
                             aria-current={isActive ? 'page' : undefined}
@@ -692,10 +692,10 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                       type="button"
                       onClick={handleSelectAll}
                       disabled={!selectMode || notifications.length === 0}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-[#c2cbea] hover:text-[#122361] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <span className={`flex h-4 w-4 items-center justify-center rounded border ${
-                        allSelected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'
+                        allSelected ? 'border-[#243b8e] bg-[#243b8e] text-white' : 'border-slate-300 bg-white'
                       }`}>
                         {allSelected && <Check className="h-3 w-3" />}
                       </span>
@@ -706,7 +706,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                         type="button"
                         onClick={handleBulkRead}
                         disabled={!selectMode || selectedCount === 0}
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-600 transition hover:bg-[#eef3ff] hover:text-[#122361] disabled:cursor-not-allowed disabled:opacity-50"
                         aria-label="Mark selected as read"
                       >
                         <CheckCheck className="h-4 w-4" />
@@ -743,17 +743,17 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
         {messageNotification && (
           <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
             <motion.div
-              className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-[0_28px_90px_rgba(15,23,42,0.25)]"
+              className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 20, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.96 }}
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#122361]">
                   {messageNotification.type?.includes('REJECTED') ? <AlertTriangle className="h-6 w-6 text-red-600" /> : <CheckCircle2 className="h-6 w-6" />}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-montserrat text-xl font-extrabold text-slate-900">{messageNotification.title}</h3>
+                  <h3 className="text-xl font-extrabold text-slate-900">{messageNotification.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{messageNotification.message}</p>
                   {messageNotification.additionalData && (
                     <div className="mt-3 rounded-2xl bg-red-50 p-3 text-sm font-semibold leading-6 text-red-700 ring-1 ring-red-100">
@@ -766,7 +766,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                 <button
                   type="button"
                   onClick={() => setMessageNotification(null)}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-extrabold text-slate-700 transition hover:border-[#c2cbea] hover:text-[#122361]"
                 >
                   Close
                 </button>
@@ -777,7 +777,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                       setMessageNotification(null);
                       setShowAccountActivity(true);
                     }}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-blue-700"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-[#243b8e] px-4 py-2 text-sm font-extrabold text-white transition hover:bg-[#122361]"
                   >
                     <RefreshCw className="h-4 w-4" />
                     Reapply
@@ -790,7 +790,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                       setSelectedRequest(messageNotification.request);
                       setMessageNotification(null);
                     }}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-blue-700"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-[#243b8e] px-4 py-2 text-sm font-extrabold text-white transition hover:bg-[#122361]"
                   >
                     <FileText className="h-4 w-4" />
                     View Request

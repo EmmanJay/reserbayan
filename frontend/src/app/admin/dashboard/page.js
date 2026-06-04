@@ -576,7 +576,7 @@ export default function AdminDashboard() {
             initial={{ opacity: 0, y: -50, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.95 }}
-            className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-2xl border max-w-sm ${
+            className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-sm border max-w-sm ${
               notification.type === 'success' 
                 ? 'bg-green-50 border-green-200 text-green-800' 
                 : 'bg-red-50 border-red-200 text-red-800'
@@ -614,7 +614,7 @@ export default function AdminDashboard() {
           <div className="space-y-8">
                 
             {/* 1. QUICK ACTIONS BAR - Admin focused */}
-            <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] p-5 rounded-xl border-0 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white">
+            <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] p-5 rounded-xl border-0 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-white/20 rounded-lg text-white">
                   <Settings className="w-5 h-5" />
@@ -636,8 +636,8 @@ export default function AdminDashboard() {
                 label="Total Residents"
                 value={stats.totalResidents}
                 icon={Users}
-                color="text-blue-600"
-                bgColor="bg-blue-50/80"
+                color="text-[#243b8e]"
+                bgColor="bg-[#eef3ff]/80"
               />
               <StatCard
                 label="New Requests"
@@ -651,8 +651,8 @@ export default function AdminDashboard() {
                 label="Pending Accounts"
                 value={stats.pendingResidents}
                 icon={UserPlus}
-                color="text-indigo-600"
-                bgColor="bg-indigo-50/80"
+                color="text-[#243b8e]"
+                bgColor="bg-[#eef3ff]/80"
                 alert={stats.pendingResidents > 0}
               />
               <StatCard
@@ -674,12 +674,12 @@ export default function AdminDashboard() {
                    {/* POST ANNOUNCEMENT SECTION */}
                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
                      <div className="absolute top-0 right-0 p-4 opacity-5">
-                       <Megaphone className="w-24 h-24 text-blue-900" />
+                       <Megaphone className="w-24 h-24 text-[#00114e]" />
                      </div>
                      
                      <div className="flex items-center justify-between mb-4 relative z-10">
                        <div className="flex items-center gap-3">
-                         <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                         <div className="p-2 bg-[#eef3ff] rounded-lg text-[#243b8e]">
                            <Megaphone className="w-5 h-5" />
                          </div>
                          <div>
@@ -689,7 +689,7 @@ export default function AdminDashboard() {
                        </div>
                        <button
                          onClick={handleViewAllAnnouncements}
-                         className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                         className="text-xs font-semibold text-[#243b8e] hover:text-[#122361] hover:bg-[#eef3ff] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
                        >
                          View All Announcements
                          <ArrowRight className="w-3 h-3" />
@@ -703,7 +703,7 @@ export default function AdminDashboard() {
                            placeholder="Announcement Title"
                            value={announcementTitle}
                            onChange={(e) => setAnnouncementTitle(e.target.value)}
-                           className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400"
+                           className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] transition-all placeholder:text-slate-400"
                          />
                        </div>
                        <div>
@@ -712,7 +712,7 @@ export default function AdminDashboard() {
                            placeholder="Write your message here..."
                            value={announcementContent}
                            onChange={(e) => setAnnouncementContent(e.target.value)}
-                           className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all placeholder:text-slate-400 resize-none"
+                           className="w-full text-sm px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] transition-all placeholder:text-slate-400 resize-none"
                          ></textarea>
                        </div>
                        
@@ -723,7 +723,7 @@ export default function AdminDashboard() {
                            <select
                              value={announcementPriority}
                              onChange={(e) => setAnnouncementPriority(e.target.value)}
-                             className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                             className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] transition-all"
                            >
                              <option value="LOW">Low</option>
                              <option value="MEDIUM">Medium</option>
@@ -738,7 +738,7 @@ export default function AdminDashboard() {
                                type="date"
                                value={announcementStartDate}
                                onChange={(e) => setAnnouncementStartDate(e.target.value)}
-                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] transition-all"
                              />
                              <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                            </div>
@@ -750,7 +750,7 @@ export default function AdminDashboard() {
                                type="date"
                                value={announcementEndDate}
                                onChange={(e) => setAnnouncementEndDate(e.target.value)}
-                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                               className="w-full text-sm px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] transition-all"
                              />
                              <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                            </div>
@@ -764,7 +764,7 @@ export default function AdminDashboard() {
                            id="announcementVisibility"
                            checked={announcementIsVisible}
                            onChange={(e) => setAnnouncementIsVisible(e.target.checked)}
-                           className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                           className="rounded border-slate-300 text-[#243b8e] focus:ring-[#2f84c0]"
                          />
                          <label htmlFor="announcementVisibility" className="text-sm text-slate-600">
                            Visible to residents
@@ -775,7 +775,7 @@ export default function AdminDashboard() {
                          <button
                            onClick={handlePostAnnouncement}
                            disabled={announcementLoading || !announcementTitle.trim() || !announcementContent.trim()}
-                           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white text-xs font-semibold rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 shadow-sm shadow-slate-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                          >
                            {announcementLoading ? (
                              <Loader className="w-3 h-3 animate-spin" />
@@ -791,7 +791,7 @@ export default function AdminDashboard() {
                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                       <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                          <div className="p-2 bg-[#eef3ff] rounded-lg text-[#243b8e]">
                             <Clock className="w-5 h-5" />
                           </div>
                           <div>
@@ -801,7 +801,7 @@ export default function AdminDashboard() {
                         </div>
                         <button 
                           onClick={handleViewAllRequests}
-                          className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors"
+                          className="text-xs font-semibold text-[#243b8e] hover:text-[#122361] hover:bg-[#eef3ff] px-3 py-1.5 rounded-lg transition-colors"
                         >
                           View All Requests
                         </button>
@@ -825,7 +825,7 @@ export default function AdminDashboard() {
                                 onClick={() => handleViewRequestDetails(req)}
                               >
                                 <td className="px-6 py-4">
-                                  <div className="font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">{req.resident}</div>
+                                  <div className="font-semibold text-slate-900 group-hover:text-[#122361] transition-colors">{req.resident}</div>
                                   {req.email && <div className="text-xs text-slate-500 mt-0.5">{req.email}</div>}
                                 </td>
                                 <td className="px-6 py-4">
@@ -907,7 +907,7 @@ export default function AdminDashboard() {
 
 function StatCard({ label, value, icon: Icon, color, bgColor, alert }) {
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-sm transition-all duration-300 relative overflow-hidden group">
       {alert && <div className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse ring-4 ring-red-100"></div>}
       <div className="flex justify-between items-start">
         <div>
@@ -926,7 +926,7 @@ function ActionButton({ icon: Icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg text-xs font-bold hover:border-blue-400 hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+      className="flex items-center gap-2 px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg text-xs font-bold hover:border-[#2f84c0] hover:text-[#243b8e] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
     >
       <Icon className="w-4 h-4" />
       {label}

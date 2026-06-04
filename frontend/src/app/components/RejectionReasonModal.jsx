@@ -48,7 +48,7 @@ export default function RejectionReasonModal({
 
       <div className="relative mx-auto p-2 sm:p-4 max-w-md h-full flex items-center justify-center">
         <motion.div
-          className="bg-white rounded-2xl w-full shadow-2xl border border-gray-200"
+          className="bg-white rounded-2xl w-full shadow-sm border border-gray-200"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
@@ -57,10 +57,10 @@ export default function RejectionReasonModal({
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md">
+                <div className="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-sm">
                   <AlertTriangle className="w-5 h-5" aria-hidden="true" />
                 </div>
-                <h2 id="rejection-modal-title" className="font-montserrat font-bold text-xl text-red-900">
+                <h2 id="rejection-modal-title" className="font-bold text-xl text-red-900">
                   {title}
                 </h2>
               </div>

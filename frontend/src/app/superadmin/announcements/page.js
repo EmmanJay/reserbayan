@@ -342,7 +342,7 @@ export default function AnnouncementsManagement() {
     switch (priority) {
       case 'URGENT': return 'bg-red-100 text-red-800 border-red-200';
       case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'MEDIUM': return 'bg-[#d8def2] text-[#122361] border-[#c2cbea]';
       case 'LOW': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -381,7 +381,7 @@ export default function AnnouncementsManagement() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg">
+              <div className="p-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg">
                 <Megaphone className="w-6 h-6" />
               </div>
               <div>
@@ -391,7 +391,7 @@ export default function AnnouncementsManagement() {
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 shadow-sm"
             >
               <Plus className="w-4 h-4" />
               New Announcement
@@ -410,7 +410,7 @@ export default function AnnouncementsManagement() {
               initial={{ opacity: 0, y: -50, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -50, scale: 0.95 }}
-              className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-2xl border max-w-sm ${
+              className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-sm border max-w-sm ${
                 notification.type === 'success' 
                   ? 'bg-green-50 border-green-200 text-green-800' 
                   : 'bg-red-50 border-red-200 text-red-800'
@@ -445,7 +445,7 @@ export default function AnnouncementsManagement() {
                 placeholder="Search announcements..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
               />
             </div>
 
@@ -453,7 +453,7 @@ export default function AnnouncementsManagement() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
             >
               <option value="ALL">All Priorities</option>
               <option value="LOW">Low</option>
@@ -466,7 +466,7 @@ export default function AnnouncementsManagement() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
             >
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active</option>
@@ -477,7 +477,7 @@ export default function AnnouncementsManagement() {
             <select
               value={visibilityFilter}
               onChange={(e) => setVisibilityFilter(e.target.value)}
-              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+              className="px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
             >
               <option value="ALL">All Visibility</option>
               <option value="VISIBLE">Visible</option>
@@ -495,7 +495,7 @@ export default function AnnouncementsManagement() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+                className="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-sm transition-all duration-300 overflow-hidden"
               >
                 {/* Post Header */}
                 <div className="p-6 pb-4">
@@ -505,7 +505,7 @@ export default function AnnouncementsManagement() {
                         onClick={() => toggleExpanded(announcement.announcementId)}
                         className="flex items-center gap-3 mb-3 w-full text-left hover:bg-slate-50 -m-2 p-2 rounded-lg transition-colors"
                       >
-                        <div className="w-10 h-10 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-r from-[#122361] to-[#2f84c0] rounded-full flex items-center justify-center flex-shrink-0">
                           <Megaphone className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
@@ -588,7 +588,7 @@ export default function AnnouncementsManagement() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => openEditModal(announcement)}
-                      className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                      className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-[#243b8e] bg-[#eef3ff] hover:bg-[#d8def2] rounded-lg transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                       Edit Post
@@ -623,7 +623,7 @@ export default function AnnouncementsManagement() {
             {!searchTerm && priorityFilter === 'ALL' && statusFilter === 'ALL' && visibilityFilter === 'ALL' && (
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300"
               >
                 <Plus className="w-4 h-4" />
                 Create Announcement
@@ -641,7 +641,7 @@ export default function AnnouncementsManagement() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="p-6 border-b border-slate-200">
                 <div className="flex justify-between items-center">
@@ -674,7 +674,7 @@ export default function AnnouncementsManagement() {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
                       placeholder="Enter announcement title"
                       required
                     />
@@ -690,7 +690,7 @@ export default function AnnouncementsManagement() {
                       value={formData.content}
                       onChange={handleInputChange}
                       rows={4}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 resize-none"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0] resize-none"
                       placeholder="Write your announcement content here..."
                       required
                     />
@@ -707,7 +707,7 @@ export default function AnnouncementsManagement() {
                         name="startDate"
                         value={formData.startDate}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
                       />
                     </div>
                     <div>
@@ -719,7 +719,7 @@ export default function AnnouncementsManagement() {
                         name="endDate"
                         value={formData.endDate}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
                       />
                     </div>
                   </div>
@@ -734,7 +734,7 @@ export default function AnnouncementsManagement() {
                         name="priority"
                         value={formData.priority}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                        className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
                       >
                         <option value="LOW">Low</option>
                         <option value="MEDIUM">Medium</option>
@@ -749,7 +749,7 @@ export default function AnnouncementsManagement() {
                           name="isVisible"
                           checked={formData.isVisible}
                           onChange={handleInputChange}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          className="rounded border-slate-300 text-[#243b8e] focus:ring-[#2f84c0]"
                         />
                         Visible to residents
                       </label>
@@ -774,7 +774,7 @@ export default function AnnouncementsManagement() {
                   <button
                     type="submit"
                     disabled={formLoading || !formData.title.trim() || !formData.content.trim()}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 shadow-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                   >
                     {formLoading ? (
                       <>
@@ -803,7 +803,7 @@ export default function AnnouncementsManagement() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 w-full max-w-md"
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -814,7 +814,7 @@ export default function AnnouncementsManagement() {
                 </div>
                 
                 <p className="text-slate-600 mb-6">
-                  Are you sure you want to delete the announcement "{selectedAnnouncement.title}"? 
+                  Are you sure you want to delete the announcement &quot;{selectedAnnouncement.title}&quot;? 
                   This action cannot be undone.
                 </p>
 

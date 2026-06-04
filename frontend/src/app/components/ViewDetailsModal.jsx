@@ -85,7 +85,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
 
   const InfoCard = ({ icon: Icon, label, value, className = '' }) => (
     <div className={`flex min-w-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm ${className}`}>
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef3ff] text-[#243b8e]">
         <Icon className="h-4.5 w-4.5" aria-hidden="true" />
       </div>
       <div className="min-w-0">
@@ -108,19 +108,19 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
 
       <div className="relative mx-auto flex h-full max-w-5xl items-center justify-center p-2 sm:p-4">
         <motion.div
-          className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+          className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
           initial={{ opacity: 0, scale: 0.94, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 12 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
         >
-          <div className="border-b border-slate-200 bg-gradient-to-r from-blue-50 to-white px-5 py-3.5">
+          <div className="border-b border-slate-200 bg-gradient-to-r from-[#eef3ff] to-white px-5 py-3.5">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white shadow-lg">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white shadow-sm">
                   <Users className="h-5 w-5" aria-hidden="true" />
                 </div>
-                <h2 id="modal-title" className="font-montserrat text-xl font-bold text-blue-900">
+                <h2 id="modal-title" className="text-xl font-bold text-[#00114e]">
                   {title}
                 </h2>
               </div>
@@ -136,22 +136,22 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
 
           <div className="flex-1 overflow-y-auto px-5 py-4">
             <div className={`grid gap-2.5 ${actualResident.role ? 'lg:grid-cols-[1.35fr_0.5fr_0.5fr_0.7fr_0.38fr]' : 'lg:grid-cols-[1.45fr_0.55fr_0.85fr_0.45fr]'}`}>
-              <div className="rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-2.5">
+              <div className="rounded-2xl border border-[#c2cbea] bg-gradient-to-r from-[#eef3ff] to-[#d8def2] p-2.5">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-white">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2f84c0] text-white">
                     <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-blue-700">Resident Information</p>
-                    <p className="truncate text-base font-extrabold text-blue-950">{fullName}</p>
+                    <p className="text-xs font-semibold text-[#122361]">Resident Information</p>
+                    <p className="truncate text-base font-extrabold text-[#00114e]">{fullName}</p>
                   </div>
                 </div>
               </div>
 
               {actualResident.role && (
-                <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-2.5 text-indigo-950">
+                <div className="rounded-2xl border border-[#c2cbea] bg-[#eef3ff] p-2.5 text-[#00114e]">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500 text-white">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2f84c0] text-white">
                       <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
                     </div>
                     <div className="min-w-0">
@@ -166,14 +166,14 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                 isRejected(status) ? 'border-red-200 bg-red-50 text-red-900' :
                 isPending ? 'border-amber-200 bg-amber-50 text-amber-900' :
                 isApproved ? 'border-emerald-200 bg-emerald-50 text-emerald-900' :
-                'border-blue-200 bg-blue-50 text-blue-950'
+                'border-[#c2cbea] bg-[#eef3ff] text-[#00114e]'
               }`}>
                 <div className="flex items-center gap-2.5">
                   <div className={`flex h-6 w-6 items-center justify-center rounded-full text-white ${
                     isRejected(status) ? 'bg-red-500' :
                     isPending ? 'bg-amber-500' :
                     isApproved ? 'bg-emerald-500' :
-                    'bg-blue-500'
+                    'bg-[#2f84c0]'
                   }`}>
                     <StatusIcon className="h-3.5 w-3.5" aria-hidden="true" />
                   </div>
@@ -194,9 +194,9 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-2.5 text-right">
-                <p className="text-xs font-semibold text-blue-700">Resident ID</p>
-                <p className="text-base font-extrabold text-blue-950">{actualResident.residentId ? `#${actualResident.residentId}` : 'N/A'}</p>
+              <div className="rounded-2xl border border-[#c2cbea] bg-[#eef3ff] p-2.5 text-right">
+                <p className="text-xs font-semibold text-[#122361]">Resident ID</p>
+                <p className="text-base font-extrabold text-[#00114e]">{actualResident.residentId ? `#${actualResident.residentId}` : 'N/A'}</p>
               </div>
             </div>
 
@@ -216,7 +216,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
               <div className="min-w-0 space-y-3">
                 <section>
                   <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-slate-950">
-                    <UserRound className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                    <UserRound className="h-5 w-5 text-[#243b8e]" aria-hidden="true" />
                     Personal Information
                   </h3>
                   <div className="grid gap-2.5 md:grid-cols-2">
@@ -229,7 +229,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
 
                 <section>
                   <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-slate-950">
-                    <MapPin className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                    <MapPin className="h-5 w-5 text-[#243b8e]" aria-hidden="true" />
                     Address Information
                   </h3>
                   <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -252,17 +252,17 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
               <aside className="min-w-0 space-y-3">
                 <section>
                   <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-slate-950">
-                    <FileText className="h-5 w-5 text-blue-600" aria-hidden="true" />
+                    <FileText className="h-5 w-5 text-[#243b8e]" aria-hidden="true" />
                     Additional Information
                   </h3>
                   <div className="w-full rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm">
-                    <div className="mb-2.5 flex min-w-0 items-center gap-2.5 rounded-xl bg-blue-50 p-2.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-blue-600 shadow-sm">
+                    <div className="mb-2.5 flex min-w-0 items-center gap-2.5 rounded-xl bg-[#eef3ff] p-2.5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#243b8e] shadow-sm">
                         <IdCard className="h-5 w-5" aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600">Valid ID Preview</p>
-                        <p className="truncate text-[13px] font-bold text-blue-950">
+                        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#243b8e]">Valid ID Preview</p>
+                        <p className="truncate text-[13px] font-bold text-[#00114e]">
                           {actualResident.validIdPath ? actualResident.validIdPath.split(/[\\/]/).pop() : 'No ID uploaded'}
                         </p>
                       </div>
@@ -302,7 +302,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Password</p>
                             <button
                               onClick={() => setShowPassword(!showPassword)}
-                              className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800"
+                              className="flex items-center gap-1 text-xs font-bold text-[#243b8e] hover:text-[#122361]"
                             >
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                               {showPassword ? 'Hide' : 'Show'}
@@ -393,14 +393,14 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
           <div className="relative max-h-full max-w-4xl">
             <button
               onClick={() => setExpandedImage(null)}
-              className="absolute -top-12 right-0 z-60 flex h-8 w-8 items-center justify-center rounded-full bg-white text-2xl font-bold text-slate-700 shadow-lg hover:text-slate-900"
+              className="absolute -top-12 right-0 z-60 flex h-8 w-8 items-center justify-center rounded-full bg-white text-2xl font-bold text-slate-700 shadow-sm hover:text-slate-900"
             >
               ×
             </button>
             <img
               src={expandedImage}
               alt="Expanded ID"
-              className="max-h-full max-w-full rounded-lg object-contain shadow-2xl"
+              className="max-h-full max-w-full rounded-lg object-contain shadow-sm"
               onClick={() => setExpandedImage(null)}
               style={{ cursor: 'zoom-out' }}
             />
@@ -413,7 +413,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
 
       {expandedAttachment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent p-4 backdrop-blur-md">
-          <div className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-200 p-4">
               <h3 className="text-lg font-semibold text-slate-900">{expandedAttachment.fileName || 'Attachment'}</h3>
               <button
@@ -441,7 +441,7 @@ export default function ViewDetailsModal({ isOpen, onClose, resident, documentRe
                   <a
                     href={`http://localhost:8080/uploads/${expandedAttachment.filePath?.replace(/\\/g, '/')}`}
                     download={expandedAttachment.fileName}
-                    className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                    className="inline-flex items-center rounded-lg bg-[#243b8e] px-4 py-2 text-white transition-colors hover:bg-[#122361]"
                   >
                     Download File
                   </a>

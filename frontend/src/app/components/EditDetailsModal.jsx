@@ -125,19 +125,19 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
 
       <div className="relative mx-auto p-2 sm:p-4 max-w-4xl h-full flex items-center justify-center">
         <motion.div
-          className="bg-white rounded-2xl w-full max-h-[95vh] overflow-y-auto shadow-2xl border border-gray-200"
+          className="bg-white rounded-2xl w-full max-h-[95vh] overflow-y-auto shadow-sm border border-gray-200"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white sticky top-0 z-10">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-[#eef3ff] to-white sticky top-0 z-10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md">
+                <div className="bg-gradient-to-r from-[#243b8e] to-purple-600 text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-sm">
                   <Users className="w-5 h-5" aria-hidden="true" />
                 </div>
-                <h2 id="edit-modal-title" className="font-montserrat font-bold text-2xl text-blue-900">
+                <h2 id="edit-modal-title" className="font-bold text-2xl text-[#00114e]">
                   Edit Account Details
                 </h2>
               </div>
@@ -156,7 +156,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
               <div className="space-y-6">
                 <div>
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-blue-600" aria-hidden="true" />
+                    <Users className="w-5 h-5 text-[#243b8e]" aria-hidden="true" />
                     Personal Information
                   </h3>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
@@ -168,7 +168,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         />
                       </div>
@@ -179,7 +179,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         />
                       </div>
@@ -192,7 +192,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         name="middleName"
                         value={formData.middleName}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                       />
                     </div>
 
@@ -203,7 +203,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                         required
                       />
                     </div>
@@ -215,7 +215,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         name="phoneNumber"
                         value={formData.phoneNumber}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                         required
                       />
                     </div>
@@ -228,7 +228,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="birthDate"
                           value={formData.birthDate}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         />
                       </div>
@@ -238,7 +238,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="gender"
                           value={formData.gender}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         >
                           <option value="">Select Gender</option>
@@ -252,7 +252,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
 
                 <div>
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-600" aria-hidden="true" />
+                    <MapPin className="w-5 h-5 text-[#243b8e]" aria-hidden="true" />
                     Address Information
                   </h3>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
@@ -263,7 +263,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="region"
                           value={formData.region}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         >
                           <option value="">Select Region</option>
@@ -276,7 +276,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="province"
                           value={formData.province}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         >
                           <option value="">Select Province</option>
@@ -292,7 +292,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="city"
                           value={formData.city}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         >
                           <option value="">Select City</option>
@@ -305,7 +305,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                           name="barangay"
                           value={formData.barangay}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                           required
                         >
                           <option value="">Select Barangay</option>
@@ -321,7 +321,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         name="sitio"
                         value={formData.sitio}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                         required
                       />
                     </div>
@@ -334,7 +334,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         value={formData.addressLine1}
                         onChange={handleInputChange}
                         placeholder="House No., Street Name, etc."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0] focus:border-transparent"
                         required
                       />
                     </div>
@@ -345,7 +345,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
               <div className="space-y-6">
                 <div>
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-blue-600" aria-hidden="true" />
+                    <FileText className="w-5 h-5 text-[#243b8e]" aria-hidden="true" />
                     Valid ID Document
                   </h3>
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
@@ -365,7 +365,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                             />
                             <label
                               htmlFor="file-upload"
-                              className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors"
+                              className="cursor-pointer flex flex-col items-center gap-2 text-gray-500 hover:text-[#243b8e] transition-colors"
                             >
                               <Upload className="w-8 h-8" />
                               <span className="text-sm font-medium">Click to upload new file</span>
@@ -379,9 +379,9 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                         <div className="border border-gray-200 rounded-lg p-4 bg-white">
                           <h4 className="text-sm font-medium text-gray-900 mb-3">Current/Selected File</h4>
                           {selectedFile ? (
-                            <div className="flex items-center justify-between bg-blue-50 p-3 rounded-md border border-blue-100">
+                            <div className="flex items-center justify-between bg-[#eef3ff] p-3 rounded-md border border-[#d8def2]">
                               <div className="flex items-center gap-3">
-                                <FileText className="w-5 h-5 text-blue-500" />
+                                <FileText className="w-5 h-5 text-[#2f84c0]" />
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
                                   <p className="text-xs text-gray-500">{(selectedFile.size / 1024).toFixed(0)} KB</p>
@@ -408,7 +408,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
                                 <button
                                   type="button"
                                   onClick={() => window.open(currentFileUrl, '_blank')}
-                                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                  className="text-[#243b8e] hover:text-[#122361] text-sm font-medium"
                                 >
                                   View
                                 </button>
@@ -441,7 +441,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-[#243b8e] text-white rounded-lg hover:bg-[#122361] transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? 'Resubmitting...' : 'Resubmit Application'}

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -149,8 +149,8 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
         aria-expanded={isOpen}
         className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-slate-50 px-4 text-left text-sm font-semibold text-slate-700 outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 bg-white ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200 hover:bg-white'
+            ? 'border-[#2f84c0] bg-white ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea] hover:bg-white'
         }`}
       >
         <span className="min-w-0 flex-1 truncate">{selectedOption?.label || 'Select'}</span>
@@ -160,7 +160,7 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -179,8 +179,8 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
                   }}
                   className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-sm'
-                      : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                      ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                   }`}
                 >
                   {option.label}
@@ -194,7 +194,7 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
   );
 }
 
-export default function AdminDocumentDetailView() {
+function AdminDocumentDetailContent() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
@@ -496,9 +496,9 @@ export default function AdminDocumentDetailView() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 pt-24">
-        <div className="rounded-3xl border border-blue-100 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-b-blue-600" />
+      <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-[#FAFAFA] px-4 pt-24">
+        <div className="rounded-3xl border border-[#d8def2] bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" />
           <p className="mt-4 font-medium text-slate-600">Loading document details...</p>
         </div>
       </div>
@@ -507,10 +507,10 @@ export default function AdminDocumentDetailView() {
 
   if (!documentItem) {
     return (
-      <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 pt-24">
-        <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+      <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-[#FAFAFA] px-4 pt-24">
+        <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           <p className="font-bold text-red-600">Document not found</p>
-          <Link href={`${basePath}/documents`} className="mt-4 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-extrabold text-white">
+          <Link href={`${basePath}/documents`} className="mt-4 inline-flex rounded-2xl bg-[#243b8e] px-5 py-3 text-sm font-extrabold text-white">
             Back to Documents
           </Link>
         </div>
@@ -519,13 +519,13 @@ export default function AdminDocumentDetailView() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FAFAFA] px-4 pb-12 pt-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={`${basePath}/documents`}
             onClick={handleBackToDocuments}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-700 shadow-sm transition hover:border-[#9eaddd] hover:text-[#122361]"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Documents
@@ -538,17 +538,17 @@ export default function AdminDocumentDetailView() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
         >
-          <section className="relative overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.1)] backdrop-blur lg:p-6">
-            <div className="absolute right-0 top-0 h-36 w-36 rounded-bl-[5rem] bg-gradient-to-br from-blue-50 to-sky-100" />
+          <section className="relative overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-[0_8px_20px_rgba(15,23,42,0.08)] backdrop-blur lg:p-6">
+            <div className="absolute right-0 top-0 h-36 w-36 rounded-bl-[5rem] bg-gradient-to-br from-[#eef3ff] to-[#e6eefb]" />
             <div className="relative z-10">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 ring-1 ring-blue-100">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-[#eef3ff] px-3 py-1.5 text-xs font-bold text-[#122361] ring-1 ring-[#d8def2]">
                     <BadgeCheck className="h-3.5 w-3.5" />
                     {documentItem.details?.category || 'General'}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
-                    <Clock3 className="h-3.5 w-3.5 text-blue-600" />
+                    <Clock3 className="h-3.5 w-3.5 text-[#243b8e]" />
                     {documentItem.details?.processingTime || 'Timeline to be confirmed'}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
@@ -560,7 +560,7 @@ export default function AdminDocumentDetailView() {
                   <button
                     type="button"
                     onClick={openEditDrawer}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100 transition-all hover:-translate-y-0.5 hover:bg-blue-600 hover:text-white"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#122361] shadow-sm ring-1 ring-[#d8def2] transition-all hover:-translate-y-0.5 hover:bg-[#243b8e] hover:text-white"
                     aria-label="Edit document"
                     title="Edit document"
                   >
@@ -582,7 +582,7 @@ export default function AdminDocumentDetailView() {
                 </div>
               </div>
 
-              <h1 className="mt-4 font-montserrat text-3xl font-extrabold uppercase leading-tight tracking-tight text-[#0F2A6B] lg:text-4xl">
+              <h1 className="mt-4 text-3xl font-extrabold uppercase leading-tight tracking-tight text-[#122361] lg:text-4xl">
                 {documentItem.name}
               </h1>
 
@@ -591,19 +591,19 @@ export default function AdminDocumentDetailView() {
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-                  <Clock3 className="h-5 w-5 text-blue-700" />
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-blue-500">Processing</p>
+                <div className="rounded-2xl border border-[#d8def2] bg-[#eef3ff]/70 p-4">
+                  <Clock3 className="h-5 w-5 text-[#122361]" />
+                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#2f84c0]">Processing</p>
                   <p className="mt-1 text-sm font-extrabold text-slate-800">{documentItem.details?.processingTime || 'TBD'}</p>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
-                  <FileCheck2 className="h-5 w-5 text-blue-700" />
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-blue-500">Requirements</p>
+                <div className="rounded-2xl border border-[#d8def2] bg-white p-4 shadow-sm">
+                  <FileCheck2 className="h-5 w-5 text-[#122361]" />
+                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#2f84c0]">Requirements</p>
                   <p className="mt-1 text-sm font-extrabold text-slate-800">{requirements.length} checklist items</p>
                 </div>
-                <div className="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">
-                  <ShieldCheck className="h-5 w-5 text-blue-700" />
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-blue-500">Visibility</p>
+                <div className="rounded-2xl border border-[#d8def2] bg-white p-4 shadow-sm">
+                  <ShieldCheck className="h-5 w-5 text-[#122361]" />
+                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#2f84c0]">Visibility</p>
                   <p className="mt-1 text-sm font-extrabold text-slate-800">Resident-facing</p>
                 </div>
               </div>
@@ -611,8 +611,8 @@ export default function AdminDocumentDetailView() {
               <div className="mt-5 grid gap-3 md:grid-cols-2">
                 <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
                   <div className="flex items-center gap-2">
-                    <Info className="h-5 w-5 text-blue-700" />
-                    <h2 className="font-montserrat text-lg font-extrabold text-[#0F2A6B]">Common Uses</h2>
+                    <Info className="h-5 w-5 text-[#122361]" />
+                    <h2 className="text-lg font-extrabold text-[#122361]">Common Uses</h2>
                   </div>
                   {uses.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -633,8 +633,8 @@ export default function AdminDocumentDetailView() {
 
                 <div className="rounded-3xl border border-slate-200 bg-slate-50/80 p-4">
                   <div className="flex items-center gap-2">
-                    <FileCheck2 className="h-5 w-5 text-blue-700" />
-                    <h2 className="font-montserrat text-lg font-extrabold text-[#0F2A6B]">Requirements</h2>
+                    <FileCheck2 className="h-5 w-5 text-[#122361]" />
+                    <h2 className="text-lg font-extrabold text-[#122361]">Requirements</h2>
                   </div>
                   {requirements.length > 0 ? (
                     <ul className="mt-3 space-y-2">
@@ -655,17 +655,17 @@ export default function AdminDocumentDetailView() {
           </section>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-3 shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+            <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white p-3 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
               <div className="mb-3 flex items-center justify-between px-2">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Document Preview</p>
                   <p className="text-sm font-bold text-slate-700">Official sample</p>
                 </div>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100">
+                <span className="rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-bold text-[#122361] ring-1 ring-[#d8def2]">
                   Preview
                 </span>
               </div>
-              <div className="flex max-h-[calc(100vh-11rem)] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50 p-3">
+              <div className="flex max-h-[calc(100vh-11rem)] items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-[#eef3ff] p-3">
                 <Image
                   src={imageSource}
                   alt={`${documentItem.name} preview`}
@@ -683,21 +683,21 @@ export default function AdminDocumentDetailView() {
       <AnimatePresence>
         {isEditDrawerOpen && editDraft && (
           <motion.aside
-            className="fixed bottom-0 right-0 top-[73px] z-[55] flex w-full max-w-[min(52vw,920px)] flex-col overflow-hidden border-l border-blue-100 bg-white shadow-[-24px_0_70px_rgba(15,23,42,0.18)] max-lg:max-w-[min(92vw,720px)]"
+            className="fixed bottom-0 right-0 top-[73px] z-[55] flex w-full max-w-[min(52vw,920px)] flex-col overflow-hidden border-l border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)] max-lg:max-w-[min(92vw,720px)]"
             initial={{ x: '100%', opacity: 0.7 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0.7 }}
             transition={{ duration: 0.34, ease: 'easeOut' }}
           >
-            <div className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-5 text-white">
+            <div className="relative overflow-hidden border-b border-[#d8def2] bg-gradient-to-br from-[#122361] via-[#243b8e] to-[#2f84c0] p-5 text-white">
               <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-white/15" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">Document editor</p>
-                  <h2 className="mt-2 font-montserrat text-2xl font-extrabold leading-tight">
+                  <p className="text-xs font-extrabold uppercase tracking-wide text-[#d8def2]">Document editor</p>
+                  <h2 className="mt-2 text-2xl font-extrabold leading-tight">
                     {editDraft.name || 'Untitled document'}
                   </h2>
-                  <p className="mt-1 text-sm font-medium text-blue-50">
+                  <p className="mt-1 text-sm font-medium text-[#eef3ff]">
                     Changes apply only after saving. Cancel closes the editor without saving.
                   </p>
                 </div>
@@ -713,10 +713,10 @@ export default function AdminDocumentDetailView() {
             </div>
 
             <form onSubmit={handleEditSubmit} className="flex min-h-0 flex-1 flex-col">
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-gradient-to-b from-blue-50/60 to-white p-5">
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#FAFAFA] p-5">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="mb-4 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-blue-600" />
+                    <FileText className="h-4 w-4 text-[#243b8e]" />
                     <h3 className="text-sm font-extrabold text-slate-800">Basic information</h3>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -728,7 +728,7 @@ export default function AdminDocumentDetailView() {
                         value={editDraft.name}
                         onChange={handleEditChange}
                         required
-                        className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                         placeholder="Barangay Clearance"
                       />
                     </label>
@@ -740,7 +740,7 @@ export default function AdminDocumentDetailView() {
                         value={editDraft.shortDescription}
                         onChange={handleEditChange}
                         required
-                        className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                         placeholder="Brief resident-facing summary"
                       />
                     </label>
@@ -786,7 +786,7 @@ export default function AdminDocumentDetailView() {
                             amount: event.target.value,
                           }))}
                           disabled={processingTimeDraft.unit === 'varies'}
-                          className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                          className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                           placeholder={processingTimeDraft.unit === 'varies' ? 'No fixed timeline' : 'How many?'}
                         />
                       </div>
@@ -798,23 +798,23 @@ export default function AdminDocumentDetailView() {
                         value={editDraft.details.longDescription}
                         onChange={handleEditChange}
                         rows={4}
-                        className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                         placeholder="Detailed description shown in the document preview page"
                       />
                     </label>
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
                       <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                        <FileCheck2 className="h-4 w-4 text-blue-600" />
+                        <FileCheck2 className="h-4 w-4 text-[#243b8e]" />
                         Requirements
                       </p>
                       <p className="mt-1 text-xs font-medium text-slate-500">Add each requirement as a separate checklist item.</p>
                     </div>
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100">
+                    <span className="rounded-full bg-[#eef3ff] px-2.5 py-1 text-xs font-extrabold text-[#122361] ring-1 ring-[#d8def2]">
                       {requirementsDraft.length} item{requirementsDraft.length === 1 ? '' : 's'}
                     </span>
                   </div>
@@ -829,13 +829,13 @@ export default function AdminDocumentDetailView() {
                           addRequirement();
                         }
                       }}
-                      className="h-12 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="h-12 min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                       placeholder="Type a requirement, then press Enter"
                     />
                     <button
                       type="button"
                       onClick={addRequirement}
-                      className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-[0_12px_26px_rgba(37,99,235,0.2)] transition hover:-translate-y-0.5 hover:bg-blue-700"
+                      className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#243b8e] text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5 hover:bg-[#122361]"
                       aria-label="Add requirement"
                     >
                       <Plus className="h-5 w-5" />
@@ -871,44 +871,44 @@ export default function AdminDocumentDetailView() {
                   )}
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <label className="block">
                     <span className="text-xs font-extrabold uppercase tracking-wide text-slate-500">Common uses, one per line</span>
                     <textarea
                       value={usesText}
                       onChange={(event) => setUsesText(event.target.value)}
                       rows={4}
-                      className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                      className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                       placeholder="Scholarship application&#10;Medical assistance&#10;Legal aid"
                     />
                   </label>
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="mb-3 flex items-center gap-2">
-                    <FileUp className="h-4 w-4 text-blue-600" />
+                    <FileUp className="h-4 w-4 text-[#243b8e]" />
                     <h3 className="text-sm font-extrabold text-slate-800">Preview files</h3>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
-                      <span className="text-xs font-extrabold uppercase tracking-wide text-blue-700">Image preview</span>
+                    <label className="rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
+                      <span className="text-xs font-extrabold uppercase tracking-wide text-[#122361]">Image preview</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={(event) => setImageFile(event.target.files?.[0] || null)}
-                        className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-blue-700"
+                        className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#122361]"
                       />
                       <p className="mt-2 truncate text-xs font-medium text-slate-500">
                         {imageFile ? imageFile.name : editDraft.imagePath || 'No current image'}
                       </p>
                     </label>
-                    <label className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
-                      <span className="text-xs font-extrabold uppercase tracking-wide text-blue-700">PDF sample</span>
+                    <label className="rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
+                      <span className="text-xs font-extrabold uppercase tracking-wide text-[#122361]">PDF sample</span>
                       <input
                         type="file"
                         accept=".pdf"
                         onChange={(event) => setPdfFile(event.target.files?.[0] || null)}
-                        className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-blue-700"
+                        className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#122361]"
                       />
                       <p className="mt-2 truncate text-xs font-medium text-slate-500">
                         {pdfFile ? pdfFile.name : editDraft.details.pdfPath || 'No current PDF'}
@@ -918,13 +918,13 @@ export default function AdminDocumentDetailView() {
                 </section>
               </div>
 
-              <div className="border-t border-blue-100 bg-white p-4">
+              <div className="border-t border-[#d8def2] bg-white p-4">
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => closeEditDrawer()}
                     disabled={savingEdit}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#9eaddd] hover:text-[#122361] disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <X className="h-4 w-4" />
                     Cancel
@@ -932,7 +932,7 @@ export default function AdminDocumentDetailView() {
                   <button
                     type="submit"
                     disabled={savingEdit}
-                    className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_16px_36px_rgba(37,99,235,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {savingEdit ? (
                       <>
@@ -961,7 +961,7 @@ export default function AdminDocumentDetailView() {
                 event.preventDefault();
                 handleDelete();
               }}
-              className="w-full max-w-md overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.25)]"
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -974,7 +974,7 @@ export default function AdminDocumentDetailView() {
                   </span>
                   <div>
                     <p className="text-xs font-extrabold uppercase tracking-wide text-red-600">Super Admin verification</p>
-                    <h2 className="mt-1 font-montserrat text-xl font-extrabold text-slate-900">
+                    <h2 className="mt-1 text-xl font-extrabold text-slate-900">
                       Delete document?
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -1027,7 +1027,7 @@ export default function AdminDocumentDetailView() {
                       setDeletePassword('');
                       setDeleteError('');
                     }}
-                    className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                    className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#c2cbea] hover:text-[#122361]"
                   >
                     Cancel
                   </button>
@@ -1057,5 +1057,20 @@ export default function AdminDocumentDetailView() {
         backdropBlur={notificationModal?.backdropBlur}
       />
     </div>
+  );
+}
+
+export default function AdminDocumentDetailView() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-8 pt-24">
+        <div className="rounded-3xl border border-[#d8def2] bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" />
+          <p className="mt-4 font-medium text-slate-600">Loading document...</p>
+        </div>
+      </div>
+    }>
+      <AdminDocumentDetailContent />
+    </Suspense>
   );
 }

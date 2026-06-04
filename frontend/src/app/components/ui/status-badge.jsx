@@ -16,10 +16,10 @@ export function StatusBadge({ status, className = '', size = 'md' }) {
       },
       completed: {
         icon: CheckCircle,
-        iconColor: 'text-blue-600',
-        bgColor: 'bg-blue-50',
-        textColor: 'text-blue-700',
-        borderColor: 'border-blue-200'
+        iconColor: 'text-[#243b8e]',
+        bgColor: 'bg-[#eef3ff]',
+        textColor: 'text-[#122361]',
+        borderColor: 'border-[#c2cbea]'
       },
       pending: {
         icon: Clock,

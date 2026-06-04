@@ -108,8 +108,8 @@ const staggerItem = {
 function MotifBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -right-20 top-10 h-64 w-64 rounded-full bg-sky-200/35 blur-3xl" />
-      <div className="absolute -left-20 bottom-4 h-64 w-64 rounded-full bg-blue-100/60 blur-3xl" />
+      <div className="absolute -right-20 top-10 h-64 w-64 rounded-full bg-[#d8def2]/35 blur-3xl" />
+      <div className="absolute -left-20 bottom-4 h-64 w-64 rounded-full bg-[#d8def2]/60 blur-3xl" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(30,37,102,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(30,37,102,0.045)_1px,transparent_1px)] bg-[size:42px_42px]" />
     </div>
   );
@@ -149,21 +149,21 @@ export default function FaqPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8FBFF] font-[family-name:var(--font-inter)] text-slate-900">
+    <main className="min-h-screen bg-[#FAFAFA] font-[family-name:var(--font-inter)] text-slate-900">
       <section className="relative overflow-hidden px-5 pb-10 pt-24 md:px-8 md:pb-12 md:pt-28">
         <MotifBackground />
         <div className="relative z-10 mx-auto max-w-6xl">
           <motion.div
-            className="rounded-[2rem] border border-blue-100 bg-white/90 p-6 shadow-[0_24px_70px_rgba(30,37,102,0.12)] backdrop-blur md:p-8"
+            className="rounded-[2rem] border border-[#d8def2] bg-white/90 p-6 shadow-[0_8px_20px_rgba(18,35,97,0.10)] backdrop-blur md:p-8"
             {...fadeUpProps}
           >
             <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
               <div>
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#004AAD]">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#d8def2] bg-[#eef3ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#243b8e]">
                   <HelpCircle className="h-4 w-4" />
                   Help Center
                 </div>
-                <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-[#1E2566] md:text-5xl">
+                <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-[#122361] md:text-5xl">
                   Frequently Asked Questions
                 </h1>
                 <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
@@ -173,12 +173,12 @@ export default function FaqPage() {
 
               <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                 {quickGuides.map(({ icon: Icon, title, text }) => (
-                  <div key={title} className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-slate-50 p-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#004AAD] shadow-sm">
+                  <div key={title} className="flex items-center gap-3 rounded-2xl border border-[#d8def2] bg-slate-50 p-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#243b8e] shadow-sm">
                       <Icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-extrabold text-[#1E2566]">{title}</p>
+                      <p className="text-sm font-extrabold text-[#122361]">{title}</p>
                       <p className="text-xs leading-5 text-slate-500">{text}</p>
                     </div>
                   </div>
@@ -192,10 +192,10 @@ export default function FaqPage() {
       <section className="px-5 pb-12 md:px-8 md:pb-14">
         <div className="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[300px_1fr]">
           <motion.aside
-            className="h-fit rounded-[1.5rem] border border-blue-100 bg-white p-4 shadow-sm lg:sticky lg:top-24"
+            className="h-fit rounded-[1.5rem] border border-[#d8def2] bg-white p-4 shadow-sm lg:sticky lg:top-24"
             {...fadeUpProps}
           >
-            <p className="mb-3 px-2 text-xs font-bold uppercase tracking-[0.22em] text-[#2F87C3]">Sections</p>
+            <p className="mb-3 px-2 text-xs font-bold uppercase tracking-[0.22em] text-[#2f84c0]">Sections</p>
             <div className="space-y-2">
               <CategoryButton
                 active={activeCategory === 'all'}
@@ -234,15 +234,15 @@ export default function FaqPage() {
                     <motion.section
                       key={group.key}
                       variants={staggerItem}
-                      className="overflow-hidden rounded-[1.5rem] border border-blue-100 bg-white shadow-[0_18px_45px_rgba(30,37,102,0.08)]"
+                      className="overflow-hidden rounded-[1.5rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(18,35,97,0.10)]"
                     >
-                      <div className="border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white p-5">
+                      <div className="border-b border-[#d8def2] bg-gradient-to-r from-[#eef3ff] to-white p-5">
                         <div className="flex items-start gap-3">
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#004AAD] text-white">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#243b8e] text-white">
                             <GroupIcon className="h-5 w-5" />
                           </div>
                           <div>
-                            <h2 className="text-xl font-extrabold text-[#1E2566]">{group.label}</h2>
+                            <h2 className="text-xl font-extrabold text-[#122361]">{group.label}</h2>
                             <p className="mt-1 text-sm leading-6 text-slate-600">{group.description}</p>
                           </div>
                         </div>
@@ -277,8 +277,8 @@ function CategoryButton({ active, icon: Icon, label, count, onClick }) {
       onClick={onClick}
       className={`flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-all ${
         active
-          ? 'bg-[#004AAD] text-white shadow-lg shadow-blue-900/15'
-          : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-[#004AAD]'
+          ? 'bg-[#243b8e] text-white shadow-sm shadow-[#00114e]/15'
+          : 'bg-slate-50 text-slate-700 hover:bg-[#eef3ff] hover:text-[#243b8e]'
       }`}
     >
       <span className="flex items-center gap-2 text-sm font-bold">
@@ -305,13 +305,13 @@ function FaqItem({ faq, isOpen, onToggle }) {
       >
         <div className="flex items-start gap-3">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl transition-colors ${
-            isOpen ? 'bg-[#004AAD] text-white' : 'bg-blue-50 text-[#004AAD]'
+            isOpen ? 'bg-[#243b8e] text-white' : 'bg-[#eef3ff] text-[#243b8e]'
           }`}
           >
             <IconComponent className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-base font-extrabold leading-6 text-[#1E2566]">{faq.question}</h3>
+            <h3 className="text-base font-extrabold leading-6 text-[#122361]">{faq.question}</h3>
             {faq.preview && !isOpen && (
               <p className="mt-1 text-sm leading-6 text-slate-500">{faq.preview}</p>
             )}
@@ -320,7 +320,7 @@ function FaqItem({ faq, isOpen, onToggle }) {
 
         <ChevronDown
           className={`mt-2 h-5 w-5 shrink-0 text-slate-400 transition-transform duration-300 ${
-            isOpen ? 'rotate-180 text-[#004AAD]' : 'rotate-0'
+            isOpen ? 'rotate-180 text-[#243b8e]' : 'rotate-0'
           }`}
         />
       </button>

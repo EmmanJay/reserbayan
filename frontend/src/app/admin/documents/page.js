@@ -31,28 +31,28 @@ import {
 const categoryStyles = {
   'Financial Assistance': {
     icon: Banknote,
-    className: 'bg-blue-50 text-blue-700 ring-blue-200',
-    activeClassName: 'from-blue-600 to-sky-600 text-white shadow-blue-200',
+    className: 'bg-[#eef3ff] text-[#122361] ring-[#c2cbea]',
+    activeClassName: 'from-[#243b8e] to-[#2f84c0] text-white shadow-[#c2cbea]',
   },
   Residency: {
     icon: Home,
-    className: 'bg-sky-50 text-sky-700 ring-sky-200',
-    activeClassName: 'from-sky-600 to-blue-700 text-white shadow-sky-200',
+    className: 'bg-[#eef3ff] text-[#243b8e] ring-[#d8def2]',
+    activeClassName: 'from-[#2f84c0] to-[#122361] text-white shadow-[#d8def2]',
   },
   Clearance: {
     icon: ShieldCheck,
-    className: 'bg-blue-50 text-blue-800 ring-blue-200',
-    activeClassName: 'from-blue-700 to-indigo-800 text-white shadow-blue-200',
+    className: 'bg-[#eef3ff] text-[#122361] ring-[#c2cbea]',
+    activeClassName: 'from-[#122361] to-[#122361] text-white shadow-[#c2cbea]',
   },
   'Permits & Tax': {
     icon: BriefcaseBusiness,
-    className: 'bg-sky-50 text-sky-800 ring-sky-200',
-    activeClassName: 'from-sky-600 to-cyan-700 text-white shadow-sky-200',
+    className: 'bg-[#eef3ff] text-[#122361] ring-[#d8def2]',
+    activeClassName: 'from-[#2f84c0] to-[#243b8e] text-white shadow-[#d8def2]',
   },
   'Infrastructure & Zoning': {
     icon: Building2,
-    className: 'bg-indigo-50 text-indigo-800 ring-indigo-200',
-    activeClassName: 'from-indigo-600 to-blue-900 text-white shadow-indigo-200',
+    className: 'bg-[#eef3ff] text-[#122361] ring-[#c2cbea]',
+    activeClassName: 'from-[#243b8e] to-[#00114e] text-white shadow-[#c2cbea]',
   },
 };
 
@@ -140,7 +140,7 @@ function sortDocuments(documents, sortBy) {
 
 function DocumentIcon({ compact = false }) {
   return (
-    <div className={`relative flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#13286F] to-[#1E88D3] text-white shadow-[0_10px_22px_rgba(30,74,146,0.18)] ${compact ? 'h-11 w-11' : 'h-12 w-12'}`}>
+    <div className={`relative flex shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#13286F] to-[#1E88D3] text-white shadow-[0_8px_18px_rgba(36,59,142,0.12)] ${compact ? 'h-11 w-11' : 'h-12 w-12'}`}>
       <div className="absolute inset-1 rounded-xl border border-white/20" />
       <FileBadge2 className={compact ? 'h-5 w-5' : 'h-6 w-6'} strokeWidth={1.8} />
     </div>
@@ -165,7 +165,7 @@ function CategoryCornerBadge({ category }) {
     <span
       title={category || 'General'}
       aria-label={category || 'General'}
-      className="absolute left-0 top-0 z-0 inline-flex h-9 w-9 items-start justify-start rounded-br-[2rem] bg-gradient-to-br from-blue-600/10 via-sky-300/10 to-transparent p-2 text-blue-700/45"
+      className="absolute left-0 top-0 z-0 inline-flex h-9 w-9 items-start justify-start rounded-br-[2rem] bg-gradient-to-br from-[#243b8e]/10 via-[#2f84c0]/10 to-transparent p-2 text-[#122361]/45"
     >
       <CategoryIcon className="h-3.5 w-3.5" />
     </span>
@@ -197,8 +197,8 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
         aria-expanded={isOpen}
         className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-slate-50/80 px-4 text-left text-sm font-bold text-slate-700 outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 bg-white ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200 hover:bg-white'
+            ? 'border-[#2f84c0] bg-white ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea] hover:bg-white'
         }`}
       >
         <Icon className="h-4 w-4 shrink-0 text-slate-400" />
@@ -207,7 +207,7 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.24)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -221,8 +221,8 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
                 }}
                 className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-sm'
-                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                    ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-sm'
+                    : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                 }`}
               >
                 {option.label}
@@ -246,7 +246,7 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
   if (viewMode === 'list') {
     return (
       <motion.article
-        className="group relative grid cursor-pointer gap-4 rounded-3xl border border-slate-200/80 bg-white/95 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_24px_56px_rgba(37,99,235,0.13)] md:grid-cols-[auto_1fr_auto]"
+        className="group relative grid cursor-pointer gap-4 rounded-3xl border border-slate-200/80 bg-white/95 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#9eaddd] hover:shadow-[0_8px_18px_rgba(36,59,142,0.14)] md:grid-cols-[auto_1fr_auto]"
         onClick={() => router.push(previewTargetHref)}
         whileHover={{ y: -2 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
@@ -262,15 +262,15 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
           <div className="mb-2 hidden flex-wrap items-center gap-2 md:flex">
             <CategoryBadge category={doc.details?.category} />
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 ring-1 ring-slate-200">
-              <Clock3 className="h-3.5 w-3.5 text-blue-600" />
+              <Clock3 className="h-3.5 w-3.5 text-[#243b8e]" />
               {processingTime}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 ring-1 ring-blue-100">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-bold text-[#122361] ring-1 ring-[#d8def2]">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
               {requirementsCount} requirements
             </span>
           </div>
-          <h3 className="font-montserrat text-xl font-extrabold uppercase leading-tight text-[#0F2A6B]">
+          <h3 className="text-xl font-extrabold uppercase leading-tight text-[#122361]">
             {doc.name}
           </h3>
           <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">
@@ -303,17 +303,17 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
     >
       <article
         onClick={() => router.push(previewTargetHref)}
-        className="group relative flex h-full min-h-[9.5rem] cursor-pointer items-center gap-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pr-7 pl-5 shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_22px_46px_rgba(37,99,235,0.13)]"
+        className="group relative flex h-full min-h-[9.5rem] cursor-pointer items-center gap-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pr-7 pl-5 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#9eaddd] hover:shadow-[0_8px_18px_rgba(36,59,142,0.14)]"
       >
         <CategoryCornerBadge category={doc.details?.category} />
-        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[3.5rem] bg-gradient-to-br from-blue-50 to-sky-100 opacity-80 transition-transform duration-300 group-hover:scale-110" />
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[3.5rem] bg-gradient-to-br from-[#eef3ff] to-[#e6eefb] opacity-80 transition-transform duration-300 group-hover:scale-110" />
 
         <div className="relative z-10 shrink-0">
           <DocumentIcon />
         </div>
 
         <div className="relative z-10 min-w-0 flex-1">
-          <h3 className="font-montserrat text-base font-extrabold uppercase leading-tight tracking-tight text-[#0F2A6B] sm:text-[1.05rem]">
+          <h3 className="text-base font-extrabold uppercase leading-tight tracking-tight text-[#122361] sm:text-[1.05rem]">
             {doc.name}
           </h3>
           <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600">
@@ -322,7 +322,7 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-              <Clock3 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+              <Clock3 className="h-3.5 w-3.5 shrink-0 text-[#243b8e]" />
               <span className="truncate">{processingTime}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
@@ -503,9 +503,9 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100 px-8 pt-24">
-        <div className="rounded-3xl border border-blue-100 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-b-blue-600" />
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-8 pt-24">
+        <div className="rounded-3xl border border-[#d8def2] bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" />
           <p className="mt-4 font-medium text-slate-600">Loading documents...</p>
         </div>
       </div>
@@ -514,8 +514,8 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-100 px-8 pt-24">
-        <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-8 pt-24">
+        <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           <p className="font-bold text-red-600">Error loading documents</p>
           <p className="mt-2 text-sm text-slate-500">{error}</p>
         </div>
@@ -525,13 +525,13 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 pb-12 pt-24 sm:px-6 lg:px-8"
+      className="min-h-screen bg-[#FAFAFA] px-4 pb-12 pt-24 sm:px-6 lg:px-8"
       initial={shouldAnimateEntrance ? { opacity: 0, y: 32 } : false}
       animate={shouldAnimateEntrance ? { opacity: 1, y: 0 } : undefined}
       transition={shouldAnimateEntrance ? { duration: 0.45, ease: 'easeOut' } : undefined}
     >
       <div className="mx-auto max-w-[100rem] px-10 py-5">
-        <section className="relative z-20 rounded-2xl border border-white/80 bg-white/95 p-3 shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
+        <section className="relative z-20 rounded-2xl border border-white/80 bg-white/95 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           <div className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_180px_180px_180px_auto]">
             <label className="relative block">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -540,7 +540,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
                 placeholder="Search documents"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/80 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-[#2f84c0] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                 suppressHydrationWarning={true}
               />
             </label>
@@ -571,7 +571,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
                   type="button"
                   onClick={() => setViewMode('grid')}
                   className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition ${
-                    viewMode === 'grid' ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-blue-700'
+                    viewMode === 'grid' ? 'bg-white text-[#122361] shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-[#122361]'
                   }`}
                 >
                   <Grid3X3 className="h-4 w-4" />
@@ -581,7 +581,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
                   type="button"
                   onClick={() => setViewMode('list')}
                   className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 text-sm font-extrabold transition ${
-                    viewMode === 'list' ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-blue-700'
+                    viewMode === 'list' ? 'bg-white text-[#122361] shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-[#122361]'
                   }`}
                 >
                   <LayoutList className="h-4 w-4" />
@@ -592,26 +592,26 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
               <button
                 type="button"
                 onClick={openAddDocumentModal}
-                className="group relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-[0_12px_28px_rgba(37,99,235,0.2)] transition hover:-translate-y-0.5"
+                className="group relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5"
                 aria-label="Add a new document"
               >
                 <Plus className="h-5 w-5" />
-                <span className="pointer-events-none absolute right-0 top-[calc(100%+0.55rem)] z-[120] whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-extrabold text-white opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100">
+                <span className="pointer-events-none absolute right-0 top-[calc(100%+0.55rem)] z-[120] whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-extrabold text-white opacity-0 shadow-sm transition-all group-hover:translate-y-0 group-hover:opacity-100">
                   Add a new document
                 </span>
               </button>
               <button
                 type="button"
                 onClick={() => setDeleteMode((currentValue) => !currentValue)}
-                className={`group relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-[0_12px_28px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 ${
+                className={`group relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 ${
                   deleteMode
                     ? 'bg-red-50 text-red-600 ring-1 ring-red-100'
-                    : 'bg-white text-blue-700 ring-1 ring-blue-100'
+                    : 'bg-white text-[#122361] ring-1 ring-[#d8def2]'
                 }`}
                 aria-label={deleteMode ? 'Hide document delete controls' : 'Show document delete controls'}
               >
                 {deleteMode ? <Check className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
-                <span className="pointer-events-none absolute right-0 top-[calc(100%+0.55rem)] z-[120] whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-extrabold text-white opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100">
+                <span className="pointer-events-none absolute right-0 top-[calc(100%+0.55rem)] z-[120] whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-extrabold text-white opacity-0 shadow-sm transition-all group-hover:translate-y-0 group-hover:opacity-100">
                   {deleteMode ? 'Done editing' : 'Manage documents'}
                 </span>
               </button>
@@ -623,13 +623,13 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
 
         {filteredDocuments.length === 0 ? (
           <motion.div
-            className="mt-6 rounded-[1.75rem] border border-dashed border-blue-200 bg-white/80 p-12 text-center shadow-[0_16px_44px_rgba(15,23,42,0.07)]"
+            className="mt-6 rounded-[1.75rem] border border-dashed border-[#c2cbea] bg-white/80 p-12 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={shouldAnimateEntrance ? { opacity: 0, y: 20 } : false}
             animate={shouldAnimateEntrance ? { opacity: 1, y: 0 } : undefined}
             transition={shouldAnimateEntrance ? { duration: 0.3, ease: 'easeOut' } : undefined}
           >
-            <FileText className="mx-auto h-12 w-12 text-blue-300" />
-            <h3 className="mt-4 font-montserrat text-2xl font-extrabold text-[#0F2A6B]">No documents found</h3>
+            <FileText className="mx-auto h-12 w-12 text-[#9eaddd]" />
+            <h3 className="mt-4 text-2xl font-extrabold text-[#122361]">No documents found</h3>
             <p className="mt-2 text-sm font-medium text-slate-500">Try a different search, category, timeline, or sort filter.</p>
           </motion.div>
         ) : (
@@ -659,7 +659,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
           <motion.form
             onSubmit={handleDelete}
-            className="w-full max-w-md overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.25)]"
+            className="w-full max-w-md overflow-hidden rounded-3xl border border-white/80 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
@@ -671,7 +671,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
                 </span>
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-wide text-red-600">Confirm deletion</p>
-                  <h2 className="mt-1 font-montserrat text-xl font-extrabold text-slate-900">
+                  <h2 className="mt-1 text-xl font-extrabold text-slate-900">
                     Delete document type?
                   </h2>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
@@ -714,7 +714,7 @@ export default function AdminDocumentsPage({ disableEntranceAnimation = false } 
                 <button
                   type="button"
                   onClick={closeDeleteModal}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                  className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#c2cbea] hover:text-[#122361]"
                 >
                   Cancel
                 </button>

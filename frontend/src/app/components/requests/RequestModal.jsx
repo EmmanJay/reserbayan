@@ -55,7 +55,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
       case 'approved':
         return <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
       case 'completed':
-        return <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
+        return <div className="w-5 h-5 bg-[#2f84c0] rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>;
       case 'pending':
         return <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center"><span className="text-white text-xs">○</span></div>;
       case 'rejected':
@@ -364,15 +364,15 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
 
       <div className="relative mx-auto flex h-full max-w-7xl items-center justify-center p-2">
-        <div className="w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl max-h-[97vh] sm:max-h-[94vh]">
+        <div className="w-full overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-sm max-h-[97vh] sm:max-h-[94vh]">
          
-        <div className="sticky top-0 z-10 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white p-3 sm:p-4">
+        <div className="sticky top-0 z-10 border-b border-gray-200 bg-gradient-to-r from-[#eef3ff] to-white p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md">
+              <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-sm">
                 <FileText className="w-5 h-5" aria-hidden="true" />
               </div>
-              <h2 id="modal-title" className="font-montserrat text-2xl font-bold text-blue-900">
+              <h2 id="modal-title" className="text-2xl font-bold text-[#00114e]">
                 {isEditing ? 'Edit Request' : 'Request Details'}
               </h2>
             </div>
@@ -389,15 +389,15 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
         <div className="space-y-3 p-3 sm:p-4">
           {!isEditing && (
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)_150px]">
-              <div className="flex items-center gap-3 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-3">
+              <div className="flex items-center gap-3 rounded-xl border border-[#c2cbea] bg-gradient-to-r from-[#eef3ff] to-[#d8def2] p-3">
                 {getStatusIcon(displayRequest.status)}
                 <div>
-                  <p className="text-xs font-medium text-blue-700">Current Status</p>
-                  <p className="text-base font-bold text-blue-900">{displayRequest.status}</p>
+                  <p className="text-xs font-medium text-[#122361]">Current Status</p>
+                  <p className="text-base font-bold text-[#00114e]">{displayRequest.status}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 p-3">
-                <Calendar className="h-4 w-4 shrink-0 text-blue-600" aria-hidden="true" />
+                <Calendar className="h-4 w-4 shrink-0 text-[#243b8e]" aria-hidden="true" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-green-800">Submitted</p>
                   <p className="truncate text-xs text-green-700">
@@ -410,7 +410,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                     })}
                   </p>
                   {displayRequest.updatedAt && (
-                    <p className="truncate text-xs text-blue-700">
+                    <p className="truncate text-xs text-[#122361]">
                       Updated {new Date(displayRequest.updatedAt).toLocaleDateString('en-US', {
                         timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric'
                       })}
@@ -418,9 +418,9 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                   )}
                 </div>
               </div>
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-right">
-                <p className="text-xs font-medium text-blue-700">Request ID</p>
-                <p className="text-base font-bold text-blue-900">#{displayRequest.requestId}</p>
+              <div className="rounded-xl border border-[#c2cbea] bg-[#eef3ff] p-3 text-right">
+                <p className="text-xs font-medium text-[#122361]">Request ID</p>
+                <p className="text-base font-bold text-[#00114e]">#{displayRequest.requestId}</p>
               </div>
             </div>
           )}
@@ -429,7 +429,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
             <div className="space-y-2">
               <div>
                 <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
-                  <FileText className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  <FileText className="h-4 w-4 text-[#243b8e]" aria-hidden="true" />
                   Document Information
                 </h3>
                 <div className={`grid gap-2 ${processingTime ? 'md:grid-cols-[minmax(0,1fr)_180px]' : ''}`}>
@@ -452,7 +452,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                   {!isEditing && user !== null && displayRequest.status === 'Pending' && (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                      className="flex items-center gap-1 text-xs font-semibold text-[#243b8e] hover:text-[#122361]"
                     >
                       <Edit2 className="w-3 h-3" /> Edit Details
                     </button>
@@ -461,7 +461,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
 
                 {isEditing ? (
                   <textarea
-                    className="w-full rounded-lg border-2 border-blue-100 bg-white p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border-2 border-[#d8def2] bg-white p-3 focus:border-[#2f84c0] focus:ring-2 focus:ring-[#2f84c0]"
                     rows="3"
                     value={editDetails}
                     onChange={(e) => setEditDetails(e.target.value)}
@@ -475,7 +475,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
 
               <div>
                 <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
-                  <Paperclip className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                  <Paperclip className="h-4 w-4 text-[#243b8e]" aria-hidden="true" />
                   Attached Requirements
                 </h3>
 
@@ -494,8 +494,8 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                             className="flex flex-1 items-center gap-3 overflow-hidden rounded-lg p-1 -m-1 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                             title="Click to download"
                           >
-                            <div className="rounded-md bg-blue-50 p-2">
-                              <FileText className="h-4 w-4 text-blue-600" />
+                            <div className="rounded-md bg-[#eef3ff] p-2">
+                              <FileText className="h-4 w-4 text-[#243b8e]" />
                             </div>
                             <div className="overflow-hidden">
                               <p className="truncate text-sm font-medium text-gray-700">
@@ -534,7 +534,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <label htmlFor="edit-upload" className="flex cursor-pointer flex-col items-center gap-2 text-gray-500 hover:text-blue-600">
+                      <label htmlFor="edit-upload" className="flex cursor-pointer flex-col items-center gap-2 text-gray-500 hover:text-[#243b8e]">
                         <Plus className="w-6 h-6" />
                         <span className="text-sm">Click to add more files</span>
                       </label>
@@ -558,14 +558,14 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
 
             <aside className="space-y-2">
               <h3 className="mb-2 flex items-center gap-2 font-bold text-gray-900">
-                <User className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                <User className="h-4 w-4 text-[#243b8e]" aria-hidden="true" />
                 Resident Basic Information
               </h3>
               <div className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-2">
                 {infoItems.map(({ label, value, icon: Icon }) => (
                   <div key={label} className="flex min-w-0 items-start gap-2 rounded-lg bg-white p-2 ring-1 ring-gray-100">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50">
-                      <Icon className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[#eef3ff]">
+                      <Icon className="h-4 w-4 text-[#243b8e]" aria-hidden="true" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</p>
@@ -596,7 +596,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                 </button>
                 <button
                     onClick={handleSaveChanges}
-                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white hover:bg-blue-700"
+                    className="flex items-center gap-2 rounded-lg bg-[#243b8e] px-5 py-2 font-medium text-white hover:bg-[#122361]"
                     disabled={isSaving}
                 >
                     {isSaving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Changes</>}
@@ -607,7 +607,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                  {user !== null && ['cancelled', 'rejected'].includes(displayRequest.status?.toLowerCase()) && ( 
                      <button
                         onClick={handleReRequest}
-                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+                        className="flex items-center gap-2 rounded-lg bg-[#243b8e] px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-[#122361]"
                      >
                         <RotateCcw className="w-4 h-4" /> Re-Request
                      </button>
@@ -634,7 +634,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
                     <button
                         onClick={handleCompleteRequest}
                         disabled={isCompleting}
-                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="flex items-center gap-2 rounded-lg bg-[#243b8e] px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-[#122361] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         <CheckCircle className="w-4 h-4" />
                         {isCompleting ? 'Completing...' : 'Mark as Complete'}

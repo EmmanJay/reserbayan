@@ -15,7 +15,7 @@ const inter = Inter({
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  weight: ['400', '600', '700', '800'], // Add weights you need
+  weight: ["400", "600", "700", "800"],
 });
 
 export const metadata = {
@@ -26,7 +26,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}>
         <UserProvider>
           <RequestDrawerProvider>
             <ClientLayout>

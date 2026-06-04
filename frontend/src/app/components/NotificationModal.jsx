@@ -50,9 +50,9 @@ export default function NotificationModal({
     },
     info: {
       icon: Info,
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-100',
-      buttonBg: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+      iconColor: 'text-[#243b8e]',
+      iconBg: 'bg-[#d8def2]',
+      buttonBg: 'bg-[#243b8e] hover:bg-[#122361] focus:ring-[#2f84c0]',
       defaultTitle: 'Information'
     }
   };
@@ -79,7 +79,7 @@ export default function NotificationModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-auto overflow-hidden ring-1 ring-black/5"
+        className="relative bg-white rounded-2xl shadow-sm max-w-sm w-full mx-auto overflow-hidden ring-1 ring-black/5"
       >
         {/* Close Icon (Top Right) */}
         <button 
@@ -106,7 +106,7 @@ export default function NotificationModal({
           {/* Action Button */}
           <button
             onClick={onClose}
-            className={`w-full py-3 px-4 rounded-xl text-white font-semibold shadow-md transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentStyle.buttonBg}`}
+            className={`w-full py-3 px-4 rounded-xl text-white font-semibold shadow-sm transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 ${currentStyle.buttonBg}`}
           >
             Okay, got it
           </button>

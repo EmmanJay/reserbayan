@@ -122,8 +122,8 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
         aria-expanded={isOpen}
         className={`flex h-12 w-full items-center gap-3 rounded-2xl border bg-slate-50 px-4 text-left text-sm font-semibold text-slate-700 outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 bg-white ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200 hover:bg-white'
+            ? 'border-[#2f84c0] bg-white ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea] hover:bg-white'
         }`}
       >
         <span className="min-w-0 flex-1 truncate">{selectedOption?.label || 'Select'}</span>
@@ -133,7 +133,7 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[100] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
@@ -152,8 +152,8 @@ function CustomDropdown({ options, value, onChange, ariaLabel }) {
                   }}
                   className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-sm'
-                      : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                      ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                   }`}
                 >
                   {option.label}
@@ -432,7 +432,7 @@ export default function AddDocumentModalPage({
         {!isMinimized && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 p-4 sm:p-6">
             <motion.div
-        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.26)]"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
         initial={{ opacity: 0, y: 90, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 90, scale: 0.96 }}
@@ -441,17 +441,17 @@ export default function AddDocumentModalPage({
         aria-modal="true"
         aria-labelledby="add-document-title"
       >
-        <div className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-5 text-white">
+        <div className="relative overflow-hidden border-b border-[#d8def2] bg-gradient-to-br from-[#122361] via-[#243b8e] to-[#2f84c0] p-5 text-white">
           <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-white/15" />
           <div className="relative flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
+              <p className="text-xs font-extrabold uppercase tracking-wide text-[#d8def2]">
                 Document catalog
               </p>
-              <h1 id="add-document-title" className="mt-2 font-montserrat text-2xl font-extrabold leading-tight">
+              <h1 id="add-document-title" className="mt-2 text-2xl font-extrabold leading-tight">
                 Add document type
               </h1>
-              <p className="mt-1 max-w-2xl text-sm font-medium text-blue-50">
+              <p className="mt-1 max-w-2xl text-sm font-medium text-[#eef3ff]">
                 Create a resident-facing document card with requirements, timelines, and preview files.
               </p>
             </div>
@@ -479,10 +479,10 @@ export default function AddDocumentModalPage({
         </div>
 
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-gradient-to-b from-blue-50/60 to-white p-5">
-            <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#FAFAFA] p-5">
+            <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
               <div className="mb-4 flex items-center gap-2">
-                <FileText className="h-4 w-4 text-blue-600" />
+                <FileText className="h-4 w-4 text-[#243b8e]" />
                 <h2 className="text-sm font-extrabold text-slate-800">Basic information</h2>
               </div>
 
@@ -507,7 +507,7 @@ export default function AddDocumentModalPage({
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                     placeholder="Barangay Clearance"
                   />
                 </label>
@@ -520,7 +520,7 @@ export default function AddDocumentModalPage({
                     value={formData.shortDescription}
                     onChange={handleChange}
                     required
-                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                     placeholder="Brief resident-facing summary"
                   />
                 </label>
@@ -569,7 +569,7 @@ export default function AddDocumentModalPage({
                       }}
                       required={formData.details.processingTimeUnit !== 'varies'}
                       disabled={formData.details.processingTimeUnit === 'varies'}
-                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                      className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                       placeholder={formData.details.processingTimeUnit === 'varies' ? 'No fixed timeline' : 'How many?'}
                     />
                   </div>
@@ -577,9 +577,9 @@ export default function AddDocumentModalPage({
               </div>
             </section>
 
-            <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+            <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
               <div className="mb-4 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-blue-600" />
+                <Sparkles className="h-4 w-4 text-[#243b8e]" />
                 <h2 className="text-sm font-extrabold text-slate-800">Resident details</h2>
               </div>
 
@@ -590,23 +590,23 @@ export default function AddDocumentModalPage({
                   value={formData.details.longDescription}
                   onChange={handleChange}
                   rows={4}
-                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                   placeholder="Detailed description shown in the document preview page"
                 />
               </label>
             </section>
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+              <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                      <FileCheck2 className="h-4 w-4 text-blue-600" />
+                      <FileCheck2 className="h-4 w-4 text-[#243b8e]" />
                       Requirements
                     </p>
                     <p className="mt-1 text-xs font-medium text-slate-500">Add one requirement per line.</p>
                   </div>
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100">
+                  <span className="rounded-full bg-[#eef3ff] px-2.5 py-1 text-xs font-extrabold text-[#122361] ring-1 ring-[#d8def2]">
                     {normalizeListItems(requirementsText).length} item{normalizeListItems(requirementsText).length === 1 ? '' : 's'}
                   </span>
                 </div>
@@ -614,12 +614,12 @@ export default function AddDocumentModalPage({
                   value={requirementsText}
                   onChange={(event) => setRequirementsText(event.target.value)}
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                   placeholder="Valid ID&#10;Proof of residency&#10;Birth certificate"
                 />
               </section>
 
-              <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+              <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
@@ -636,37 +636,37 @@ export default function AddDocumentModalPage({
                   value={usesText}
                   onChange={(event) => setUsesText(event.target.value)}
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                   placeholder="Job application&#10;Proof of residency&#10;Opening bank accounts"
                 />
               </section>
             </div>
 
-            <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+            <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
               <div className="mb-3 flex items-center gap-2">
-                <FileUp className="h-4 w-4 text-blue-600" />
+                <FileUp className="h-4 w-4 text-[#243b8e]" />
                 <h2 className="text-sm font-extrabold text-slate-800">Preview files</h2>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
+                <label className="rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
                   <FieldLabel>Image preview</FieldLabel>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(event) => setImageFile(event.target.files?.[0] || null)}
-                    className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-blue-700"
+                    className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#122361]"
                   />
                   <p className="mt-2 truncate text-xs font-medium text-slate-500">
                     {imageFile ? imageFile.name : 'No image selected'}
                   </p>
                 </label>
-                <label className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
+                <label className="rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
                   <FieldLabel>PDF sample</FieldLabel>
                   <input
                     type="file"
                     accept=".pdf"
                     onChange={(event) => setPdfFile(event.target.files?.[0] || null)}
-                    className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-blue-700"
+                    className="mt-2 block w-full text-xs font-semibold text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#122361]"
                   />
                   <p className="mt-2 truncate text-xs font-medium text-slate-500">
                     {pdfFile ? pdfFile.name : 'No PDF selected'}
@@ -676,13 +676,13 @@ export default function AddDocumentModalPage({
             </section>
           </div>
 
-          <div className="border-t border-blue-100 bg-white p-4">
+          <div className="border-t border-[#d8def2] bg-white p-4">
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={loading}
-                className={`inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 ${loading ? 'pointer-events-none opacity-60' : ''}`}
+                className={`inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#9eaddd] hover:text-[#122361] ${loading ? 'pointer-events-none opacity-60' : ''}`}
               >
                 <ArrowLeft className="h-4 w-4" />
                 Cancel
@@ -690,7 +690,7 @@ export default function AddDocumentModalPage({
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_16px_36px_rgba(37,99,235,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
                   <>
@@ -715,19 +715,19 @@ export default function AddDocumentModalPage({
       <AnimatePresence>
         {isMinimized && (
           <motion.div
-            className="fixed bottom-6 right-6 z-[95] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]"
+            className="fixed bottom-6 right-6 z-[95] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: 40, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.96 }}
             transition={{ duration: 0.24, ease: 'easeOut' }}
           >
-            <div className="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-sky-400" />
+            <div className="h-1.5 bg-gradient-to-r from-[#122361] via-[#2f84c0] to-[#2f84c0]" />
             <div className="flex items-center gap-3 p-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 to-sky-500 text-white shadow-md shadow-blue-200">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#122361] to-[#2f84c0] text-white shadow-sm shadow-[#c2cbea]">
                 <FileText className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-extrabold text-[#0F2A6B]">
+                <p className="truncate text-sm font-extrabold text-[#122361]">
                   {formData.name || 'New document type'}
                 </p>
                 <p className="truncate text-xs font-semibold text-slate-500">
@@ -751,7 +751,7 @@ export default function AddDocumentModalPage({
                   });
                   onMinimizeChange?.(false);
                 }}
-                className="rounded-2xl bg-blue-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                className="rounded-2xl bg-[#243b8e] px-3 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-[#122361]"
               >
                 Restore
               </button>
@@ -764,7 +764,7 @@ export default function AddDocumentModalPage({
         {refreshPromptOpen && (
           <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/40 p-4">
             <motion.div
-              className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]"
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 32, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 32, scale: 0.96 }}
@@ -779,7 +779,7 @@ export default function AddDocumentModalPage({
                     <AlertTriangle className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 id="refresh-warning-title" className="font-montserrat text-xl font-extrabold">
+                    <h2 id="refresh-warning-title" className="text-xl font-extrabold">
                       Finish this draft first
                     </h2>
                     <p className="mt-1 text-sm font-medium text-amber-50">
@@ -804,7 +804,7 @@ export default function AddDocumentModalPage({
                   <button
                     type="button"
                     onClick={keepEditing}
-                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-[#243b8e] px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#122361]"
                   >
                     Continue editing
                   </button>
