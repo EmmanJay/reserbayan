@@ -122,45 +122,42 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="pt-28 px-6 min-h-screen bg-[#FAFAFA] pb-10"
+      className="pt-24 px-4 min-h-screen bg-[#FAFAFA] pb-6"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto space-y-4">
         {/* Welcome Section */}
         <motion.div
-          className="mb-6"
+          className="mb-3"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5 sm:px-8 sm:py-6">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="font-extrabold text-3xl md:text-4xl text-[#00114e]">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 sm:px-6">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <h1 className="font-extrabold text-2xl md:text-3xl text-[#00114e]">
                 Welcome back, {user.firstName}!
               </h1>
-              <span className="inline-flex items-center rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-semibold text-[#122361]">
-                Resident Dashboard
-              </span>
             </div>
-            <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
+            <p className="mt-1 text-sm text-gray-600 leading-snug">
               Manage your requests, track recent activity, and review announcements at a glance.
             </p>
           </div>
         </motion.div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-6">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-4">
             {/* Quick Actions */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
             >
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
-                <h2 className="font-bold text-xl text-gray-800 mb-4">Quick Actions</h2>
-                <div className="grid gap-3 sm:grid-cols-2">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
+                <h2 className="font-bold text-lg text-gray-800 mb-3">Quick Actions</h2>
+                <div className="grid gap-2 sm:grid-cols-2">
                   <button
                     onClick={() => {
                       if (user.status === 'PENDING') {
@@ -177,7 +174,7 @@ export default function DashboardPage() {
                       }
                       setShowRequestModal(true);
                     }}
-                    className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center space-x-2"
+                    className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center space-x-2"
                   >
                     <Plus className="w-5 h-5" />
                     <span>Request Document</span>
@@ -185,7 +182,7 @@ export default function DashboardPage() {
 
                   <Link
                     href="/documents"
-                    className="bg-white border-2 border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:border-[#2f84c0] hover:bg-[#eef3ff] transition-all duration-300 flex items-center justify-center space-x-2"
+                    className="bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-lg font-semibold text-sm hover:border-[#2f84c0] hover:bg-[#eef3ff] transition-all duration-300 flex items-center justify-center space-x-2"
                   >
                     <FileText className="w-5 h-5" />
                     <span>Browse Documents</span>
@@ -200,21 +197,21 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
             >
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-6 py-5">
-                  <h2 className="font-bold text-xl text-gray-800 mb-4">Recent Activity</h2>
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-5 py-4">
+                  <h2 className="font-bold text-lg text-gray-800 mb-3">Recent Activity</h2>
                   {loading ? (
                     <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
                       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#243b8e] mx-auto mb-4"></div>
                       <p className="text-gray-600 text-sm">Loading your recent requests...</p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {/* Account Activity */}
                       {(user.status?.toLowerCase() === 'pending' || user.status?.toLowerCase() === 'approved' || user.status?.toLowerCase() === 'rejected') && (
                         <motion.div
                           onClick={() => setShowAccountActivityModal(true)}
-                          className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-[#eef3ff] to-[#eef3ff] rounded-xl border border-[#c2cbea] hover:shadow-sm transition-all duration-300 cursor-pointer"
+                          className="flex items-center justify-between gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-300 cursor-pointer"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 }}
@@ -248,8 +245,8 @@ export default function DashboardPage() {
                           transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-xl p-2.5 w-10 h-10 flex items-center justify-center shadow-sm">
-                              <FileText className="w-5 h-5" />
+                            <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg p-2 w-9 h-9 flex items-center justify-center shadow-sm">
+                              <FileText className="w-4 h-4" />
                             </div>
                             <div>
                               <h4 className="font-bold text-gray-900 text-sm md:text-base">{request.documentName}</h4>
@@ -299,13 +296,13 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
           >
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-6 py-5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-r from-[#d8def2] to-[#eef3ff] rounded-lg">
-                    <Megaphone className="w-5 h-5 text-[#122361]" />
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-gradient-to-r from-[#d8def2] to-[#eef3ff] rounded-lg">
+                    <Megaphone className="w-4 h-4 text-[#122361]" />
                   </div>
-                  <h2 className="font-bold text-xl text-gray-800">Announcements</h2>
+                  <h2 className="font-bold text-lg text-gray-800">Announcements</h2>
                 </div>
 
                 {announcementsLoading ? (
