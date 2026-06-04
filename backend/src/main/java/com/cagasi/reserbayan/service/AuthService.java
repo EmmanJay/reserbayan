@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cagasi.reserbayan.dto.ProfileUpdateDTO;
 import com.cagasi.reserbayan.config.JwtUtil;
 import com.cagasi.reserbayan.dto.RegisterRequest; // Make sure to import this!
 import com.cagasi.reserbayan.dto.ResidentDTO;
@@ -22,6 +23,9 @@ import com.cagasi.reserbayan.entity.Role;
 import com.cagasi.reserbayan.entity.Status;
 import com.cagasi.reserbayan.repository.AdminRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -227,5 +231,104 @@ public class AuthService {
         // -------------------
 
         return residentRepository.save(resident);
+    }
+
+    public Map<String, Object> updateAuthenticatedProfile(String username, String role, ProfileUpdateDTO profileDTO) {
+        if ("ROLE_ADMIN".equals(role) || "ROLE_SUPER_ADMIN".equals(role)) {
+            Admin admin = adminRepository.findByUsername(username)
+                    .orElseGet(() -> adminRepository.findByResidentEmail(username)
+                            .orElseThrow(() -> new RuntimeException("Admin not found")));
+            Admin savedAdmin = updateAdminProfile(admin, profileDTO);
+            String nextSubject = savedAdmin.getUsername() != null && !savedAdmin.getUsername().isBlank()
+                    ? savedAdmin.getUsername()
+                    : savedAdmin.getResidentEmail();
+            return buildProfileResponse(savedAdmin, savedAdmin.getRole().name(), nextSubject);
+        }
+
+        Resident resident = residentRepository.findByResidentEmail(username)
+                .orElseThrow(() -> new RuntimeException("Resident not found"));
+        Resident savedResident = updateResidentProfile(resident, profileDTO);
+        return buildProfileResponse(savedResident, "RESIDENT", savedResident.getResidentEmail());
+    }
+
+    private Resident updateResidentProfile(Resident resident, ProfileUpdateDTO profileDTO) {
+        String nextEmail = requireValue(profileDTO.getResidentEmail(), "Email is required");
+
+        if (!resident.getResidentEmail().equals(nextEmail)) {
+            if (adminRepository.findByResidentEmail(nextEmail).isPresent()) {
+                throw new RuntimeException("Email already registered as admin");
+            }
+            if (residentRepository.findByResidentEmail(nextEmail)
+                    .filter(existing -> !existing.getResidentId().equals(resident.getResidentId()))
+                    .isPresent()) {
+                throw new RuntimeException("Email already registered as resident");
+            }
+        }
+
+        resident.setFirstName(profileDTO.getFirstName());
+        resident.setLastName(profileDTO.getLastName());
+        resident.setMiddleName(profileDTO.getMiddleName());
+        resident.setResidentEmail(nextEmail);
+        resident.setPhoneNumber(profileDTO.getPhoneNumber());
+        resident.setBirthdate(profileDTO.getBirthdate());
+        resident.setGender(profileDTO.getGender());
+        resident.setRegion(profileDTO.getRegion());
+        resident.setProvince(profileDTO.getProvince());
+        resident.setCity(profileDTO.getCity());
+        resident.setBarangay(profileDTO.getBarangay());
+        resident.setSitio(profileDTO.getSitio());
+        resident.setAddressLine1(profileDTO.getAddressLine1());
+
+        return residentRepository.save(resident);
+    }
+
+    private Admin updateAdminProfile(Admin admin, ProfileUpdateDTO profileDTO) {
+        String nextEmail = requireValue(profileDTO.getResidentEmail(), "Email is required");
+        String nextUsername = requireValue(profileDTO.getUsername(), "Username is required");
+
+        if (!admin.getResidentEmail().equals(nextEmail)) {
+            if (residentRepository.findByResidentEmail(nextEmail).isPresent()) {
+                throw new RuntimeException("Email already registered as resident");
+            }
+            if (adminRepository.findByResidentEmail(nextEmail)
+                    .filter(existing -> !existing.getResidentId().equals(admin.getResidentId()))
+                    .isPresent()) {
+                throw new RuntimeException("Email already registered as admin");
+            }
+        }
+
+        if (!nextUsername.equals(admin.getUsername())) {
+            if (adminRepository.findByUsername(nextUsername)
+                    .filter(existing -> !existing.getResidentId().equals(admin.getResidentId()))
+                    .isPresent()) {
+                throw new RuntimeException("Username already registered");
+            }
+        }
+
+        admin.setFirstName(profileDTO.getFirstName());
+        admin.setLastName(profileDTO.getLastName());
+        admin.setMiddleName(profileDTO.getMiddleName());
+        admin.setResidentEmail(nextEmail);
+        admin.setUsername(nextUsername);
+        admin.setPhoneNumber(profileDTO.getPhoneNumber());
+        admin.setAddress(profileDTO.getAddress());
+        admin.setPosition(profileDTO.getPosition());
+
+        return adminRepository.save(admin);
+    }
+
+    private String requireValue(String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new RuntimeException(message);
+        }
+        return value.trim();
+    }
+
+    private Map<String, Object> buildProfileResponse(Object user, String role, String tokenSubject) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
+        response.put("role", role);
+        response.put("token", jwtUtil.generateToken(tokenSubject, role));
+        return response;
     }
 }
