@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle } from 'lucide-react';
+import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle, ChevronDown } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 import ConfirmationModal from '@/app/components/ConfirmationModal';
 import ViewDetailsModal from '@/app/components/ViewDetailsModal';
@@ -11,6 +11,67 @@ import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 import { motion } from 'framer-motion';
 
 import Link from 'next/link';
+
+const SUPERADMIN_ALLOWED_TABS = ['administrators', 'residents', 'resident-requests', 'document-requests'];
+
+const managementTabConfig = {
+  administrators: { label: 'Administrators', icon: Shield, color: 'blue', description: 'Manage administrator accounts and permissions' },
+  residents: { label: 'Residents', icon: Users, color: 'green', description: 'Manage verified resident records' },
+  'resident-requests': { label: 'Pending Accounts', icon: Users, color: 'orange', description: 'Review resident verification requests' },
+  'document-requests': { label: 'Document Requests', icon: FileText, color: 'purple', description: 'Review and process document requests' },
+};
+
+const getActiveTabStyles = (color) => {
+  const styles = {
+    blue: 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm',
+    green: 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm',
+    orange: 'bg-amber-50 text-amber-700 border border-amber-200 shadow-sm',
+    purple: 'bg-violet-50 text-violet-700 border border-violet-200 shadow-sm',
+  };
+  return styles[color] || 'bg-gray-100 text-gray-700 border border-gray-200';
+};
+
+function CustomManagementDropdown({ value, options, onChange, className = '' }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find((option) => option.value === value) || options[0];
+
+  return (
+    <div className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 120)}
+        className="flex h-11 w-full min-w-[150px] items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-700 shadow-sm outline-none transition-all hover:border-blue-200 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
+      >
+        <span className="truncate">{selectedOption?.label || 'Select'}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-full min-w-[180px] overflow-hidden rounded-2xl border border-blue-100 bg-white p-1.5 shadow-[0_18px_45px_rgba(30,37,102,0.16)]">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm font-bold transition-all ${
+                option.value === value
+                  ? 'bg-[#004AAD] text-white'
+                  : 'text-slate-700 hover:bg-blue-50 hover:text-[#004AAD]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SuperAdminManagementPage() {
   const router = useRouter();
@@ -30,6 +91,8 @@ export default function SuperAdminManagementPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
   const itemsPerPage = 10;
+  const loadedTabRef = useRef(null);
+  const fetchRequestRef = useRef(0);
   
   // Cache for data to avoid unnecessary re-fetching
   const [dataCache, setDataCache] = useState({});
@@ -55,27 +118,20 @@ export default function SuperAdminManagementPage() {
     const role = localStorage.getItem('role');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    if (!token || (role !== 'SUPER_ADMIN' && role !== 'ADMIN')) {
+    if (!token) {
       router.push('/');
+      return;
+    }
+
+    if (role !== 'SUPER_ADMIN') {
+      router.push(role === 'ADMIN' ? '/admin/management' : '/');
       return;
     }
 
     setUser(user);
     setRole(role);
     setLoading(false);
-
-    // Check for tab parameter in URL and set initial tab
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['administrators', 'residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
-      setActiveTab(tabParam);
-      fetchData(tabParam, true);
-    } else {
-      // Set default tab based on role
-      const defaultTab = role === 'ADMIN' ? 'residents' : 'administrators';
-      setActiveTab(defaultTab);
-      fetchData(defaultTab, true);
-    }
-  }, [router, searchParams]);
+  }, [router]);
 
   // Handle URL parameter changes after initial load
   useEffect(() => {
@@ -83,22 +139,29 @@ export default function SuperAdminManagementPage() {
       const tabParam = searchParams.get('tab');
       const actionParam = searchParams.get('action');
       
-      if (tabParam && ['administrators', 'residents', 'resident-requests', 'document-requests'].includes(tabParam)) {
-        if (activeTab !== tabParam) {
-          setActiveTab(tabParam);
-          fetchData(tabParam, false);
-        }
+      if (tabParam && !SUPERADMIN_ALLOWED_TABS.includes(tabParam)) {
+        router.replace('/superadmin/management?tab=administrators', { scroll: false });
+        return;
+      }
+
+      const nextTab = tabParam && SUPERADMIN_ALLOWED_TABS.includes(tabParam) ? tabParam : 'administrators';
+      if (activeTab !== nextTab) {
+        setActiveTab(nextTab);
+      }
+      if (loadedTabRef.current !== nextTab) {
+        loadedTabRef.current = nextTab;
+        fetchData(nextTab, false);
       }
       
       // Handle action parameter - if action=addAdmin and we're on administrators tab, open the modal
-      if (actionParam === 'addAdmin' && activeTab === 'administrators') {
+      if (actionParam === 'addAdmin' && nextTab === 'administrators') {
         setAddAdminModal(true);
         // Clean up the URL by removing the action parameter
-        const newUrl = `/superadmin/management?tab=${activeTab}`;
-        router.push(newUrl, { scroll: false });
+        const newUrl = `/superadmin/management?tab=${nextTab}`;
+        window.history.replaceState(null, '', newUrl);
       }
     }
-  }, [searchParams, loading, activeTab]);
+  }, [searchParams, loading, activeTab, router]);
 
   // Close dropdown when clicking anywhere on the screen
   useEffect(() => {
@@ -118,6 +181,11 @@ export default function SuperAdminManagementPage() {
   }, [openDropdownId]);
 
   const fetchData = async (tab, forceRefresh = false) => {
+    if (!SUPERADMIN_ALLOWED_TABS.includes(tab)) {
+      tab = 'administrators';
+    }
+    const requestId = fetchRequestRef.current + 1;
+    fetchRequestRef.current = requestId;
     // Check if we have cached data and don't need to force refresh
     if (!forceRefresh && dataCache[tab]) {
       setData(dataCache[tab].data);
@@ -173,6 +241,7 @@ export default function SuperAdminManagementPage() {
       });
       if (!response.ok) throw new Error(`Failed to fetch ${tab}`);
       let data = await response.json();
+      if (fetchRequestRef.current !== requestId) return;
 
       // Extract unique sitios for residents tab
       let sitios = [];
@@ -202,15 +271,20 @@ export default function SuperAdminManagementPage() {
       setTotalPages(Math.ceil(data.length / itemsPerPage));
       setCurrentPage(1);
     } catch (err) {
+      if (fetchRequestRef.current !== requestId) return;
       console.error(`Error fetching ${tab}:`, err);
       setData([]);
       setTotalPages(1);
     } finally {
-      setLoadingData(false);
+      if (fetchRequestRef.current === requestId) {
+        setLoadingData(false);
+      }
     }
   };
 
   const handleTabChange = (tab) => {
+    if (!SUPERADMIN_ALLOWED_TABS.includes(tab)) return;
+    if (tab === activeTab) return;
     setActiveTab(tab);
     setSearchQuery('');
     setSitioFilter('');
@@ -220,11 +294,12 @@ export default function SuperAdminManagementPage() {
     setOpenDropdownId(null);
     
     // Load data from cache or fetch if not available
+    loadedTabRef.current = tab;
     fetchData(tab, false);
     
     // Update URL to reflect the tab change
     const newUrl = `/superadmin/management?tab=${tab}`;
-    router.push(newUrl, { scroll: false });
+    window.history.pushState(null, '', newUrl);
   };
 
   const handleManage = (type, item, event) => {
@@ -769,6 +844,52 @@ export default function SuperAdminManagementPage() {
     });
   };
 
+  const currentTabConfig = managementTabConfig[activeTab] || managementTabConfig.administrators;
+  const CurrentTabIcon = currentTabConfig.icon;
+  const filteredData = data
+    .filter((item) => {
+      if (activeTab === 'residents' && sitioFilter && sitioFilter.trim() !== '') {
+        if (item.sitio !== sitioFilter) return false;
+      }
+
+      if (activeTab === 'document-requests' && statusFilter && statusFilter.trim() !== '') {
+        if (item.status !== statusFilter) return false;
+      }
+
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        item.firstName?.toLowerCase().includes(query) ||
+        item.lastName?.toLowerCase().includes(query) ||
+        item.middleName?.toLowerCase().includes(query) ||
+        item.residentEmail?.toLowerCase().includes(query) ||
+        item.phoneNumber?.toLowerCase().includes(query) ||
+        item.sitio?.toLowerCase().includes(query) ||
+        item.documentName?.toLowerCase().includes(query) ||
+        item.resident?.firstName?.toLowerCase().includes(query) ||
+        item.resident?.lastName?.toLowerCase().includes(query)
+      );
+    })
+    .sort((a, b) => {
+      if (activeTab === 'document-requests') {
+        const nameA = `${a.resident?.firstName || ''} ${a.resident?.lastName || ''}`.toLowerCase();
+        const nameB = `${b.resident?.firstName || ''} ${b.resident?.lastName || ''}`.toLowerCase();
+        return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      }
+
+      const nameA = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
+      const nameB = `${b.firstName || ''} ${b.lastName || ''}`.toLowerCase();
+      return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    });
+  const computedTotalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
+  const safeCurrentPage = Math.min(currentPage, computedTotalPages);
+  const paginatedData = filteredData.slice((safeCurrentPage - 1) * itemsPerPage, safeCurrentPage * itemsPerPage);
+  const activeFilterTags = [
+    searchQuery.trim() ? { label: `Search: ${searchQuery.trim()}`, onClear: () => setSearchQuery('') } : null,
+    sitioFilter ? { label: `Sitio: ${sitioFilter}`, onClear: () => setSitioFilter('') } : null,
+    statusFilter ? { label: `Status: ${statusFilter}`, onClear: () => setStatusFilter('') } : null,
+  ].filter(Boolean);
+
   if (!user || loading) {
     return (
       <div className="flex h-screen bg-gray-50 items-center justify-center">
@@ -781,120 +902,135 @@ export default function SuperAdminManagementPage() {
   }
 
   return (
-    <motion.div
-      className="pt-24 px-8 min-h-screen bg-[#FAFAFA] pb-16"
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+    <div
+      className="pt-24 px-8 md:px-8 min-h-screen bg-[#F8FBFF] pb-16 font-[family-name:var(--font-inter)]"
     >
-      <motion.div
+      <div
         className="mb-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
       >
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
-          <div className="flex space-x-1">
-            {[
-              ...(role === 'SUPER_ADMIN' ? [{ id: 'administrators', label: 'Administrators', icon: Shield, color: 'blue' }] : []),
-              { id: 'residents', label: 'Residents', icon: Users, color: 'green' },
-              ...(role === 'SUPER_ADMIN' ? [{ id: 'resident-requests', label: 'Pending Accounts', icon: Users, color: 'orange' }] : []),
-              { id: 'document-requests', label: 'Document Requests', icon: FileText, color: 'purple' }
-            ].map((tab) => (
+        <div className="rounded-[1.5rem] border border-blue-100 bg-white p-2 shadow-sm">
+          <div className="grid gap-2 md:grid-cols-4">
+            {SUPERADMIN_ALLOWED_TABS.map((tabId) => {
+              const tab = { id: tabId, ...managementTabConfig[tabId] };
+              return (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
                   activeTab === tab.id
-                    ? `bg-${tab.color}-100 text-${tab.color}-700 border border-${tab.color}-200`
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? getActiveTabStyles(tab.color)
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#1E2566]'
                 }`}
               >
                 <tab.icon size={16} />
                 {tab.label}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+      <div
+        className="overflow-hidden rounded-[1.5rem] border border-blue-100 bg-white shadow-[0_18px_45px_rgba(30,37,102,0.08)]"
       >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {activeTab === 'administrators' && 'Administrators'}
-                {activeTab === 'residents' && 'Residents'}
-                {activeTab === 'resident-requests' && 'Resident Requests'}
-                {activeTab === 'document-requests' && 'Document Requests'}
-              </h2>
-              <span className="text-sm text-gray-500">
-                {data.length} total
-              </span>
+        <div className="border-b border-blue-100 bg-gradient-to-r from-white to-blue-50/40 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#004AAD] text-white shadow-sm">
+                <CurrentTabIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-xl font-extrabold text-[#1E2566]">{currentTabConfig.label}</h2>
+                <p className="text-sm text-slate-500">{filteredData.length} visible of {data.length} records</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               {activeTab === 'administrators' && role === 'SUPER_ADMIN' && (
                 <button
                   onClick={() => setAddAdminModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                  className="flex h-11 items-center gap-2 rounded-2xl bg-[#004AAD] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#003A88]"
                 >
                   <Plus size={16} />
                   Add Administrator
                 </button>
               )}
+              <CustomManagementDropdown
+                value={sortOrder}
+                options={[
+                  { value: 'asc', label: 'Name A-Z' },
+                  { value: 'desc', label: 'Name Z-A' },
+                ]}
+                onChange={(nextValue) => {
+                  setSortOrder(nextValue);
+                  setCurrentPage(1);
+                }}
+              />
               {activeTab === 'document-requests' && (
                 <>
-                  <select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                  >
-                    <option value="asc">Name A-Z</option>
-                    <option value="desc">Name Z-A</option>
-                  </select>
-                  <select
+                  <CustomManagementDropdown
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                  >
-                    <option value="">All Status</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+                    options={[
+                      { value: '', label: 'All Status' },
+                      { value: 'Pending', label: 'Pending' },
+                      { value: 'Approved', label: 'Approved' },
+                      { value: 'Completed', label: 'Completed' },
+                      { value: 'Rejected', label: 'Rejected' },
+                      { value: 'Cancelled', label: 'Cancelled' },
+                    ]}
+                    onChange={(nextValue) => {
+                      setStatusFilter(nextValue);
+                      setCurrentPage(1);
+                    }}
+                  />
                 </>
               )}
               {activeTab === 'residents' && availableSitios.length > 0 && (
-                <select
+                <CustomManagementDropdown
                   value={sitioFilter}
-                  onChange={(e) => setSitioFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
-                >
-                  <option value="">All Sitios</option>
-                  {availableSitios.map((sitio) => (
-                    <option key={sitio} value={sitio}>
-                      {sitio}
-                    </option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: 'All Sitios' },
+                    ...availableSitios.map((sitio) => ({ value: sitio, label: sitio })),
+                  ]}
+                  onChange={(nextValue) => {
+                    setSitioFilter(nextValue);
+                    setCurrentPage(1);
+                  }}
+                />
               )}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-64"
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100 lg:w-80"
                 />
               </div>
             </div>
           </div>
+          {activeFilterTags.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {activeFilterTags.map((tag) => (
+                <button
+                  key={tag.label}
+                  type="button"
+                  onClick={() => {
+                    tag.onClear();
+                    setCurrentPage(1);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1 text-xs font-bold text-[#004AAD] shadow-sm hover:bg-blue-50"
+                >
+                  {tag.label}
+                  <XCircle className="h-3.5 w-3.5" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {loadingData ? (
@@ -906,77 +1042,29 @@ export default function SuperAdminManagementPage() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                       {activeTab === 'document-requests' ? 'Resident' : 'Name'}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                       {activeTab === 'document-requests' ? 'Document' : 'Email'}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                       {activeTab === 'document-requests' ? 'Date' : 'Phone'}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
                       {activeTab === 'administrators' ? 'Role' : activeTab === 'residents' ? 'Sitio' : 'Status'}
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                    <th className="px-6 py-3 text-right text-xs font-bold uppercase tracking-[0.16em] text-slate-500"></th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {data
-                    .filter((item) => {
-                      // Apply sitio filter if residents tab and sitio filter is selected
-                      if (activeTab === 'residents' && sitioFilter && sitioFilter.trim() !== '') {
-                        if (item.sitio !== sitioFilter) return false;
-                      }
-
-                      // Apply status filter if document-requests tab and status filter is selected
-                      if (activeTab === 'document-requests' && statusFilter && statusFilter.trim() !== '') {
-                        if (item.status !== statusFilter) return false;
-                      }
-
-                      // Apply search query filter
-                      if (!searchQuery.trim()) return true;
-                      const query = searchQuery.toLowerCase();
-                      return (
-                        item.firstName?.toLowerCase().includes(query) ||
-                        item.lastName?.toLowerCase().includes(query) ||
-                        item.middleName?.toLowerCase().includes(query) ||
-                        item.residentEmail?.toLowerCase().includes(query) ||
-                        item.phoneNumber?.toLowerCase().includes(query) ||
-                        item.sitio?.toLowerCase().includes(query) ||
-                        item.documentName?.toLowerCase().includes(query) ||
-                        item.resident?.firstName?.toLowerCase().includes(query) ||
-                        item.resident?.lastName?.toLowerCase().includes(query)
-                      );
-                    })
-                    .sort((a, b) => {
-                      // Apply sorting for document requests
-                      if (activeTab === 'document-requests') {
-                        const nameA = `${a.resident?.firstName || ''} ${a.resident?.lastName || ''}`.toLowerCase();
-                        const nameB = `${b.resident?.firstName || ''} ${b.resident?.lastName || ''}`.toLowerCase();
-                        if (sortOrder === 'asc') {
-                          return nameA.localeCompare(nameB);
-                        } else {
-                          return nameB.localeCompare(nameA);
-                        }
-                      }
-                      // Default sorting for other tabs
-                      const nameA = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
-                      const nameB = `${b.firstName || ''} ${b.lastName || ''}`.toLowerCase();
-                      if (sortOrder === 'asc') {
-                        return nameA.localeCompare(nameB);
-                      } else {
-                        return nameB.localeCompare(nameA);
-                      }
-                    })
-                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                    .map((item, index) => (
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {paginatedData.map((item, index) => (
                       <tr
                         key={`${activeTab}-${item.requestId || item.residentId}-${index}`}
                         onClick={() => handleViewInfo(item)}
-                        className="hover:bg-gray-100 cursor-pointer transition-colors"
+                        className="cursor-pointer transition-colors hover:bg-blue-50/40"
                         role="row"
                         tabIndex={0}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleViewInfo(item); } }}
@@ -1058,6 +1146,19 @@ export default function SuperAdminManagementPage() {
                         </td>
                       </tr>
                     ))}
+                  {paginatedData.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-14 text-center">
+                        <div className="mx-auto flex max-w-sm flex-col items-center">
+                          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#004AAD]">
+                            <Search className="h-6 w-6" />
+                          </div>
+                          <p className="text-sm font-extrabold text-[#1E2566]">No records found</p>
+                          <p className="mt-1 text-sm leading-6 text-slate-500">Try adjusting your search, sort, or filter options.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1246,61 +1347,61 @@ export default function SuperAdminManagementPage() {
                 </div>
             )}
 
-            {totalPages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            {(
+              <div className="flex items-center justify-between border-t border-blue-100 bg-slate-50/80 px-4 py-4 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                    disabled={safeCurrentPage === 1}
+                    className="relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => setCurrentPage(Math.min(computedTotalPages, safeCurrentPage + 1))}
+                    disabled={safeCurrentPage === computedTotalPages}
+                    className="ml-3 relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
-                      <span className="font-medium">{Math.min(currentPage * itemsPerPage, data.length)}</span> of{' '}
-                      <span className="font-medium">{data.length}</span> results
+                    <p className="text-sm font-medium text-slate-600">
+                      Showing <span className="font-extrabold text-[#1E2566]">{filteredData.length === 0 ? 0 : (safeCurrentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                      <span className="font-extrabold text-[#1E2566]">{Math.min(safeCurrentPage * itemsPerPage, filteredData.length)}</span> of{' '}
+                      <span className="font-extrabold text-[#1E2566]">{filteredData.length}</span> results
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <nav className="relative z-0 inline-flex overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                       <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
+                        disabled={safeCurrentPage === 1}
+                        className="relative inline-flex items-center px-3 py-2 text-sm font-bold text-slate-500 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <span className="sr-only">Previous</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       </button>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      {Array.from({ length: computedTotalPages }, (_, i) => i + 1).map((page) => (
                         <button
                           key={page}
                           onClick={() => setCurrentPage(page)}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                            page === currentPage
-                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          className={`relative inline-flex items-center border-l border-slate-200 px-4 py-2 text-sm font-bold ${
+                            page === safeCurrentPage
+                              ? 'z-10 bg-[#004AAD] text-white'
+                              : 'bg-white text-slate-500 hover:bg-blue-50'
                           }`}
                         >
                           {page}
                         </button>
                       ))}
                       <button
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setCurrentPage(Math.min(computedTotalPages, safeCurrentPage + 1))}
+                        disabled={safeCurrentPage === computedTotalPages}
+                        className="relative inline-flex items-center border-l border-slate-200 px-3 py-2 text-sm font-bold text-slate-500 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <span className="sr-only">Next</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -1314,7 +1415,7 @@ export default function SuperAdminManagementPage() {
             )}
           </>
         )}
-      </motion.div>
+      </div>
 
       {addAdminModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
@@ -1476,6 +1577,17 @@ export default function SuperAdminManagementPage() {
               fetchData(activeTab, true);
             }}
             cancelRequest={async () => ({ success: false, error: 'Not supported in superadmin view' })}
+            completeRequest={async (requestId) => {
+              const token = localStorage.getItem('token');
+              const response = await fetch(`http://localhost:8080/api/superadmin/requests/${requestId}/complete`, {
+                method: 'PUT',
+                headers: token ? {
+                  'Authorization': `Bearer ${token}`,
+                } : {},
+              });
+              if (!response.ok) throw new Error('Failed to mark request as complete.');
+              return response.json();
+            }}
             onUpdateRequest={() => fetchData(activeTab, true)}
           />
         )
@@ -1545,6 +1657,6 @@ export default function SuperAdminManagementPage() {
         cancelText={confirmationModal?.cancelText}
         confirmButtonClass={confirmationModal?.confirmButtonClass}
       />
-    </motion.div>
+    </div>
   );
 }
