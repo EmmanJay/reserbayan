@@ -7,16 +7,17 @@ import {
   AlertCircle,
   AlertTriangle,
   Bell,
+  Check,
   CheckCheck,
   CheckCircle2,
   ClipboardList,
   FileText,
   RefreshCw,
-  Settings,
   Trash2,
   UserCheck,
   XCircle,
 } from 'lucide-react';
+import ConfirmationModal from '@/app/components/ConfirmationModal';
 import RequestModal from '@/app/components/requests/RequestModal';
 import AccountActivityModal from '@/app/components/AccountActivityModal';
 import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsModal';
@@ -80,9 +81,21 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [showAccountActivity, setShowAccountActivity] = useState(false);
   const [actionLoading, setActionLoading] = useState({ approve: false, reject: false, accountId: null });
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
   const adminMode = isAdminRole(role);
   const unreadCount = useMemo(() => notifications.filter(isUnread).length, [notifications]);
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(notifications.length / pageSize));
+  const paginatedNotifications = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return notifications.slice(startIndex, startIndex + pageSize);
+  }, [currentPage, notifications]);
+  const selectedCount = selectedIds.size;
+  const allSelected = notifications.length > 0 && selectedCount === notifications.length;
 
   const updateUnreadCount = useCallback(async (currentNotifications) => {
     if (!adminMode) {
@@ -148,6 +161,37 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
     fetchNotifications();
   }, [fetchNotifications]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectMode(false);
+      setSelectedIds(new Set());
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedIds(new Set());
+  }, [activeFilter, adminMode, user?.residentId]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set();
+      notifications.forEach((notification) => {
+        const id = getNotificationId(notification);
+        if (prev.has(id)) next.add(id);
+      });
+      return next;
+    });
+  }, [notifications]);
+
   const markAsRead = async (notification) => {
     if (!isUnread(notification)) return;
 
@@ -203,8 +247,6 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
   };
 
   const deleteAllNotifications = async () => {
-    if (!window.confirm('Delete all notifications? This cannot be undone.')) return;
-
     const token = localStorage.getItem('token');
     const endpoint = adminMode
       ? 'http://localhost:8080/api/admin-notifications'
@@ -217,6 +259,135 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
 
     setNotifications([]);
     onUnreadCountChange?.(0);
+  };
+
+  const toggleSelectMode = () => {
+    setSelectMode((prev) => {
+      const next = !prev;
+      if (!next) {
+        setSelectedIds(new Set());
+      }
+      return next;
+    });
+  };
+
+  const toggleSelection = (notificationId) => {
+    if (!selectMode) return;
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(notificationId)) {
+        next.delete(notificationId);
+      } else {
+        next.add(notificationId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (!selectMode || notifications.length === 0) return;
+    if (allSelected) {
+      setSelectedIds(new Set());
+      return;
+    }
+
+    setSelectedIds(new Set(notifications.map(getNotificationId)));
+  };
+
+  const handleBulkRead = async () => {
+    if (selectedIds.size === 0) return;
+
+    if (selectedIds.size === notifications.length) {
+      await markAllAsRead();
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const unreadTargets = notifications.filter((notification) => (
+      selectedIds.has(getNotificationId(notification)) && isUnread(notification)
+    ));
+
+    if (unreadTargets.length === 0) {
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      return;
+    }
+
+    await Promise.all(unreadTargets.map((notification) => {
+      const notificationId = getNotificationId(notification);
+      const endpoint = adminMode
+        ? `http://localhost:8080/api/admin-notifications/${notificationId}/read`
+        : `http://localhost:8080/api/notifications/${notificationId}/read`;
+
+      return fetch(endpoint, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }));
+
+    const nextNotifications = notifications.map((item) => (
+      selectedIds.has(getNotificationId(item)) ? { ...item, isRead: 1 } : item
+    ));
+    setNotifications(nextNotifications);
+    updateUnreadCount(nextNotifications);
+    setSelectedIds(new Set());
+    setSelectMode(false);
+  };
+
+  const executeBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    if (selectedIds.size === notifications.length) {
+      await deleteAllNotifications();
+      setSelectedIds(new Set());
+      setSelectMode(false);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const deleteTargets = notifications.filter((notification) => (
+      selectedIds.has(getNotificationId(notification))
+    ));
+
+    await Promise.all(deleteTargets.map((notification) => {
+      const notificationId = getNotificationId(notification);
+      const endpoint = adminMode
+        ? `http://localhost:8080/api/admin-notifications/${notificationId}`
+        : `http://localhost:8080/api/notifications/${notificationId}`;
+
+      return fetch(endpoint, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }));
+
+    const remaining = notifications.filter((item) => !selectedIds.has(getNotificationId(item)));
+    setNotifications(remaining);
+    updateUnreadCount(remaining);
+    setSelectedIds(new Set());
+    setSelectMode(false);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    const selectedLabel = selectedIds.size === 1 ? 'notification' : 'notifications';
+    const title = 'Confirm Deletion';
+    const message = selectedIds.size === notifications.length
+      ? 'Are you sure you want to delete all notifications? This action cannot be undone.'
+      : `Are you sure you want to delete ${selectedIds.size} ${selectedLabel}? This action cannot be undone.`;
+
+    setDeleteModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: executeBulkDelete,
+    });
   };
 
   const fetchDocumentRequest = async (requestId) => {
@@ -383,14 +554,16 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                       {unreadCount} unread message{unreadCount === 1 ? '' : 's'}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="rounded-full bg-slate-50 p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-                    aria-label="Close notification center"
-                  >
-                    <Settings className="h-5 w-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleSelectMode}
+                      disabled={notifications.length === 0}
+                      className="rounded-full border border-slate-200 px-4 py-2 text-xs font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {selectMode ? 'Done' : 'Select'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -411,26 +584,6 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                     ))}
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={markAllAsRead}
-                    disabled={notifications.length === 0}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <CheckCheck className="h-4 w-4" />
-                    Read all
-                  </button>
-                  <button
-                    type="button"
-                    onClick={deleteAllNotifications}
-                    disabled={notifications.length === 0}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete all
-                  </button>
-                </div>
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto bg-white p-2">
@@ -443,68 +596,148 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
                     <p className="mt-1 text-sm text-slate-500">You are all caught up.</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    {notifications.map((notification) => {
+                  <div className="space-y-1.5">
+                    {paginatedNotifications.map((notification) => {
                       const Icon = getNotificationIcon(notification.type);
                       const unread = isUnread(notification);
+                      const notificationId = getNotificationId(notification);
+                      const selected = selectedIds.has(notificationId);
 
                       return (
                         <article
-                          key={getNotificationId(notification)}
-                          className={`group rounded-3xl p-3 transition hover:bg-slate-50 ${
+                          key={notificationId}
+                          className={`group rounded-2xl p-2.5 transition ${
                             unread ? 'bg-blue-50/55' : 'bg-white'
-                          }`}
+                          } ${selected ? 'ring-1 ring-blue-200' : 'hover:bg-slate-50'}`}
                         >
                           <button
                             type="button"
-                            onClick={() => handleNotificationClick(notification)}
-                            className="flex w-full gap-3 text-left"
+                            onClick={() => (
+                              selectMode
+                                ? toggleSelection(notificationId)
+                                : handleNotificationClick(notification)
+                            )}
+                            className="flex w-full items-center gap-3 text-left"
                           >
-                            <span className={`relative mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                            {selectMode && (
+                              <span
+                                role="checkbox"
+                                aria-checked={selected}
+                                aria-label={selected ? 'Selected notification' : 'Select notification'}
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                  selected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'
+                                }`}
+                              >
+                                {selected && <Check className="h-3 w-3" />}
+                              </span>
+                            )}
+                            <span className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                               unread ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'
                             }`}>
-                              <Icon className="h-5 w-5" />
-                              {unread && <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-blue-600" />}
+                              <Icon className="h-4 w-4" />
+                              {unread && <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-blue-600" />}
                             </span>
                             <span className="min-w-0 flex-1">
-                              <span className="font-extrabold text-slate-900">{notification.title}</span>
-                              <span className="mt-1 line-clamp-2 block text-sm leading-5 text-slate-600">{notification.message}</span>
+                              <span className="block line-clamp-1 text-sm font-extrabold text-slate-900">{notification.title}</span>
+                              <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-slate-600">{notification.message}</span>
                               {notification.additionalData && (
-                                <span className="mt-2 line-clamp-1 block rounded-2xl bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700">
+                                <span className="mt-1.5 line-clamp-1 block rounded-2xl bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-700">
                                   {notification.additionalData}
                                 </span>
                               )}
-                              <span className="mt-1.5 block text-xs font-semibold text-slate-400">{formatDateTime(notification.createdAt)}</span>
+                              <span className="mt-1.5 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                                <span>{formatDateTime(notification.createdAt)}</span>
+                                {unread && (
+                                  <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-extrabold text-blue-700">
+                                    Unread
+                                  </span>
+                                )}
+                              </span>
                             </span>
                           </button>
-                          <div className="mt-1 flex justify-end gap-1 pr-1">
-                            {unread && (
-                              <button
-                                type="button"
-                                onClick={() => markAsRead(notification)}
-                                className="rounded-full px-3 py-1 text-xs font-bold text-blue-600 transition hover:bg-white"
-                              >
-                                Mark read
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => deleteNotification(notification)}
-                              className="rounded-full px-3 py-1 text-xs font-bold text-red-500 transition hover:bg-red-50"
-                            >
-                              Delete
-                            </button>
-                          </div>
                         </article>
                       );
                     })}
                   </div>
                 )}
               </div>
+
+              {notifications.length > 0 && (
+                <div className="border-t border-slate-100 bg-white px-4 py-3">
+                  {totalPages > 1 && (
+                    <div className="flex flex-wrap items-center justify-center gap-1.5">
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        const isActive = page === currentPage;
+                        return (
+                          <button
+                            key={page}
+                            type="button"
+                            onClick={() => setCurrentPage(page)}
+                            className={`h-7 min-w-[28px] rounded-full px-2 text-xs font-extrabold transition ${
+                              isActive
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                            }`}
+                            aria-current={isActive ? 'page' : undefined}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSelectAll}
+                      disabled={!selectMode || notifications.length === 0}
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-extrabold text-slate-700 transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <span className={`flex h-4 w-4 items-center justify-center rounded border ${
+                        allSelected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'
+                      }`}>
+                        {allSelected && <Check className="h-3 w-3" />}
+                      </span>
+                      Select all
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleBulkRead}
+                        disabled={!selectMode || selectedCount === 0}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-600 transition hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Mark selected as read"
+                      >
+                        <CheckCheck className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBulkDelete}
+                        disabled={!selectMode || selectedCount === 0}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-50 text-slate-600 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Delete selected notifications"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.aside>
           </>
         )}
       </AnimatePresence>
+
+      <ConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+        onConfirm={deleteModal.onConfirm || (() => {})}
+        type="delete"
+        title={deleteModal.title}
+        message={deleteModal.message}
+        confirmText="Delete"
+      />
 
       <AnimatePresence>
         {messageNotification && (
