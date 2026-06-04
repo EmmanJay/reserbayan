@@ -236,7 +236,7 @@ export default function SignUpContainer({ onClose }) {
   return (
     // PADDING INCREASED: p-10 md:p-14 for cleaner layout
     // FLEX LAYOUT: Ensures login can be vertically centered
-    <div className={`bg-white border-gray-200 border rounded-2xl shadow-2xl p-10 md:p-14 w-full max-w-[680px] mx-auto md:mx-0 relative min-h-[700px] max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className={`bg-white border-gray-200 border rounded-2xl shadow-sm p-10 md:p-14 w-full max-w-[680px] mx-auto md:mx-0 relative min-h-[700px] max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       
       <style jsx>{`
         div::-webkit-scrollbar { display: none; }
@@ -267,8 +267,8 @@ export default function SignUpContainer({ onClose }) {
 
       {/* Tabs Spacing */}
       <div className="flex justify-center gap-10 mb-10 font-semibold text-xl flex-shrink-0">
-        <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Log In</button>
-        <button onClick={() => setActiveTab('signup')} className={`pb-3 px-4 transition-colors ${activeTab === 'signup' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Sign Up</button>
+        <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#243b8e] border-b-4 border-[#243b8e]' : `text-gray-400 hover:text-[#243b8e]`}`}>Log In</button>
+        <button onClick={() => setActiveTab('signup')} className={`pb-3 px-4 transition-colors ${activeTab === 'signup' ? 'text-[#243b8e] border-b-4 border-[#243b8e]' : `text-gray-400 hover:text-[#243b8e]`}`}>Sign Up</button>
       </div>
 
       {/* --- LOGIN FORM (Vertically Centered) --- */}
@@ -313,13 +313,13 @@ export default function SignUpContainer({ onClose }) {
             {loginError && (<div className="text-center mt-2"><p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">{loginError}</p></div>)}
             
             <div className="pt-6">
-              <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
+              <Button type="submit" className={`w-full bg-[#243b8e] hover:bg-[#122361] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-sm transition-all`} disabled={loading}>
                 {loading ? "Logging in..." : "Log In"}
               </Button>
             </div>
             
             <div className="text-center pt-6">
-              <p className={`text-base text-gray-500`}>Don't have an account? <button type="button" onClick={() => setActiveTab('signup')} className="text-[#004AAD] font-bold hover:underline ml-1">Sign Up</button></p>
+              <p className={`text-base text-gray-500`}>Don&apos;t have an account? <button type="button" onClick={() => setActiveTab('signup')} className="text-[#243b8e] font-bold hover:underline ml-1">Sign Up</button></p>
             </div>
           </form>
         </div>
@@ -520,19 +520,19 @@ export default function SignUpContainer({ onClose }) {
               <FileText className="w-5 h-5" /> Valid ID Document {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
             <div className="relative">
-              <input id="file-upload" type="file" accept="image/*,application/pdf" onChange={handleFileChange} required className={`border border-gray-300 rounded-lg p-2.5 w-full text-base file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#004AAD] file:text-white hover:file:bg-[#003A88] transition-colors ${inputHeight}`} />
+              <input id="file-upload" type="file" accept="image/*,application/pdf" onChange={handleFileChange} required className={`border border-gray-300 rounded-lg p-2.5 w-full text-base file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#243b8e] file:text-white hover:file:bg-[#122361] transition-colors ${inputHeight}`} />
             </div>
             <p className={`text-sm ml-1 text-gray-500 mt-2`}>Upload a valid government-issued ID (PNG, JPG, or PDF)</p>
           </div>
 
           <div className="pt-8">
-            <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
+            <Button type="submit" className={`w-full bg-[#243b8e] hover:bg-[#122361] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-sm transition-all`} disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </div>
 
           <div className="text-center pt-4 pb-2">
-            <p className={`text-base text-gray-500`}>Already have an account? <button type="button" onClick={() => setActiveTab('login')} className="text-[#004AAD] font-bold hover:underline ml-1">Log In</button></p>
+            <p className={`text-base text-gray-500`}>Already have an account? <button type="button" onClick={() => setActiveTab('login')} className="text-[#243b8e] font-bold hover:underline ml-1">Log In</button></p>
           </div>
         </form>
       )}

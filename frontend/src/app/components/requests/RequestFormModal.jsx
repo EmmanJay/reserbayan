@@ -77,7 +77,7 @@ function DraftWarningModal({
       {isOpen && (
         <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/45 p-4">
           <motion.div
-            className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]"
+            className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: 32, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 32, scale: 0.96 }}
@@ -91,7 +91,7 @@ function DraftWarningModal({
                   <AlertTriangle className="h-6 w-6" />
                 </div>
                 <div>
-                  <h2 className="font-montserrat text-xl font-extrabold">{title}</h2>
+                  <h2 className="text-xl font-extrabold">{title}</h2>
                   <p className="mt-1 text-sm font-medium text-amber-50">{message}</p>
                 </div>
               </div>
@@ -112,7 +112,7 @@ function DraftWarningModal({
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                  className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-[#243b8e] px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#122361]"
                 >
                   {cancelText}
                 </button>
@@ -306,7 +306,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
         {!isMinimized && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 p-3 backdrop-blur-sm sm:p-5">
             <motion.div
-              className="flex max-h-[calc(100vh-1.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[1rem] border border-blue-100 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.26)]"
+              className="flex max-h-[calc(100vh-1.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[1rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 90, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 90, scale: 0.96 }}
@@ -315,17 +315,17 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
               aria-modal="true"
               aria-labelledby="request-document-title"
             >
-              <div className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-4 text-white sm:p-5">
+              <div className="relative overflow-hidden border-b border-[#d8def2] bg-gradient-to-br from-[#122361] via-[#243b8e] to-[#2f84c0] p-4 text-white sm:p-5">
                 <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-white/15" />
                 <div className="relative flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-[#d8def2]">
                       Resident document request
                     </p>
-                    <h2 id="request-document-title" className="mt-2 font-montserrat text-2xl font-extrabold leading-tight">
+                    <h2 id="request-document-title" className="mt-2 text-2xl font-extrabold leading-tight">
                       Request a document
                     </h2>
-                    <p className="mt-1 max-w-2xl text-sm font-medium text-blue-50">
+                    <p className="mt-1 max-w-2xl text-sm font-medium text-[#eef3ff]">
                       Select a document, confirm your autofilled details, and attach supporting files in one secure form.
                     </p>
                   </div>
@@ -353,12 +353,12 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
               </div>
 
               <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-                <div className="min-h-0 flex-1 overflow-y-auto bg-gradient-to-b from-blue-50/60 to-white p-3 sm:p-4 xl:overflow-hidden">
+                <div className="min-h-0 flex-1 overflow-y-auto bg-[#FAFAFA] p-3 sm:p-4 xl:overflow-hidden">
                   <div className="grid min-h-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(310px,0.72fr)]">
                     <div className="grid min-h-0 gap-3 lg:grid-cols-2">
-                      <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                      <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                         <div className="mb-3 flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
+                          <FileText className="h-4 w-4 text-[#243b8e]" />
                           <h3 className="text-sm font-extrabold text-slate-800">Document</h3>
                         </div>
 
@@ -370,7 +370,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                               onChange={(event) => setSelectedDocument(event.target.value)}
                               disabled={documentsLoading || submitting}
                               required
-                              className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                              className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pr-10 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                             >
                               <option value="">{documentsLoading ? 'Loading documents...' : 'Choose a document'}</option>
                               {documentsData.map((documentItem) => (
@@ -400,13 +400,13 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                         )}
                       </section>
 
-                      <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                      <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
-                            <FileCheck2 className="h-4 w-4 text-blue-600" />
+                            <FileCheck2 className="h-4 w-4 text-[#243b8e]" />
                             <h3 className="text-sm font-extrabold text-slate-800">Requirements</h3>
                           </div>
-                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100">
+                          <span className="rounded-full bg-[#eef3ff] px-2.5 py-1 text-xs font-extrabold text-[#122361] ring-1 ring-[#d8def2]">
                             {requirements.length} item{requirements.length === 1 ? '' : 's'}
                           </span>
                         </div>
@@ -414,7 +414,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                         {requirements.length > 0 ? (
                           <div className="grid max-h-40 gap-2 overflow-y-auto pr-1">
                             {requirements.map((requirement, index) => (
-                              <div key={`${requirement}-${index}`} className="flex gap-2 rounded-2xl bg-blue-50/70 p-2 text-xs font-semibold text-slate-700">
+                              <div key={`${requirement}-${index}`} className="flex gap-2 rounded-2xl bg-[#eef3ff]/70 p-2 text-xs font-semibold text-slate-700">
                                 <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
                                 <span>{requirement}</span>
                               </div>
@@ -427,9 +427,9 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                         )}
                       </section>
 
-                      <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)] lg:col-span-2">
+                      <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)] lg:col-span-2">
                         <label htmlFor="dashboard-request-purpose" className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                          <FileText className="h-4 w-4 text-blue-600" />
+                          <FileText className="h-4 w-4 text-[#243b8e]" />
                           Purpose of request <span className="text-red-500">*</span>
                         </label>
                         <textarea
@@ -438,17 +438,17 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                           onChange={(event) => setPurpose(event.target.value)}
                           rows={4}
                           placeholder="Example: For school enrollment, employment requirement, scholarship application..."
-                          className="mt-3 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                          className="mt-3 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                           required
                         />
                       </section>
                     </div>
 
                     <div className="grid min-h-0 gap-3">
-                      <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                      <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                         <div className="mb-3 flex items-center justify-between">
                           <div>
-                            <p className="text-xs font-extrabold uppercase tracking-wide text-blue-600">Resident information</p>
+                            <p className="text-xs font-extrabold uppercase tracking-wide text-[#243b8e]">Resident information</p>
                             <p className="text-xs font-medium text-slate-500">Autofilled from your account</p>
                           </div>
                           <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -456,7 +456,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
                           {residentInfo.map(({ icon: Icon, label, value }) => (
                             <div key={label} className="flex min-w-0 gap-3 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
-                              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#243b8e]" />
                               <div className="min-w-0 flex-1">
                                 <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{label}</p>
                                 <p className="break-words text-xs font-bold leading-snug text-slate-700 sm:text-sm">{value}</p>
@@ -466,21 +466,21 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                         </div>
                       </section>
 
-                      <section className="min-h-0 rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                      <section className="min-h-0 rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                              <Paperclip className="h-4 w-4 text-blue-600" />
+                              <Paperclip className="h-4 w-4 text-[#243b8e]" />
                               Attachments
                             </p>
                             <p className="mt-1 text-xs font-medium text-slate-500">Upload IDs or supporting files if needed.</p>
                           </div>
-                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100">
+                          <span className="rounded-full bg-[#eef3ff] px-2.5 py-1 text-xs font-extrabold text-[#122361] ring-1 ring-[#d8def2]">
                             {selectedFiles.length} file{selectedFiles.length === 1 ? '' : 's'}
                           </span>
                         </div>
 
-                        <div className="mt-3 rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
+                        <div className="mt-3 rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
                           <input
                             ref={fileInputRef}
                             type="file"
@@ -491,7 +491,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                           />
                           <label
                             htmlFor="dashboard-request-file-upload"
-                            className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-blue-700 shadow-sm ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:shadow-md"
+                            className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-[#122361] shadow-sm ring-1 ring-[#d8def2] transition hover:-translate-y-0.5 hover:shadow-sm"
                           >
                             <Upload className="h-4 w-4" />
                             {selectedFiles.length > 0 ? 'Add more files' : 'Choose files'}
@@ -506,7 +506,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                                 className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200"
                               >
                                 <div className="flex min-w-0 items-center gap-2">
-                                  <File className="h-4 w-4 shrink-0 text-blue-600" />
+                                  <File className="h-4 w-4 shrink-0 text-[#243b8e]" />
                                   <div className="min-w-0">
                                     <p className="truncate text-sm font-bold text-slate-700">{file.name}</p>
                                     <p className="text-xs font-medium text-slate-400">{getFileSize(file.size)}</p>
@@ -529,13 +529,13 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                   </div>
                 </div>
 
-                <div className="border-t border-blue-100 bg-white p-3 sm:p-4">
+                <div className="border-t border-[#d8def2] bg-white p-3 sm:p-4">
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={requestClose}
                       disabled={submitting}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#9eaddd] hover:text-[#122361] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       Cancel
@@ -543,7 +543,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
                     <button
                       type="submit"
                       disabled={submitting || documentsLoading}
-                      className="inline-flex flex-[1.35] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_16px_36px_rgba(37,99,235,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex flex-[1.35] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {submitting ? (
                         <>
@@ -568,19 +568,19 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
       <AnimatePresence>
         {isMinimized && (
           <motion.div
-            className="fixed bottom-6 right-6 z-[95] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]"
+            className="fixed bottom-6 right-6 z-[95] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ opacity: 0, y: 40, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.96 }}
             transition={{ duration: 0.24, ease: 'easeOut' }}
           >
-            <div className="h-1.5 bg-gradient-to-r from-blue-700 via-blue-500 to-sky-400" />
+            <div className="h-1.5 bg-gradient-to-r from-[#122361] via-[#2f84c0] to-[#2f84c0]" />
             <div className="flex items-center gap-3 p-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 to-sky-500 text-white shadow-md shadow-blue-200">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#122361] to-[#2f84c0] text-white shadow-sm shadow-[#c2cbea]">
                 <FileText className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-extrabold text-[#0F2A6B]">
+                <p className="truncate text-sm font-extrabold text-[#122361]">
                   {selectedDocumentData?.name || 'New document request'}
                 </p>
                 <p className="truncate text-xs font-semibold text-slate-500">
@@ -590,7 +590,7 @@ export default function RequestFormModal({ user, onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={() => setIsMinimized(false)}
-                className="rounded-2xl bg-blue-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                className="rounded-2xl bg-[#243b8e] px-3 py-2 text-xs font-extrabold text-white shadow-sm transition hover:bg-[#122361]"
               >
                 Restore
               </button>

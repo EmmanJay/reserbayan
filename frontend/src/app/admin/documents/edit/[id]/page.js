@@ -180,7 +180,7 @@ export default function EditDocumentPage() {
     return (
       <div className="pt-24 px-8 min-h-screen bg-[#FAFAFA] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#243b8e] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading document...</p>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function EditDocumentPage() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-md p-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Info */}
             <div className="md:col-span-2">
@@ -234,7 +234,7 @@ export default function EditDocumentPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="e.g., Barangay Clearance"
               />
             </div>
@@ -249,7 +249,7 @@ export default function EditDocumentPage() {
                 value={formData.shortDescription}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="Brief description of the document"
               />
             </div>
@@ -262,7 +262,7 @@ export default function EditDocumentPage() {
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files[0])}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
               />
               {imageFile && <p className="mt-1 text-sm text-gray-600">Selected: {imageFile.name}</p>}
               {!imageFile && formData.imagePath && <p className="mt-1 text-sm text-gray-600">Current: {formData.imagePath}</p>}
@@ -277,7 +277,7 @@ export default function EditDocumentPage() {
                 name="details.category"
                 value={formData.details.category}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="e.g., Certificate"
               />
             </div>
@@ -296,7 +296,7 @@ export default function EditDocumentPage() {
                 value={formData.details.longDescription}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="Detailed description of the document"
               />
             </div>
@@ -310,7 +310,7 @@ export default function EditDocumentPage() {
                 name="details.processingTime"
                 value={formData.details.processingTime}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="e.g., 3-5 working days"
               />
             </div>
@@ -323,7 +323,7 @@ export default function EditDocumentPage() {
                 type="file"
                 accept=".pdf"
                 onChange={(e) => setPdfFile(e.target.files[0])}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
               />
               {pdfFile && <p className="mt-1 text-sm text-gray-600">Selected: {pdfFile.name}</p>}
               {!pdfFile && formData.details.pdfPath && <p className="mt-1 text-sm text-gray-600">Current: {formData.details.pdfPath}</p>}
@@ -337,7 +337,7 @@ export default function EditDocumentPage() {
                 value={requirementsText}
                 onChange={(e) => setRequirementsText(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="Valid ID&#10;Proof of residency&#10;Birth certificate"
               />
             </div>
@@ -350,7 +350,7 @@ export default function EditDocumentPage() {
                 value={usesText}
                 onChange={(e) => setUsesText(e.target.value)}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2f84c0]"
                 placeholder="Job application&#10;Bank loan&#10;Government transactions"
               />
             </div>
@@ -361,7 +361,7 @@ export default function EditDocumentPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="bg-[#243b8e] text-white px-6 py-3 rounded-lg hover:bg-[#122361] transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               <Save size={18} />
               {loading ? 'Updating...' : 'Update Document Type'}

@@ -10,7 +10,7 @@ export default function RejectedResubmitModal({ isOpen, onClose, onResubmit }) {
 
       <div className="relative mx-auto p-4 max-w-sm h-full flex items-center justify-center">
         <motion.div
-          className="bg-white rounded-2xl w-full overflow-hidden shadow-2xl border border-gray-200"
+          className="bg-white rounded-2xl w-full overflow-hidden shadow-sm border border-gray-200"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
@@ -23,7 +23,7 @@ export default function RejectedResubmitModal({ isOpen, onClose, onResubmit }) {
                 <div className="bg-red-100 p-2 w-10 h-10 flex items-center justify-center rounded-lg">
                   <AlertTriangle className="w-5 h-5 text-red-600" />
                 </div>
-                <h2 className="font-montserrat font-bold text-lg text-red-900">
+                <h2 className="font-bold text-lg text-red-900">
                   Account Rejected
                 </h2>
               </div>
@@ -48,8 +48,8 @@ export default function RejectedResubmitModal({ isOpen, onClose, onResubmit }) {
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="bg-blue-100 p-2 w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 mt-0.5">
-                <RefreshCw className="w-4 h-4 text-blue-600" />
+              <div className="bg-[#d8def2] p-2 w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 mt-0.5">
+                <RefreshCw className="w-4 h-4 text-[#243b8e]" />
               </div>
               <div className="text-sm">
                 <p className="text-gray-700 font-medium mb-1">To resubmit:</p>
@@ -72,7 +72,7 @@ export default function RejectedResubmitModal({ isOpen, onClose, onResubmit }) {
             </button>
             <button
               onClick={onResubmit}
-              className="px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-md transition-all text-sm font-medium"
+              className="px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm transition-all text-sm font-medium"
             >
               Resubmit
             </button>

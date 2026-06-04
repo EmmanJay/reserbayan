@@ -125,9 +125,9 @@ export default function RequestDetailsModal({
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'pending':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-[#d8def2] text-[#122361] border-[#c2cbea]';
       case 'approved':
-        return 'bg-blue-200 text-blue-900 border-blue-300';
+        return 'bg-[#c2cbea] text-[#00114e] border-[#9eaddd]';
       case 'completed':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'rejected':
@@ -153,7 +153,7 @@ export default function RequestDetailsModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="relative bg-white rounded-2xl shadow-2xl max-w-4xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
+        className="relative bg-white rounded-2xl shadow-sm max-w-4xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
@@ -186,16 +186,16 @@ export default function RequestDetailsModal({
           ) : (
             <div className="space-y-6">
               {/* Request Header */}
-              <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] rounded-xl p-6 border border-blue-100">
+              <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] rounded-xl p-6 border border-[#d8def2]">
                 <div className="flex items-start gap-4">
-                  <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center font-bold text-xl text-[#1E2566]">
+                  <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-xl text-[#122361]">
                     {requestDetails.resident?.charAt(0) || 'R'}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white">
                       {requestDetails.documentName}
                     </h3>
-                    <p className="text-blue-100 flex items-center gap-2 mt-1">
+                    <p className="text-[#d8def2] flex items-center gap-2 mt-1">
                       <User className="w-4 h-4" />
                       {requestDetails.resident}
                     </p>
@@ -321,8 +321,8 @@ export default function RequestDetailsModal({
                             className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
                           >
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="bg-blue-100 p-2 rounded-md flex-shrink-0">
-                                <FileText className="w-4 h-4 text-blue-600" />
+                              <div className="bg-[#d8def2] p-2 rounded-md flex-shrink-0">
+                                <FileText className="w-4 h-4 text-[#243b8e]" />
                               </div>
                               <div className="overflow-hidden">
                                 <p className="text-sm font-medium text-slate-900 truncate">
@@ -336,7 +336,7 @@ export default function RequestDetailsModal({
                             <button
                               onClick={() => handleDownloadAttachment(file)}
                               disabled={isDownloading[file.id]}
-                              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                              className="p-2 text-slate-400 hover:text-[#243b8e] hover:bg-[#eef3ff] rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                               title="Download file"
                             >
                               <Download className="w-4 h-4" />
@@ -352,7 +352,7 @@ export default function RequestDetailsModal({
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {Array.from({ length: requestDetails.attachmentCount }, (_, i) => (
-                          <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                          <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#d8def2] text-[#122361] border border-[#c2cbea]">
                             <Paperclip className="w-3 h-3 mr-1" />
                             Attachment {i + 1}
                           </span>
@@ -391,7 +391,7 @@ export default function RequestDetailsModal({
             {requestDetails?.status === 'Approved' && onComplete && (
               <button
                 onClick={() => onComplete(requestDetails.id || requestDetails.requestId)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-colors bg-[#243b8e] text-white hover:bg-[#122361]"
               >
                 <CheckCircle className="w-5 h-5" />
                 Complete Request

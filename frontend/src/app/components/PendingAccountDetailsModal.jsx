@@ -140,7 +140,7 @@ export default function PendingAccountDetailsModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
+          className="relative bg-white rounded-2xl shadow-sm max-w-2xl w-full mx-auto overflow-hidden ring-1 ring-black/5"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
@@ -174,16 +174,16 @@ export default function PendingAccountDetailsModal({
             ) : (
               <div className="space-y-6">
                 {/* Profile Section */}
-                <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] rounded-xl p-6 border border-blue-100">
+                <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] rounded-xl p-6 border border-[#d8def2]">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center font-bold text-xl text-[#1E2566]">
+                    <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center font-bold text-xl text-[#122361]">
                       {accountDetails.firstName?.charAt(0) || 'U'}
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">
                         {accountDetails.firstName} {accountDetails.middleName && accountDetails.middleName + ' '}{accountDetails.lastName}
                       </h3>
-                      <p className="text-blue-100 flex items-center gap-2">
+                      <p className="text-[#d8def2] flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         {accountDetails.residentEmail}
                       </p>
@@ -319,7 +319,7 @@ export default function PendingAccountDetailsModal({
                           </div>
                         ) : isImageFile(validIdPath) ? (
                           // Image Document Display (PNG, JPG, JPEG only)
-                          <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-blue-300 transition-colors" onClick={handleImageClick}>
+                          <div className="border border-slate-200 rounded-lg overflow-hidden cursor-pointer hover:border-[#9eaddd] transition-colors" onClick={handleImageClick}>
                             <img
                               src={buildImageUrl(validIdPath)}
                               alt="Valid ID Document - Image File"
@@ -511,7 +511,7 @@ export default function PendingAccountDetailsModal({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
-              className="relative bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[90vh] w-full mx-auto overflow-hidden"
+              className="relative bg-white rounded-2xl shadow-sm max-w-4xl max-h-[90vh] w-full mx-auto overflow-hidden"
               onClick={handleImageViewerModalClick}
             >
               {/* Header */}

@@ -65,19 +65,19 @@ export default function AccountActivityModal({ isOpen, onClose, user, onResubmit
 
         <div className="relative mx-auto p-2 sm:p-4 max-w-2xl h-full flex items-center justify-center">
           <motion.div
-            className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200"
+            className="bg-white rounded-2xl w-full max-h-[90vh] overflow-y-auto shadow-sm border border-gray-200"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white sticky top-0 z-10">
+            <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-[#eef3ff] to-white sticky top-0 z-10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`bg-gradient-to-r ${statusInfo.bgColor} p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-md rounded-lg`}>
+                  <div className={`bg-gradient-to-r ${statusInfo.bgColor} p-2 w-10 h-10 flex-shrink-0 flex items-center justify-center shadow-sm rounded-lg`}>
                     <StatusIcon className={`w-5 h-5 ${statusInfo.color}`} aria-hidden="true" />
                   </div>
-                  <h2 id="activity-modal-title" className="font-montserrat font-bold text-2xl text-blue-900">
+                  <h2 id="activity-modal-title" className="font-bold text-2xl text-[#00114e]">
                     {statusInfo.title}
                   </h2>
                 </div>
@@ -154,7 +154,7 @@ export default function AccountActivityModal({ isOpen, onClose, user, onResubmit
               </button>
               <button
                 onClick={() => setShowDetailsModal(true)}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+                className="px-6 py-2 bg-[#243b8e] text-white rounded-lg hover:bg-[#122361] transition-colors font-medium shadow-sm"
               >
                 View Details
               </button>

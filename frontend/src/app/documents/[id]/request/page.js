@@ -28,10 +28,10 @@ export default function RequestDocumentFallbackPage() {
   }, [documentsData, error, id, loading, router, startRequest]);
 
   return (
-    <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-gradient-to-br from-blue-50 to-white px-4">
-      <div className="rounded-3xl border border-blue-100 bg-white p-8 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-b-blue-600" />
-        <h1 className="mt-4 font-montserrat text-xl font-extrabold text-[#0F2A6B]">
+    <div className="flex min-h-[calc(100vh-7rem)] items-center justify-center bg-[#FAFAFA] px-4">
+      <div className="rounded-3xl border border-[#d8def2] bg-white p-8 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" />
+        <h1 className="mt-4 text-xl font-extrabold text-[#122361]">
           Opening request drawer
         </h1>
         <p className="mt-2 text-sm font-medium text-slate-500">

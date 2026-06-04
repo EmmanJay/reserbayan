@@ -54,8 +54,8 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
         aria-expanded={isOpen}
         className={`flex h-[3.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-sm font-bold text-slate-700 outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200'
+            ? 'border-[#2f84c0] ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea]'
         }`}
       >
         <Icon className="h-4 w-4 shrink-0 text-slate-400" />
@@ -64,7 +64,7 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[120] overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[120] overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -78,8 +78,8 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
                 }}
                 className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-sm'
-                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                    ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-sm'
+                    : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                 }`}
               >
                 {option.label}
@@ -169,9 +169,9 @@ export default function RequestsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-8 pt-24" role="status" aria-live="polite">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-b-blue-600" aria-hidden="true" />
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] px-8 pt-24" role="status" aria-live="polite">
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" aria-hidden="true" />
           <p className="mt-4 font-medium text-slate-600">Loading your requests...</p>
         </div>
       </div>
@@ -184,14 +184,14 @@ export default function RequestsPage() {
 
   return (
     <motion.main
-      className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(47,135,195,0.16),transparent_34%),linear-gradient(180deg,#F8FBFF_0%,#FFFFFF_40%,#F6F8FC_100%)] px-4 pb-16 pt-24 sm:px-6 lg:px-8"
+      className="min-h-screen overflow-hidden bg-[#FAFAFA] px-4 pb-16 pt-24 sm:px-6 lg:px-8"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
       <div className="mx-auto max-w-7xl">
         <motion.section
-          className="sticky top-1 z-20 mt-4 rounded-3xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_44px_rgba(15,23,42,0.09)] backdrop-blur-xl"
+          className="sticky top-1 z-20 mt-4 rounded-3xl border border-white/80 bg-white/90 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.08)] backdrop-blur-xl"
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.12, ease: 'easeOut' }}
@@ -205,7 +205,7 @@ export default function RequestsPage() {
                 placeholder="Search by document, purpose, or request ID..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="h-[3.25rem] w-full rounded-2xl border border-slate-200 bg-slate-50/80 pl-12 pr-4 text-sm font-medium text-slate-700 shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="h-[3.25rem] w-full rounded-2xl border border-slate-200 bg-slate-50/80 pl-12 pr-4 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-[#2f84c0] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                 aria-describedby="search-help"
               />
               <span id="search-help" className="sr-only">Search by document name, purpose, status, or request ID</span>
@@ -230,7 +230,7 @@ export default function RequestsPage() {
             <button
               type="button"
               onClick={() => setSortOrder((currentOrder) => currentOrder === 'asc' ? 'desc' : 'asc')}
-              className="inline-flex h-[3.25rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              className="inline-flex h-[3.25rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-[#122361] shadow-sm transition-all hover:border-[#9eaddd] hover:bg-[#eef3ff] focus:outline-none focus:ring-4 focus:ring-[#d8def2]"
               title={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
               aria-label={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
             >
@@ -243,7 +243,7 @@ export default function RequestsPage() {
                 onClick={() => setViewMode('grid')}
                 className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all ${
                   viewMode === 'grid'
-                    ? 'bg-white text-blue-700 shadow-sm'
+                    ? 'bg-white text-[#122361] shadow-sm'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
                 aria-pressed={viewMode === 'grid'}
@@ -256,7 +256,7 @@ export default function RequestsPage() {
                 onClick={() => setViewMode('list')}
                 className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all ${
                   viewMode === 'list'
-                    ? 'bg-white text-blue-700 shadow-sm'
+                    ? 'bg-white text-[#122361] shadow-sm'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
                 aria-pressed={viewMode === 'list'}
@@ -276,7 +276,7 @@ export default function RequestsPage() {
                 setSearchTerm('');
                 setSelectedStatus('all');
               }}
-              className="text-left text-sm font-bold text-blue-700 hover:text-blue-900 sm:text-right"
+              className="text-left text-sm font-bold text-[#122361] hover:text-[#00114e] sm:text-right"
             >
               Clear {activeFiltersCount} active filter{activeFiltersCount > 1 ? 's' : ''}
             </button>
@@ -285,7 +285,7 @@ export default function RequestsPage() {
 
         {filteredRequests.length === 0 ? (
           <motion.div
-            className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white/85 p-12 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+            className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white/85 p-12 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             role="status"
             aria-live="polite"
             initial={{ opacity: 0, y: 24 }}
@@ -305,7 +305,7 @@ export default function RequestsPage() {
               <button
                 type="button"
                 onClick={() => router.push('/documents')}
-                className="mt-6 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                className="mt-6 rounded-2xl bg-[#243b8e] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#122361] focus:outline-none focus:ring-4 focus:ring-[#d8def2]"
               >
                 Browse Documents
               </button>

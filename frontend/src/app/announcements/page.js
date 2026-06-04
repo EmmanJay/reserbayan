@@ -170,7 +170,7 @@ export default function AnnouncementsPage() {
     switch (priority) {
       case 'URGENT': return 'bg-red-100 text-red-800 border-red-200';
       case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'MEDIUM': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'MEDIUM': return 'bg-[#d8def2] text-[#122361] border-[#c2cbea]';
       case 'LOW': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -243,7 +243,7 @@ export default function AnnouncementsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg">
+              <div className="p-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg">
                 <Megaphone className="w-6 h-6" />
               </div>
               <div>
@@ -254,7 +254,7 @@ export default function AnnouncementsPage() {
             <button
               onClick={refreshAnnouncements}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-md disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 shadow-sm disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               Refresh
@@ -273,7 +273,7 @@ export default function AnnouncementsPage() {
               initial={{ opacity: 0, y: -50, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -50, scale: 0.95 }}
-              className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-2xl border max-w-sm ${
+              className={`fixed top-4 right-4 z-[70] p-4 rounded-xl shadow-sm border max-w-sm ${
                 notification.type === 'success' 
                   ? 'bg-green-50 border-green-200 text-green-800' 
                   : 'bg-red-50 border-red-200 text-red-800'
@@ -318,7 +318,7 @@ export default function AnnouncementsPage() {
                 placeholder="Search announcements by title, content, or author..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
               />
             </div>
 
@@ -326,7 +326,7 @@ export default function AnnouncementsPage() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+              className="px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d8def2] focus:border-[#2f84c0]"
             >
               <option value="ALL">All Priorities</option>
               <option value="URGENT">Urgent</option>
@@ -355,7 +355,7 @@ export default function AnnouncementsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={`bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden ${
+                className={`bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-sm transition-all duration-300 overflow-hidden ${
                   !isActive(announcement) ? 'opacity-75' : ''
                 }`}
               >
@@ -370,7 +370,7 @@ export default function AnnouncementsPage() {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           announcement.priority === 'URGENT' ? 'bg-red-500' :
                           announcement.priority === 'HIGH' ? 'bg-orange-500' :
-                          announcement.priority === 'MEDIUM' ? 'bg-blue-500' : 'bg-green-500'
+                          announcement.priority === 'MEDIUM' ? 'bg-[#2f84c0]' : 'bg-green-500'
                         }`}>
                           <div className="text-white">
                             {getPriorityIcon(announcement.priority)}
@@ -506,7 +506,7 @@ export default function AnnouncementsPage() {
                   setSearchTerm('');
                   setPriorityFilter('ALL');
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300"
               >
                 Clear Filters
               </button>
@@ -514,7 +514,7 @@ export default function AnnouncementsPage() {
             {!searchTerm && priorityFilter === 'ALL' && (
               <button
                 onClick={refreshAnnouncements}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-lg hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300"
               >
                 <RefreshCw className="w-4 h-4" />
                 Refresh

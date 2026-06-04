@@ -32,26 +32,26 @@ export default function Navbar() {
             height={40}
             className="h-10 w-10"
           />
-          <span className="text-xl font-semibold text-gray-900">ReserBayan</span>
+          <span className="font-[family-name:var(--font-montserrat)] text-xl font-bold text-gray-900">ReserBayan</span>
         </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
 
           {/* THIS IS YOUR MAIN HOMEPAGE (HeroSection) */}
-          <Link href="/" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+          <Link href="/" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             Home
           </Link>
 
           {/* THIS IS YOUR NEW GRID LAYOUT PAGE */}
-          <Link href="/documents" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+          <Link href="/documents" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             Documents
           </Link>
 
-          <Link href="/about" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+          <Link href="/about" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             About
           </Link>
-          <Link href="/faq" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+          <Link href="/faq" className={`relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
             FAQ
           </Link>
         </nav>
@@ -67,7 +67,7 @@ export default function Navbar() {
           </button>
           <button
             onClick={handleSignUpClick}
-            className="bg-[#004AAD] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#003A88] transition-colors"
+            className="bg-[#243b8e] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#122361] transition-colors"
             suppressHydrationWarning={true}
           >
             Sign Up
@@ -88,16 +88,16 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-8 py-4 space-y-4">
-            <Link href="/" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            <Link href="/" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               Home
             </Link>
-            <Link href="/documents" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            <Link href="/documents" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/documents' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/documents' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               Documents
             </Link>
-            <Link href="/about" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            <Link href="/about" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/about' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/about' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               About
             </Link>
-            <Link href="/faq" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#1E2566]' : 'text-gray-700 hover:text-[#1E2566]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
+            <Link href="/faq" className={`block relative px-3 py-2 font-semibold transition-all duration-300 ${pathname === '/faq' ? 'text-[#122361]' : 'text-gray-700 hover:text-[#122361]'} ${pathname === '/faq' ? 'after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]' : 'hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-0.5 hover:after:bg-gray-300'}`}>
               FAQ
             </Link>
             <div className="pt-4 space-y-2">
@@ -110,7 +110,7 @@ export default function Navbar() {
               </button>
               <button
                 onClick={handleSignUpClick}
-                className="block bg-[#004AAD] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#003A88] transition-colors text-center"
+                className="block bg-[#243b8e] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#122361] transition-colors text-center"
                 suppressHydrationWarning={true}
               >
                 Sign Up

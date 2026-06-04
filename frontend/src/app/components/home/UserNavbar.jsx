@@ -49,8 +49,8 @@ function getNavRole(role) {
 function NavLink({ href, label, icon: Icon, pathname, onClick }) {
   const active = pathname === href || pathname?.startsWith(`${href}/`);
   const activeClass = active
-    ? 'text-[#1E2566] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-[#1E2566] after:to-[#2F87C3]'
-    : 'text-gray-700 hover:text-[#1E2566] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-gray-300';
+    ? 'text-[#122361] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-[#122361] after:to-[#2f84c0]'
+    : 'text-gray-700 hover:text-[#122361] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:h-0.5 hover:after:w-full hover:after:bg-gray-300';
 
   return (
     <Link
@@ -71,7 +71,7 @@ function NotificationBellButton({ unreadCount, onClick, className = '' }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative rounded-xl p-2 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E2566] ${className}`}
+      className={`relative rounded-xl p-2 text-gray-700 transition hover:bg-[#eef3ff] hover:text-[#122361] ${className}`}
       aria-label="Open notifications"
     >
       <Bell className="h-5 w-5" />
@@ -159,7 +159,7 @@ export default function UserNavbar() {
             height={40}
             className="h-10 w-10"
           />
-          <span className="text-xl font-semibold text-gray-900">ReserBayan</span>
+          <span className="font-[family-name:var(--font-montserrat)] text-xl font-bold text-gray-900">ReserBayan</span>
         </div>
 
         <nav className="hidden items-center space-x-8 md:flex">
@@ -176,7 +176,7 @@ export default function UserNavbar() {
               <button
                 type="button"
                 onClick={() => setDropdownOpen((open) => !open)}
-                className="flex items-center space-x-2 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#1E2566]"
+                className="flex items-center space-x-2 rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#122361]"
               >
                 {user.profilePicture ? (
                   <img src={user.profilePicture} alt="Profile" className="h-5 w-5 rounded-full object-cover" />
@@ -189,10 +189,10 @@ export default function UserNavbar() {
             )}
 
             {dropdownOpen && user && (
-              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-sm">
                 <button
                   type="button"
-                  className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors first:rounded-t-lg hover:bg-gray-50 hover:text-[#1E2566]"
+                  className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors first:rounded-t-lg hover:bg-gray-50 hover:text-[#122361]"
                   onClick={openProfile}
                 >
                   <User className="h-4 w-4" />
@@ -234,7 +234,7 @@ export default function UserNavbar() {
                 <button
                   type="button"
                   onClick={() => setDropdownOpen((open) => !open)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#1E2566]"
+                  className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 hover:text-[#122361]"
                 >
                   <div className="flex items-center space-x-2">
                     {user.profilePicture ? (
@@ -251,7 +251,7 @@ export default function UserNavbar() {
                   <div className="overflow-hidden rounded-lg bg-gray-50">
                     <button
                       type="button"
-                      className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors hover:bg-gray-100 hover:text-[#1E2566]"
+                      className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors hover:bg-gray-100 hover:text-[#122361]"
                       onClick={openProfile}
                     >
                       <User className="h-4 w-4" />
@@ -294,7 +294,7 @@ export default function UserNavbar() {
 
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center backdrop-blur-md">
-          <div className="mx-4 max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-2xl">
+          <div className="mx-4 max-w-md rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
                 <LogOut className="h-8 w-8 text-red-600" />

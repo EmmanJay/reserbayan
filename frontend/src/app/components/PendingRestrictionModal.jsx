@@ -9,7 +9,7 @@ export default function PendingRestrictionModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
       <motion.div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+        className="bg-white rounded-lg shadow-sm max-w-md w-full mx-4"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
@@ -36,11 +36,11 @@ export default function PendingRestrictionModal({ isOpen, onClose }) {
               You can browse available documents, but document requests are restricted until your account is approved.
             </p>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-800">
+            <div className="bg-[#eef3ff] p-4 rounded-lg">
+              <p className="text-sm text-[#122361]">
                 <strong>What happens next?</strong>
               </p>
-              <ul className="text-sm text-blue-700 mt-2 space-y-1">
+              <ul className="text-sm text-[#122361] mt-2 space-y-1">
                 <li>• Your registration information is being reviewed</li>
                 <li>• You'll receive approval notification once processed</li>
                 <li>• Approved residents can request documents immediately</li>
@@ -51,7 +51,7 @@ export default function PendingRestrictionModal({ isOpen, onClose }) {
           <div className="flex gap-3 mt-6">
             <button
               onClick={onClose}
-              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="flex-1 bg-[#243b8e] text-white px-4 py-2 rounded-lg hover:bg-[#122361] transition-colors font-medium"
             >
               I Understand
             </button>

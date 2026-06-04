@@ -122,7 +122,7 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      className="pt-28 px-6 min-h-screen bg-gradient-to-br from-[#FAFAFA] to-[#F5F7FA] pb-10"
+      className="pt-28 px-6 min-h-screen bg-[#FAFAFA] pb-10"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -135,12 +135,12 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-lg px-6 py-5 sm:px-8 sm:py-6">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5 sm:px-8 sm:py-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="font-montserrat font-extrabold text-3xl md:text-4xl text-blue-900">
+              <h1 className="font-extrabold text-3xl md:text-4xl text-[#00114e]">
                 Welcome back, {user.firstName}!
               </h1>
-              <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+              <span className="inline-flex items-center rounded-full bg-[#eef3ff] px-3 py-1 text-xs font-semibold text-[#122361]">
                 Resident Dashboard
               </span>
             </div>
@@ -158,8 +158,8 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
             >
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-lg px-6 py-5">
-                <h2 className="font-montserrat font-bold text-xl text-gray-800 mb-4">Quick Actions</h2>
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
+                <h2 className="font-bold text-xl text-gray-800 mb-4">Quick Actions</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     onClick={() => {
@@ -177,7 +177,7 @@ export default function DashboardPage() {
                       }
                       setShowRequestModal(true);
                     }}
-                    className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center space-x-2"
+                    className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center space-x-2"
                   >
                     <Plus className="w-5 h-5" />
                     <span>Request Document</span>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
 
                   <Link
                     href="/documents"
-                    className="bg-white border-2 border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center space-x-2"
+                    className="bg-white border-2 border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm md:text-base hover:border-[#2f84c0] hover:bg-[#eef3ff] transition-all duration-300 flex items-center justify-center space-x-2"
                   >
                     <FileText className="w-5 h-5" />
                     <span>Browse Documents</span>
@@ -200,12 +200,12 @@ export default function DashboardPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
             >
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-5">
-                  <h2 className="font-montserrat font-bold text-xl text-gray-800 mb-4">Recent Activity</h2>
+                  <h2 className="font-bold text-xl text-gray-800 mb-4">Recent Activity</h2>
                   {loading ? (
                     <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
-                      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#243b8e] mx-auto mb-4"></div>
                       <p className="text-gray-600 text-sm">Loading your recent requests...</p>
                     </div>
                   ) : (
@@ -214,13 +214,13 @@ export default function DashboardPage() {
                       {(user.status?.toLowerCase() === 'pending' || user.status?.toLowerCase() === 'approved' || user.status?.toLowerCase() === 'rejected') && (
                         <motion.div
                           onClick={() => setShowAccountActivityModal(true)}
-                          className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:shadow-md transition-all duration-300 cursor-pointer"
+                          className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-[#eef3ff] to-[#eef3ff] rounded-xl border border-[#c2cbea] hover:shadow-sm transition-all duration-300 cursor-pointer"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 }}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-xl p-2.5 w-10 h-10 flex items-center justify-center shadow-lg">
+                            <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-xl p-2.5 w-10 h-10 flex items-center justify-center shadow-sm">
                               <Users className="w-5 h-5" />
                             </div>
                             <div>
@@ -242,13 +242,13 @@ export default function DashboardPage() {
                         <motion.div
                           key={request.requestId}
                           onClick={() => setViewRequest(request)}
-                          className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300 cursor-pointer"
+                          className="flex items-center justify-between gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hover:shadow-sm transition-all duration-300 cursor-pointer"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white rounded-xl p-2.5 w-10 h-10 flex items-center justify-center shadow-lg">
+                            <div className="bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white rounded-xl p-2.5 w-10 h-10 flex items-center justify-center shadow-sm">
                               <FileText className="w-5 h-5" />
                             </div>
                             <div>
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                             const managementPath = userRole === 'SUPER_ADMIN' ? '/superadmin/management' : '/admin/management';
                             router.push(`${managementPath}?tab=document-requests`);
                           }}
-                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5"
                         >
                           <span>View All Requests</span>
                           <ArrowRight className="w-4 h-4" />
@@ -280,7 +280,7 @@ export default function DashboardPage() {
                       ) : (
                         <Link
                           href="/requests"
-                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5"
                         >
                           <span>View All Requests</span>
                           <ArrowRight className="w-4 h-4" />
@@ -299,18 +299,18 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
           >
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-6 py-5">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-gradient-to-r from-blue-100 to-blue-50 rounded-lg">
-                    <Megaphone className="w-5 h-5 text-[#1E2566]" />
+                  <div className="p-2 bg-gradient-to-r from-[#d8def2] to-[#eef3ff] rounded-lg">
+                    <Megaphone className="w-5 h-5 text-[#122361]" />
                   </div>
-                  <h2 className="font-montserrat font-bold text-xl text-gray-800">Announcements</h2>
+                  <h2 className="font-bold text-xl text-gray-800">Announcements</h2>
                 </div>
 
                 {announcementsLoading ? (
                   <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1E2566] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#122361] mx-auto mb-4"></div>
                     <p className="text-gray-600 text-sm">Loading announcements...</p>
                   </div>
                 ) : announcements.length > 0 ? (
@@ -325,15 +325,15 @@ export default function DashboardPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 * index }}
-                            className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:shadow-md hover:border-blue-200 transition-all duration-300 group"
+                            className="p-4 bg-gradient-to-r from-[#eef3ff] to-[#eef3ff] rounded-xl border border-[#d8def2] hover:shadow-sm hover:border-[#c2cbea] transition-all duration-300 group"
                           >
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <div className="flex items-center gap-3 flex-1">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white flex items-center justify-center shadow-sm group-hover:shadow-sm transition-all duration-300 flex-shrink-0">
                                   <Megaphone className="w-5 h-5" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-bold text-gray-900 text-sm md:text-base group-hover:text-[#1E2566] transition-colors line-clamp-2">
+                                  <h4 className="font-bold text-gray-900 text-sm md:text-base group-hover:text-[#122361] transition-colors line-clamp-2">
                                     {announcement.title}
                                   </h4>
                                   <p className="text-[11px] md:text-xs text-gray-500 flex items-center mt-1">
@@ -353,9 +353,9 @@ export default function DashboardPage() {
                                 aria-controls={`announcement-content-${announcement.announcementId}`}
                               >
                                 {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-[#1E2566] group-hover/toggle:text-[#2F87C3] transition-colors" />
+                                  <ChevronUp className="w-4 h-4 text-[#122361] group-hover/toggle:text-[#2f84c0] transition-colors" />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-[#1E2566] group-hover/toggle:text-[#2F87C3] transition-colors" />
+                                  <ChevronDown className="w-4 h-4 text-[#122361] group-hover/toggle:text-[#2f84c0] transition-colors" />
                                 )}
                               </button>
                             </div>
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                       <div className="mt-5 text-center">
                         <button
                           onClick={() => router.push('/announcements')}
-                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5"
                         >
                           <span>View All Announcements ({announcements.length})</span>
                           <ArrowRight className="w-4 h-4" />
@@ -400,8 +400,8 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
-                    <div className="bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                      <Megaphone className="w-10 h-10 text-[#1E2566]" />
+                    <div className="bg-gradient-to-r from-[#d8def2] to-[#d8def2] rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                      <Megaphone className="w-10 h-10 text-[#122361]" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-700 mb-2">No Announcements</h3>
                     <p className="text-gray-500 text-sm">There are no announcements at this time. Check back later!</p>
@@ -417,7 +417,7 @@ export default function DashboardPage() {
         {showExistingRequestPrompt && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
             <motion.div
-              className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]"
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
               initial={{ opacity: 0, y: 32, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 32, scale: 0.96 }}
@@ -432,7 +432,7 @@ export default function DashboardPage() {
                     <AlertTriangle className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 id="existing-request-title" className="font-montserrat text-xl font-extrabold">
+                    <h2 id="existing-request-title" className="text-xl font-extrabold">
                       Finish this request first
                     </h2>
                     <p className="mt-1 text-sm font-medium text-amber-50">
@@ -471,7 +471,7 @@ export default function DashboardPage() {
                       setShowExistingRequestPrompt(false);
                       restoreRequest();
                     }}
-                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-[#243b8e] px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#122361]"
                   >
                     Continue
                   </button>

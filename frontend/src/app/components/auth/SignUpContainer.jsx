@@ -123,30 +123,30 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
         type="button"
         onClick={() => setIsOpen((currentValue) => !currentValue)}
         aria-expanded={isOpen}
-        className={`flex h-11 w-full items-center gap-3 rounded-2xl border bg-gradient-to-r from-white to-blue-50/40 px-4 text-left text-base shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full items-center gap-3 rounded-2xl border bg-gradient-to-r from-white to-[#eef3ff]/40 px-4 text-left text-base shadow-sm outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200'
+            ? 'border-[#2f84c0] ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea]'
         } ${value ? 'text-slate-900' : 'text-slate-400'}`}
       >
-        <Calendar className="h-5 w-5 shrink-0 text-blue-500" />
+        <Calendar className="h-5 w-5 shrink-0 text-[#2f84c0]" />
         <span className="flex-1">{formatDateForDisplay(value)}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[90] w-[19rem] overflow-hidden rounded-3xl bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.2)]">
+        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-[90] w-[19rem] overflow-hidden rounded-3xl bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           <div className="flex items-center justify-between">
-            <button type="button" onClick={() => changeMonth(-1)} className="rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-700">
+            <button type="button" onClick={() => changeMonth(-1)} className="rounded-full p-2 text-slate-500 hover:bg-[#eef3ff] hover:text-[#122361]">
               <ChevronDown className="h-5 w-5 rotate-90" />
             </button>
             <button
               type="button"
               onClick={() => setPickerMode((currentMode) => currentMode === 'days' ? 'months' : 'days')}
-              className="rounded-full px-3 py-1.5 text-sm font-extrabold text-slate-800 transition-all hover:bg-blue-50 hover:text-blue-700"
+              className="rounded-full px-3 py-1.5 text-sm font-extrabold text-slate-800 transition-all hover:bg-[#eef3ff] hover:text-[#122361]"
             >
               {MONTH_NAMES[month]} {year}
             </button>
-            <button type="button" onClick={() => changeMonth(1)} className="rounded-full p-2 text-slate-500 hover:bg-blue-50 hover:text-blue-700">
+            <button type="button" onClick={() => changeMonth(1)} className="rounded-full p-2 text-slate-500 hover:bg-[#eef3ff] hover:text-[#122361]">
               <ChevronDown className="h-5 w-5 -rotate-90" />
             </button>
           </div>
@@ -177,11 +177,11 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
                       }}
                       className={`h-9 rounded-xl text-sm font-semibold transition-all ${
                         isSelected
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          ? 'bg-[#243b8e] text-white shadow-sm shadow-[#d8def2]'
                           : isDisabled
                             ? 'cursor-not-allowed text-slate-300'
                             : isCurrentMonth
-                              ? 'text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                              ? 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                               : 'text-slate-300 hover:bg-slate-50'
                       }`}
                     >
@@ -198,7 +198,7 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
               <button
                 type="button"
                 onClick={() => setPickerMode('years')}
-                className="mb-3 w-full rounded-2xl bg-blue-50 px-3 py-2 text-sm font-extrabold text-blue-700 transition-all hover:bg-blue-100"
+                className="mb-3 w-full rounded-2xl bg-[#eef3ff] px-3 py-2 text-sm font-extrabold text-[#122361] transition-all hover:bg-[#d8def2]"
               >
                 Change year: {year}
               </button>
@@ -215,10 +215,10 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
                       onClick={() => updateMonth(monthIndex)}
                       className={`rounded-2xl px-3 py-2 text-sm font-bold transition-all ${
                         isSelected
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
+                          ? 'bg-[#243b8e] text-white shadow-sm shadow-[#d8def2]'
                           : isDisabled
                             ? 'cursor-not-allowed bg-slate-50 text-slate-300'
-                            : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                            : 'bg-slate-50 text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                       }`}
                     >
                       {monthName.slice(0, 3)}
@@ -243,8 +243,8 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
                       onClick={() => updateYear(yearOption)}
                       className={`rounded-2xl px-3 py-2 text-sm font-bold transition-all ${
                         isSelected
-                          ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
-                          : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-700'
+                          ? 'bg-[#243b8e] text-white shadow-sm shadow-[#d8def2]'
+                          : 'bg-slate-50 text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                       }`}
                     >
                       {yearOption}
@@ -270,7 +270,7 @@ function CustomDatePicker({ id, value, onChange, maxDate, required = false }) {
                 onChange(maxDate);
                 setIsOpen(false);
               }}
-              className="rounded-full bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700 hover:bg-blue-100"
+              className="rounded-full bg-[#eef3ff] px-3 py-1.5 text-sm font-bold text-[#122361] hover:bg-[#d8def2]"
             >
               Today
             </button>
@@ -315,8 +315,8 @@ function CustomSelect({ id, value, onChange, placeholder, options, required = fa
         aria-expanded={isOpen}
         className={`flex h-11 w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-base shadow-sm outline-none transition-all ${
           isOpen
-            ? 'border-blue-400 ring-4 ring-blue-100'
-            : 'border-slate-200 hover:border-blue-200'
+            ? 'border-[#2f84c0] ring-4 ring-[#d8def2]'
+            : 'border-slate-200 hover:border-[#c2cbea]'
         } ${selectedOption ? 'text-slate-900' : 'text-slate-400'}`}
       >
         <span className="min-w-0 flex-1 truncate">{selectedOption?.label || placeholder}</span>
@@ -324,7 +324,7 @@ function CustomSelect({ id, value, onChange, placeholder, options, required = fa
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.45rem)] z-[80] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_22px_55px_rgba(15,23,42,0.18)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.45rem)] z-[80] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -338,8 +338,8 @@ function CustomSelect({ id, value, onChange, placeholder, options, required = fa
                 }}
                 className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white'
-                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                    ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white'
+                    : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                 }`}
               >
                 {option.label}
@@ -394,7 +394,7 @@ export default function SignUpContainer({ onClose }) {
 
   // --- STYLES ---
   const inputHeight = `h-11`; 
-  const inputStyle = `pl-11 text-base ${inputHeight} bg-white rounded-2xl border-slate-200 shadow-sm focus-visible:ring-4 focus-visible:ring-blue-100 focus-visible:border-blue-400`; 
+  const inputStyle = `pl-11 text-base ${inputHeight} bg-white rounded-2xl border-slate-200 shadow-sm focus-visible:ring-4 focus-visible:ring-[#d8def2] focus-visible:border-[#2f84c0]`; 
   const iconStyle = `absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5`; 
   const labelStyle = `block text-base font-medium text-gray-700 mb-2`; 
   
@@ -625,7 +625,7 @@ export default function SignUpContainer({ onClose }) {
   };
 
   return (
-    <div className={`bg-white border-gray-200 border rounded-2xl shadow-2xl p-6 md:p-7 w-full max-w-[820px] mx-auto md:mx-0 relative max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className={`bg-white border-gray-200 border rounded-2xl shadow-sm p-6 md:p-7 w-full max-w-[820px] mx-auto md:mx-0 relative max-h-[90vh] overflow-y-auto flex flex-col`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       
       <style jsx>{`
         div::-webkit-scrollbar { display: none; }
@@ -645,13 +645,13 @@ export default function SignUpContainer({ onClose }) {
             className="h-12 w-12 object-contain"
             priority
           />
-          <span className="text-2xl font-bold text-[#1E2566]">ReserBayan</span>
+          <span className="text-2xl font-bold text-[#122361]">ReserBayan</span>
         </div>
       </div>
 
       <div className="flex justify-center gap-10 mb-5 font-semibold text-xl flex-shrink-0">
-        <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Log In</button>
-        <button onClick={() => setActiveTab('signup')} className={`pb-3 px-4 transition-colors ${activeTab === 'signup' ? 'text-[#004AAD] border-b-4 border-[#004AAD]' : `text-gray-400 hover:text-[#004AAD]`}`}>Sign Up</button>
+        <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#243b8e] border-b-4 border-[#243b8e]' : `text-gray-400 hover:text-[#243b8e]`}`}>Log In</button>
+        <button onClick={() => setActiveTab('signup')} className={`pb-3 px-4 transition-colors ${activeTab === 'signup' ? 'text-[#243b8e] border-b-4 border-[#243b8e]' : `text-gray-400 hover:text-[#243b8e]`}`}>Sign Up</button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -719,13 +719,13 @@ export default function SignUpContainer({ onClose }) {
             </motion.div>
 
             <motion.div variants={fieldVariants} className="pt-4">
-              <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
+              <Button type="submit" className={`w-full bg-[#243b8e] hover:bg-[#122361] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-sm transition-all`} disabled={loading}>
                 {loading ? "Logging in..." : "Log In"}
               </Button>
             </motion.div>
             
             <motion.div variants={fieldVariants} className="text-center pt-4">
-              <p className={`text-base text-gray-500`}>Don't have an account? <button type="button" onClick={() => setActiveTab('signup')} className="text-[#004AAD] font-bold hover:underline ml-1">Sign Up</button></p>
+              <p className={`text-base text-gray-500`}>Don't have an account? <button type="button" onClick={() => setActiveTab('signup')} className="text-[#243b8e] font-bold hover:underline ml-1">Sign Up</button></p>
             </motion.div>
           </form>
         </motion.div>
@@ -906,7 +906,7 @@ export default function SignUpContainer({ onClose }) {
             <label htmlFor="file-upload" className={`block text-base font-medium flex items-center gap-2 text-gray-700 mb-2.5`}>
               <FileText className="w-5 h-5" /> Valid ID Document {employmentFile && <CheckCircle className="w-5 h-5 text-green-500" />}
             </label>
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/50 p-4 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-[#eef3ff]/50 p-4 shadow-sm">
               <input
                 ref={fileInputRef}
                 id="file-upload"
@@ -919,14 +919,14 @@ export default function SignUpContainer({ onClose }) {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#004AAD] px-6 text-sm font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:bg-[#003A88]"
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#243b8e] px-6 text-sm font-bold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#122361]"
                 >
                   {employmentFile ? 'Replace Image' : 'Choose File'}
                 </button>
 
                 {employmentFile && (
-                  <div className="flex w-full items-center gap-3 rounded-2xl border border-blue-100 bg-white px-4 py-2.5 shadow-inner">
-                    <FileText className="h-5 w-5 shrink-0 text-blue-600" />
+                  <div className="flex w-full items-center gap-3 rounded-2xl border border-[#d8def2] bg-white px-4 py-2.5 shadow-inner">
+                    <FileText className="h-5 w-5 shrink-0 text-[#243b8e]" />
                     <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
                       {employmentFile.name}
                     </span>
@@ -947,13 +947,13 @@ export default function SignUpContainer({ onClose }) {
           </motion.div>
 
           <motion.div variants={fieldVariants} className="pt-3">
-            <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
+            <Button type="submit" className={`w-full bg-[#243b8e] hover:bg-[#122361] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-sm transition-all`} disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </motion.div>
 
           <motion.div variants={fieldVariants} className="text-center pt-1 pb-1">
-            <p className={`text-base text-gray-500`}>Already have an account? <button type="button" onClick={() => setActiveTab('login')} className="text-[#004AAD] font-bold hover:underline ml-1">Log In</button></p>
+            <p className={`text-base text-gray-500`}>Already have an account? <button type="button" onClick={() => setActiveTab('login')} className="text-[#243b8e] font-bold hover:underline ml-1">Log In</button></p>
           </motion.div>
         </motion.form>
       )}

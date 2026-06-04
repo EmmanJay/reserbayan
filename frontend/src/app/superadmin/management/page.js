@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, Shield, Eye, Settings, Trash2, Key, Plus, CheckCircle, XCircle, Search, MoreVertical, Edit, EyeOff, Crown, UserX, FileText, AlertTriangle, ChevronDown } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
@@ -23,7 +23,7 @@ const managementTabConfig = {
 
 const getActiveTabStyles = (color) => {
   const styles = {
-    blue: 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm',
+    blue: 'bg-[#eef3ff] text-[#122361] border border-[#c2cbea] shadow-sm',
     green: 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm',
     orange: 'bg-amber-50 text-amber-700 border border-amber-200 shadow-sm',
     purple: 'bg-violet-50 text-violet-700 border border-violet-200 shadow-sm',
@@ -41,14 +41,14 @@ function CustomManagementDropdown({ value, options, onChange, className = '' }) 
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         onBlur={() => setTimeout(() => setIsOpen(false), 120)}
-        className="flex h-11 w-full min-w-[150px] items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-700 shadow-sm outline-none transition-all hover:border-blue-200 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
+        className="flex h-11 w-full min-w-[150px] items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 text-left text-sm font-semibold text-slate-700 shadow-sm outline-none transition-all hover:border-[#c2cbea] focus:border-[#9eaddd] focus:ring-4 focus:ring-[#d8def2]"
       >
         <span className="truncate">{selectedOption?.label || 'Select'}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-full min-w-[180px] overflow-hidden rounded-2xl border border-blue-100 bg-white p-1.5 shadow-[0_18px_45px_rgba(30,37,102,0.16)]">
+        <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-full min-w-[180px] overflow-hidden rounded-2xl border border-[#d8def2] bg-white p-1.5 shadow-[0_8px_20px_rgba(18,35,97,0.10)]">
           {options.map((option) => (
             <button
               key={option.value}
@@ -60,8 +60,8 @@ function CustomManagementDropdown({ value, options, onChange, className = '' }) 
               }}
               className={`flex w-full items-center rounded-xl px-3 py-2.5 text-left text-sm font-bold transition-all ${
                 option.value === value
-                  ? 'bg-[#004AAD] text-white'
-                  : 'text-slate-700 hover:bg-blue-50 hover:text-[#004AAD]'
+                  ? 'bg-[#243b8e] text-white'
+                  : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#243b8e]'
               }`}
             >
               {option.label}
@@ -73,7 +73,7 @@ function CustomManagementDropdown({ value, options, onChange, className = '' }) 
   );
 }
 
-export default function SuperAdminManagementPage() {
+function SuperAdminManagementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
@@ -652,7 +652,7 @@ export default function SuperAdminManagementPage() {
       title: 'Confirm Document Completion',
       message: `Are you sure you want to mark the document request for ${displayName} as completed? This indicates the document has been claimed.`,
       confirmText: 'Mark as Completed',
-      confirmButtonClass: 'bg-blue-600 hover:bg-blue-700',
+      confirmButtonClass: 'bg-[#243b8e] hover:bg-[#122361]',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
@@ -812,7 +812,7 @@ export default function SuperAdminManagementPage() {
       title: 'Confirm Super Admin Promotion',
       message: `Are you sure you want to promote ${item.firstName} ${item.lastName} to Super Administrator? This will grant them full system access.`,
       confirmText: 'Promote',
-      confirmButtonClass: 'bg-indigo-600 hover:bg-indigo-700',
+      confirmButtonClass: 'bg-[#243b8e] hover:bg-[#122361]',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
@@ -893,8 +893,8 @@ export default function SuperAdminManagementPage() {
   if (!user || loading) {
     return (
       <div className="flex h-screen bg-gray-50 items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-6"></div>
+        <div className="bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#243b8e] mx-auto mb-6"></div>
           <p className="text-gray-600 text-lg">Loading management panel...</p>
         </div>
       </div>
@@ -903,12 +903,12 @@ export default function SuperAdminManagementPage() {
 
   return (
     <div
-      className="pt-24 px-8 md:px-8 min-h-screen bg-[#F8FBFF] pb-16 font-[family-name:var(--font-inter)]"
+      className="pt-24 px-8 md:px-8 min-h-screen bg-[#FAFAFA] pb-16 font-[family-name:var(--font-inter)]"
     >
       <div
         className="mb-6"
       >
-        <div className="rounded-[1.5rem] border border-blue-100 bg-white p-2 shadow-sm">
+        <div className="rounded-[1.5rem] border border-[#d8def2] bg-white p-2 shadow-sm">
           <div className="grid gap-2 md:grid-cols-4">
             {SUPERADMIN_ALLOWED_TABS.map((tabId) => {
               const tab = { id: tabId, ...managementTabConfig[tabId] };
@@ -919,7 +919,7 @@ export default function SuperAdminManagementPage() {
                 className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
                   activeTab === tab.id
                     ? getActiveTabStyles(tab.color)
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#1E2566]'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-[#122361]'
                 }`}
               >
                 <tab.icon size={16} />
@@ -932,16 +932,16 @@ export default function SuperAdminManagementPage() {
       </div>
 
       <div
-        className="overflow-hidden rounded-[1.5rem] border border-blue-100 bg-white shadow-[0_18px_45px_rgba(30,37,102,0.08)]"
+        className="overflow-hidden rounded-[1.5rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(18,35,97,0.10)]"
       >
-        <div className="border-b border-blue-100 bg-gradient-to-r from-white to-blue-50/40 p-5">
+        <div className="border-b border-[#d8def2] bg-gradient-to-r from-white to-[#eef3ff]/40 p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#004AAD] text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#243b8e] text-white shadow-sm">
                 <CurrentTabIcon className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-xl font-extrabold text-[#1E2566]">{currentTabConfig.label}</h2>
+                <h2 className="text-xl font-extrabold text-[#122361]">{currentTabConfig.label}</h2>
                 <p className="text-sm text-slate-500">{filteredData.length} visible of {data.length} records</p>
               </div>
             </div>
@@ -949,7 +949,7 @@ export default function SuperAdminManagementPage() {
               {activeTab === 'administrators' && role === 'SUPER_ADMIN' && (
                 <button
                   onClick={() => setAddAdminModal(true)}
-                  className="flex h-11 items-center gap-2 rounded-2xl bg-[#004AAD] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#003A88]"
+                  className="flex h-11 items-center gap-2 rounded-2xl bg-[#243b8e] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#122361]"
                 >
                   <Plus size={16} />
                   Add Administrator
@@ -1008,7 +1008,7 @@ export default function SuperAdminManagementPage() {
                     setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100 lg:w-80"
+                  className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-[#9eaddd] focus:ring-4 focus:ring-[#d8def2] lg:w-80"
                 />
               </div>
             </div>
@@ -1023,7 +1023,7 @@ export default function SuperAdminManagementPage() {
                     tag.onClear();
                     setCurrentPage(1);
                   }}
-                  className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1 text-xs font-bold text-[#004AAD] shadow-sm hover:bg-blue-50"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#d8def2] bg-white px-3 py-1 text-xs font-bold text-[#243b8e] shadow-sm hover:bg-[#eef3ff]"
                 >
                   {tag.label}
                   <XCircle className="h-3.5 w-3.5" />
@@ -1035,7 +1035,7 @@ export default function SuperAdminManagementPage() {
 
         {loadingData ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#243b8e] mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading data...</p>
           </div>
         ) : (
@@ -1064,7 +1064,7 @@ export default function SuperAdminManagementPage() {
                       <tr
                         key={`${activeTab}-${item.requestId || item.residentId}-${index}`}
                         onClick={() => handleViewInfo(item)}
-                        className="cursor-pointer transition-colors hover:bg-blue-50/40"
+                        className="cursor-pointer transition-colors hover:bg-[#eef3ff]/40"
                         role="row"
                         tabIndex={0}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleViewInfo(item); } }}
@@ -1075,13 +1075,13 @@ export default function SuperAdminManagementPage() {
                             <div className="flex-shrink-0 h-10 w-10">
                               <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
                                 activeTab === 'administrators' ? 'bg-purple-100' :
-                                activeTab === 'residents' ? 'bg-blue-100' :
+                                activeTab === 'residents' ? 'bg-[#d8def2]' :
                                 activeTab === 'resident-requests' ? 'bg-orange-100' : 'bg-green-100'
                               }`}>
                                 {activeTab === 'administrators' ? (
                                   <Shield className="h-5 w-5 text-purple-600" />
                                 ) : activeTab === 'residents' ? (
-                                  <Users className="h-5 w-5 text-blue-600" />
+                                  <Users className="h-5 w-5 text-[#243b8e]" />
                                 ) : activeTab === 'resident-requests' ? (
                                   <Users className="h-5 w-5 text-orange-600" />
                                 ) : (
@@ -1107,7 +1107,7 @@ export default function SuperAdminManagementPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {activeTab === 'administrators' ? (
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-[#d8def2] text-[#122361]">
                               {item.role || 'N/A'}
                             </span>
                           ) : activeTab === 'residents' ? (
@@ -1119,7 +1119,7 @@ export default function SuperAdminManagementPage() {
                               // Using a temporary variable to normalize status case for simpler check
                               ['COMPLETED', 'Completed'].includes(item.status) ? 'bg-green-100 text-green-800' :
                               ['PENDING', 'Pending'].includes(item.status) ? 'bg-yellow-100 text-yellow-800' :
-                              ['APPROVED', 'Approved'].includes(item.status) ? 'bg-blue-100 text-blue-800' :
+                              ['APPROVED', 'Approved'].includes(item.status) ? 'bg-[#d8def2] text-[#122361]' :
                               ['REJECTED', 'Rejected'].includes(item.status) ? 'bg-red-100 text-red-800' :
                               ['CANCELLED', 'Cancelled'].includes(item.status) ? 'bg-gray-200 text-gray-800' :
                               'bg-gray-100 text-gray-800' // General fallback (e.g., if status is undefined)
@@ -1150,10 +1150,10 @@ export default function SuperAdminManagementPage() {
                     <tr>
                       <td colSpan={5} className="px-6 py-14 text-center">
                         <div className="mx-auto flex max-w-sm flex-col items-center">
-                          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#004AAD]">
+                          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#243b8e]">
                             <Search className="h-6 w-6" />
                           </div>
-                          <p className="text-sm font-extrabold text-[#1E2566]">No records found</p>
+                          <p className="text-sm font-extrabold text-[#122361]">No records found</p>
                           <p className="mt-1 text-sm leading-6 text-slate-500">Try adjusting your search, sort, or filter options.</p>
                         </div>
                       </td>
@@ -1165,7 +1165,7 @@ export default function SuperAdminManagementPage() {
 
             {openDropdownId && (
                 <div
-                  className="absolute bg-white border border-gray-200 rounded-lg shadow-lg p-2 min-w-48 z-20"
+                  className="absolute bg-white border border-gray-200 rounded-lg shadow-sm p-2 min-w-48 z-20"
                   style={{
                     top: dropdownPosition.top,
                     left: dropdownPosition.left,
@@ -1322,7 +1322,7 @@ export default function SuperAdminManagementPage() {
                                   handleCompleteDocument(item);
                                   setOpenDropdownId(null);
                                 }}
-                                className="w-full text-left px-3 py-2 text-sm text-blue-700 hover:bg-blue-50 rounded flex items-center gap-2"
+                                className="w-full text-left px-3 py-2 text-sm text-[#122361] hover:bg-[#eef3ff] rounded flex items-center gap-2"
                               >
                                 <CheckCircle size={16} />
                                 Complete
@@ -1348,19 +1348,19 @@ export default function SuperAdminManagementPage() {
             )}
 
             {(
-              <div className="flex items-center justify-between border-t border-blue-100 bg-slate-50/80 px-4 py-4 sm:px-6">
+              <div className="flex items-center justify-between border-t border-[#d8def2] bg-slate-50/80 px-4 py-4 sm:px-6">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
                     disabled={safeCurrentPage === 1}
-                    className="relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(Math.min(computedTotalPages, safeCurrentPage + 1))}
                     disabled={safeCurrentPage === computedTotalPages}
-                    className="ml-3 relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Next
                   </button>
@@ -1368,9 +1368,9 @@ export default function SuperAdminManagementPage() {
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600">
-                      Showing <span className="font-extrabold text-[#1E2566]">{filteredData.length === 0 ? 0 : (safeCurrentPage - 1) * itemsPerPage + 1}</span> to{' '}
-                      <span className="font-extrabold text-[#1E2566]">{Math.min(safeCurrentPage * itemsPerPage, filteredData.length)}</span> of{' '}
-                      <span className="font-extrabold text-[#1E2566]">{filteredData.length}</span> results
+                      Showing <span className="font-extrabold text-[#122361]">{filteredData.length === 0 ? 0 : (safeCurrentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                      <span className="font-extrabold text-[#122361]">{Math.min(safeCurrentPage * itemsPerPage, filteredData.length)}</span> of{' '}
+                      <span className="font-extrabold text-[#122361]">{filteredData.length}</span> results
                     </p>
                   </div>
                   <div>
@@ -1378,7 +1378,7 @@ export default function SuperAdminManagementPage() {
                       <button
                         onClick={() => setCurrentPage(Math.max(1, safeCurrentPage - 1))}
                         disabled={safeCurrentPage === 1}
-                        className="relative inline-flex items-center px-3 py-2 text-sm font-bold text-slate-500 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="relative inline-flex items-center px-3 py-2 text-sm font-bold text-slate-500 hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <span className="sr-only">Previous</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -1391,8 +1391,8 @@ export default function SuperAdminManagementPage() {
                           onClick={() => setCurrentPage(page)}
                           className={`relative inline-flex items-center border-l border-slate-200 px-4 py-2 text-sm font-bold ${
                             page === safeCurrentPage
-                              ? 'z-10 bg-[#004AAD] text-white'
-                              : 'bg-white text-slate-500 hover:bg-blue-50'
+                              ? 'z-10 bg-[#243b8e] text-white'
+                              : 'bg-white text-slate-500 hover:bg-[#eef3ff]'
                           }`}
                         >
                           {page}
@@ -1401,7 +1401,7 @@ export default function SuperAdminManagementPage() {
                       <button
                         onClick={() => setCurrentPage(Math.min(computedTotalPages, safeCurrentPage + 1))}
                         disabled={safeCurrentPage === computedTotalPages}
-                        className="relative inline-flex items-center border-l border-slate-200 px-3 py-2 text-sm font-bold text-slate-500 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="relative inline-flex items-center border-l border-slate-200 px-3 py-2 text-sm font-bold text-slate-500 hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <span className="sr-only">Next</span>
                         <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -1420,15 +1420,15 @@ export default function SuperAdminManagementPage() {
       {addAdminModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+            className="bg-white rounded-lg shadow-sm max-w-md w-full mx-4"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
           >
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-[#d8def2] rounded-full flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-[#243b8e]" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Add New Administrator</h3>
@@ -1437,23 +1437,23 @@ export default function SuperAdminManagementPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-[#eef3ff] p-3 rounded-lg">
+                  <p className="text-sm text-[#122361]">
                     <strong>Default Settings:</strong>
                   </p>
-                  <p className="text-sm text-blue-700 mt-1">
+                  <p className="text-sm text-[#122361] mt-1">
                     Password: Admin123
                   </p>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-[#122361]">
                     Username and Name: Auto-generated (Admin1, Admin2, etc.)
                   </p>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-[#122361]">
                     Email: AdminX@reserbayan.com (temporary)
                   </p>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-[#122361]">
                     Role: ADMIN, Status: ACTIVE
                   </p>
-                  <p className="text-sm text-blue-700">
+                  <p className="text-sm text-[#122361]">
                     Other info: Empty (can be filled later)
                   </p>
                 </div>
@@ -1462,7 +1462,7 @@ export default function SuperAdminManagementPage() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleAddAdmin}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="flex-1 bg-[#243b8e] text-white px-4 py-2 rounded-lg hover:bg-[#122361] transition-colors font-medium"
                 >
                   Add Administrator
                 </button>
@@ -1483,7 +1483,7 @@ export default function SuperAdminManagementPage() {
       {passwordWarningModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+            className="bg-white rounded-lg shadow-sm max-w-md w-full mx-4"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -1527,7 +1527,7 @@ export default function SuperAdminManagementPage() {
       {passwordRevealModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
           <motion.div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4"
+            className="bg-white rounded-lg shadow-sm max-w-md w-full mx-4"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -1555,7 +1555,7 @@ export default function SuperAdminManagementPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setPasswordRevealModal(null)}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="flex-1 bg-[#243b8e] text-white px-4 py-2 rounded-lg hover:bg-[#122361] transition-colors font-medium"
                 >
                   Close
                 </button>
@@ -1618,14 +1618,14 @@ export default function SuperAdminManagementPage() {
           <div className="relative max-w-4xl max-h-full">
             <button
               onClick={() => setExpandedImage(null)}
-              className="absolute -top-12 right-0 text-gray-700 hover:text-gray-900 text-2xl font-bold z-60 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg"
+              className="absolute -top-12 right-0 text-gray-700 hover:text-gray-900 text-2xl font-bold z-60 bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm"
             >
               ✕
             </button>
             <img
               src={expandedImage}
               alt="Expanded ID"
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
               onClick={() => setExpandedImage(null)}
               style={{ cursor: 'zoom-out' }}
             />
@@ -1658,5 +1658,20 @@ export default function SuperAdminManagementPage() {
         confirmButtonClass={confirmationModal?.confirmButtonClass}
       />
     </div>
+  );
+}
+
+export default function SuperAdminManagementPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-[#FAFAFA]">
+        <div className="rounded-2xl border border-gray-100 bg-white p-12 text-center shadow-sm">
+          <div className="mx-auto mb-6 h-12 w-12 animate-spin rounded-full border-b-2 border-[#243b8e]"></div>
+          <p className="text-sm font-semibold text-slate-500">Loading management...</p>
+        </div>
+      </div>
+    }>
+      <SuperAdminManagementContent />
+    </Suspense>
   );
 }

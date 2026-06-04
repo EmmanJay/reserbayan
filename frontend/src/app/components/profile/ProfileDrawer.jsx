@@ -149,7 +149,7 @@ function FieldInput({ label, name, value, onChange, type = 'text', placeholder, 
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+        className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[#2f84c0] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
       />
     </label>
   );
@@ -158,7 +158,7 @@ function FieldInput({ label, name, value, onChange, type = 'text', placeholder, 
 function InfoRow({ icon: Icon, label, value }) {
   return (
     <div className="flex gap-3 rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#004AAD]">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eef3ff] text-[#243b8e]">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0">
@@ -171,12 +171,12 @@ function InfoRow({ icon: Icon, label, value }) {
 
 function Section({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-[1.5rem] border border-blue-100 bg-white p-4 shadow-[0_16px_38px_rgba(30,37,102,0.07)]">
+    <section className="rounded-[1.5rem] border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(18,35,97,0.10)]">
       <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#004AAD] text-white">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#243b8e] text-white">
           <Icon className="h-4 w-4" />
         </span>
-        <h3 className="font-montserrat text-base font-extrabold text-[#1E2566]">{title}</h3>
+        <h3 className="text-base font-extrabold text-[#122361]">{title}</h3>
       </div>
       <div className="space-y-3">{children}</div>
     </section>
@@ -271,18 +271,18 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
               onClick={onClose}
             />
             <motion.aside
-              className="fixed bottom-0 right-0 top-0 z-[61] flex w-[37.5vw] min-w-[420px] max-w-[560px] flex-col overflow-hidden border-l border-blue-100 bg-[#F8FBFF] shadow-[0_24px_80px_rgba(15,23,42,0.26)] max-sm:left-3 max-sm:right-0 max-sm:top-0 max-sm:w-auto max-sm:min-w-0"
+              className="fixed bottom-0 right-0 top-0 z-[61] flex w-[37.5vw] min-w-[420px] max-w-[560px] flex-col overflow-hidden border-l border-[#d8def2] bg-[#FAFAFA] shadow-[0_8px_20px_rgba(15,23,42,0.08)] max-sm:left-3 max-sm:right-0 max-sm:top-0 max-sm:w-auto max-sm:min-w-0"
               initial={{ x: '100%', opacity: 0.9 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0.9 }}
               transition={{ duration: 0.28, ease: 'easeOut' }}
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="border-b border-blue-100 bg-white px-5 pb-4 pt-5">
+              <div className="border-b border-[#d8def2] bg-white px-5 pb-4 pt-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#2F87C3]">Profile</p>
-                    <h2 className="mt-1 font-montserrat text-2xl font-extrabold text-[#1E2566]">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#2f84c0]">Profile</p>
+                    <h2 className="mt-1 text-2xl font-extrabold text-[#122361]">
                       Account Details
                     </h2>
                   </div>
@@ -298,10 +298,10 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                <div className="overflow-hidden rounded-[1.75rem] border border-blue-100 bg-white shadow-[0_24px_60px_rgba(30,37,102,0.1)]">
-                  <div className="bg-gradient-to-br from-[#111A54] via-[#1E4A92] to-[#2F87C3] p-5 text-white">
+                <div className="overflow-hidden rounded-[1.75rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(18,35,97,0.10)]">
+                  <div className="bg-gradient-to-br from-[#00114e] via-[#243b8e] to-[#2f84c0] p-5 text-white">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-white/95 text-2xl font-extrabold text-[#1E2566] shadow-lg">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-white/95 text-2xl font-extrabold text-[#122361] shadow-sm">
                         {user.profilePicture ? (
                           <img src={user.profilePicture} alt="Profile" className="h-full w-full object-cover" />
                         ) : (
@@ -309,8 +309,8 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <h3 className="truncate font-montserrat text-xl font-extrabold">{fullName(user)}</h3>
-                        <p className="mt-1 truncate text-sm font-semibold text-blue-100">{user.residentEmail}</p>
+                        <h3 className="truncate text-xl font-extrabold">{fullName(user)}</h3>
+                        <p className="mt-1 truncate text-sm font-semibold text-[#d8def2]">{user.residentEmail}</p>
                         <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-extrabold ring-1 ring-white/20">
                           <ShieldCheck className="h-3.5 w-3.5" />
                           {roleLabel}
@@ -408,7 +408,7 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
                 </div>
               </div>
 
-              <div className="border-t border-blue-100 bg-white px-5 py-4">
+              <div className="border-t border-[#d8def2] bg-white px-5 py-4">
                 {editing ? (
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -424,7 +424,7 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
                       type="submit"
                       form="profile-drawer-form"
                       disabled={saving}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(47,135,195,0.28)] transition hover:brightness-105 disabled:opacity-60"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#122361] to-[#2f84c0] text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(47,135,195,0.28)] transition hover:brightness-105 disabled:opacity-60"
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       {saving ? 'Saving' : 'Save Changes'}
@@ -437,7 +437,7 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
                       setEditing(true);
                       setMessage(null);
                     }}
-                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#1E2566] to-[#2F87C3] text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(47,135,195,0.28)] transition hover:brightness-105"
+                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#122361] to-[#2f84c0] text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(47,135,195,0.28)] transition hover:brightness-105"
                   >
                     <Edit3 className="h-4 w-4" />
                     Edit Profile
@@ -458,7 +458,7 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
         message="Please confirm that you want to update your profile information."
         confirmText="Save Changes"
         cancelText="Review"
-        confirmButtonClass="bg-[#1E2566] hover:bg-[#17205A]"
+        confirmButtonClass="bg-[#122361] hover:bg-[#17205A]"
       />
     </>
   );

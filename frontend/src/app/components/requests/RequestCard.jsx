@@ -45,9 +45,9 @@ const getStatusAccent = (status) => {
   }
   if (statusLower === 'completed') {
     return {
-      bar: 'from-blue-600 via-sky-500 to-blue-400',
-      glow: 'from-blue-50 to-sky-50',
-      icon: 'from-blue-600 to-sky-500',
+      bar: 'from-[#243b8e] via-[#2f84c0] to-[#2f84c0]',
+      glow: 'from-[#eef3ff] to-[#eef3ff]',
+      icon: 'from-[#243b8e] to-[#2f84c0]',
     };
   }
   if (statusLower === 'cancelled') {
@@ -59,9 +59,9 @@ const getStatusAccent = (status) => {
   }
 
   return {
-    bar: 'from-blue-600 via-sky-500 to-blue-400',
-    glow: 'from-blue-50 to-sky-50',
-    icon: 'from-[#1E2566] to-[#2F87C3]',
+    bar: 'from-[#243b8e] via-[#2f84c0] to-[#2f84c0]',
+    glow: 'from-[#eef3ff] to-[#eef3ff]',
+    icon: 'from-[#122361] to-[#2f84c0]',
   };
 };
 
@@ -73,7 +73,7 @@ function RequestCard({ request, onClick }) {
     <button
       type="button"
       onClick={() => onClick(request)}
-      className="group relative flex h-full min-h-[12rem] w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pt-5 text-left shadow-[0_12px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_20px_42px_rgba(37,99,235,0.13)] focus:outline-none focus:ring-4 focus:ring-blue-100"
+      className="group relative flex h-full min-h-[12rem] w-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pt-5 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#9eaddd] hover:shadow-[0_8px_18px_rgba(36,59,142,0.14)] focus:outline-none focus:ring-4 focus:ring-[#d8def2]"
       aria-label={`View details for ${request.documentName} request`}
     >
       <div className={`absolute left-0 top-0 h-1.5 w-full bg-gradient-to-r ${accent.bar}`} />
@@ -83,12 +83,12 @@ function RequestCard({ request, onClick }) {
         <StatusBadge status={request.status} size="sm" className="absolute right-0 top-0 shrink-0 px-2.5" />
 
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3.5">
-          <div className={`mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r ${accent.icon} text-white shadow-md shadow-slate-300/60`}>
+          <div className={`mt-0.5 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r ${accent.icon} text-white shadow-sm shadow-slate-300/60`}>
             <FileText className="h-7 w-7" aria-hidden="true" />
           </div>
 
           <div className="min-w-0">
-            <h3 className="line-clamp-2 break-words font-montserrat text-lg font-extrabold leading-tight text-[#0F2A6B] [overflow-wrap:anywhere]">
+            <h3 className="line-clamp-2 break-words text-lg font-extrabold leading-tight text-[#122361] [overflow-wrap:anywhere]">
               {request.documentName || 'Untitled Request'}
             </h3>
 
@@ -110,7 +110,7 @@ function RequestCard({ request, onClick }) {
       <div className="relative z-10 mt-3 grid grid-cols-3 gap-2 text-[0.7rem] font-bold text-slate-600">
         <div className="rounded-xl bg-slate-50 px-2.5 py-2 ring-1 ring-slate-100">
           <span className="mb-0.5 flex items-center gap-1 text-slate-400">
-            <Calendar className="h-3 w-3 text-blue-600" aria-hidden="true" />
+            <Calendar className="h-3 w-3 text-[#243b8e]" aria-hidden="true" />
             Submitted
           </span>
           <p className="truncate text-slate-700">{formatDate(request.submittedAt)}</p>
@@ -122,8 +122,8 @@ function RequestCard({ request, onClick }) {
           </span>
           <p className="truncate text-slate-700">{formatDate(request.updatedAt)}</p>
         </div>
-        <div className="rounded-xl bg-blue-50 px-2.5 py-2 text-blue-700 ring-1 ring-blue-100">
-          <span className="mb-0.5 flex items-center gap-1 text-blue-400">
+        <div className="rounded-xl bg-[#eef3ff] px-2.5 py-2 text-[#122361] ring-1 ring-[#d8def2]">
+          <span className="mb-0.5 flex items-center gap-1 text-[#2f84c0]">
             <Paperclip className="h-3 w-3" aria-hidden="true" />
             Files
           </span>
@@ -132,7 +132,7 @@ function RequestCard({ request, onClick }) {
       </div>
 
       <div className="relative z-10 mt-auto flex items-center justify-end pt-2">
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-700 transition-colors group-hover:text-blue-900">
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-[#122361] transition-colors group-hover:text-[#00114e]">
           View details
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </span>

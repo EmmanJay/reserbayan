@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
@@ -127,17 +127,17 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
         aria-expanded={isOpen}
         className={`flex h-11 w-full items-center gap-2.5 rounded-2xl border px-3 text-left text-sm font-bold text-slate-700 transition-all ${
           isOpen
-            ? 'border-blue-400 bg-white ring-4 ring-blue-100'
-            : 'border-slate-200 bg-slate-50/90 hover:border-blue-200 hover:bg-white'
+            ? 'border-[#2f84c0] bg-white ring-4 ring-[#d8def2]'
+            : 'border-slate-200 bg-slate-50/90 hover:border-[#c2cbea] hover:bg-white'
         }`}
       >
-        <Icon className="h-4 w-4 shrink-0 text-blue-500" />
+        <Icon className="h-4 w-4 shrink-0 text-[#2f84c0]" />
         <span className="min-w-0 flex-1 truncate">{selectedOption.label}</span>
         <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[120] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.24)]">
+        <div className="absolute left-0 right-0 top-[calc(100%+0.4rem)] z-[120] overflow-hidden rounded-2xl bg-white p-1.5 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
           {options.map((option) => {
             const isSelected = option.value === value;
 
@@ -151,8 +151,8 @@ function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
                 }}
                 className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white'
-                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                    ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white'
+                    : 'text-slate-700 hover:bg-[#eef3ff] hover:text-[#122361]'
                 }`}
               >
                 {option.label}
@@ -226,7 +226,7 @@ function DocumentSidebar({ isOpen, onClose }) {
       )}
 
       <motion.nav
-        className={`border-r border-slate-200/80 bg-white/95 p-4 shadow-[14px_0_45px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-all duration-300 ${
+        className={`border-r border-slate-200/80 bg-white/95 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 ${
           isOpen
             ? 'fixed left-0 top-18 z-50 h-[calc(100vh-4.5rem)] w-80 translate-x-0 lg:static lg:z-auto lg:h-auto lg:w-[22rem] lg:translate-x-0'
             : 'hidden lg:block lg:w-[22rem] lg:shrink-0'
@@ -238,7 +238,7 @@ function DocumentSidebar({ isOpen, onClose }) {
         <Link
           href={backHref}
           onClick={onClose}
-          className="group flex items-center justify-between rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-bold text-white shadow-[0_14px_32px_rgba(37,99,235,0.24)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(37,99,235,0.3)]"
+          className="group flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(36,59,142,0.14)]"
         >
           <span className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
@@ -255,7 +255,7 @@ function DocumentSidebar({ isOpen, onClose }) {
               placeholder="Search documents"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50/90 pl-10 pr-3 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50/90 pl-10 pr-3 text-sm font-medium text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-[#2f84c0] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
             />
           </label>
 
@@ -303,19 +303,19 @@ function DocumentSidebar({ isOpen, onClose }) {
                   onClick={onClose}
                   className={`group flex items-center gap-3 rounded-2xl border p-3 transition-all ${
                     isActive
-                      ? 'border-blue-300 bg-blue-600 text-white shadow-[0_16px_34px_rgba(37,99,235,0.24)]'
-                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50'
+                      ? 'border-[#9eaddd] bg-[#243b8e] text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)]'
+                      : 'border-slate-200 bg-white text-slate-700 hover:-translate-y-0.5 hover:border-[#c2cbea] hover:bg-[#eef3ff]'
                   }`}
                 >
                   <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                    isActive ? 'bg-white/15 text-white' : 'bg-blue-50 text-blue-700'
+                    isActive ? 'bg-white/15 text-white' : 'bg-[#eef3ff] text-[#122361]'
                   }`}>
                     <CategoryIcon className="h-5 w-5" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-extrabold">{doc.name}</span>
+                    <span className="block truncate font-[family-name:var(--font-montserrat)] text-sm font-extrabold">{doc.name}</span>
                     <span className={`mt-0.5 flex items-center gap-2 text-xs ${
-                      isActive ? 'text-blue-50' : 'text-slate-500'
+                      isActive ? 'text-[#eef3ff]' : 'text-slate-500'
                     }`}>
                       <Clock3 className="h-3.5 w-3.5" />
                       {doc.details?.processingTime || 'TBD'}
@@ -333,14 +333,14 @@ function DocumentSidebar({ isOpen, onClose }) {
   );
 }
 
-export default function DocumentsLayout({ children }) {
+function DocumentsLayoutContent({ children }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const pathname = usePathname();
   const isDetailPage = pathname.startsWith('/documents/') && pathname !== '/documents';
 
   if (isDetailPage) {
     return (
-      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(47,135,195,0.13),transparent_30%),linear-gradient(180deg,#F8FBFF_0%,#FFFFFF_46%,#F6F8FC_100%)] pt-18">
+      <div className="flex min-h-screen bg-[#FAFAFA] pt-18">
         <DocumentSidebar
           isOpen={isMobileSidebarOpen}
           onClose={() => setIsMobileSidebarOpen(false)}
@@ -349,7 +349,7 @@ export default function DocumentsLayout({ children }) {
         <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6">
           <button
             onClick={() => setIsMobileSidebarOpen(true)}
-            className={`fixed left-4 top-20 z-30 rounded-2xl border border-slate-200 bg-white p-2 shadow-md transition-all duration-300 lg:hidden ${isMobileSidebarOpen ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
+            className={`fixed left-4 top-20 z-30 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm transition-all duration-300 lg:hidden ${isMobileSidebarOpen ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
           >
             <PanelLeftOpen className="h-6 w-6" />
           </button>
@@ -363,4 +363,19 @@ export default function DocumentsLayout({ children }) {
   }
 
   return children;
+}
+
+export default function DocumentsLayout({ children }) {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[#FAFAFA] pt-18">
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#d8def2] border-b-[#243b8e]" />
+          <p className="mt-4 font-medium text-slate-600">Loading documents...</p>
+        </div>
+      </div>
+    }>
+      <DocumentsLayoutContent>{children}</DocumentsLayoutContent>
+    </Suspense>
+  );
 }

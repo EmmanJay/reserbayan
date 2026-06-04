@@ -311,22 +311,22 @@ export function RequestDrawerProvider({ children }) {
       <AnimatePresence>
         {isOpen && draft && (
           <motion.aside
-            className="fixed bottom-0 right-0 top-[73px] z-[45] flex w-full max-w-[480px] flex-col overflow-hidden border-l border-blue-100 bg-white shadow-[-24px_0_70px_rgba(15,23,42,0.18)]"
+            className="fixed bottom-0 right-0 top-[73px] z-[45] flex w-full max-w-[480px] flex-col overflow-hidden border-l border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
             initial={{ x: '100%', opacity: 0.7 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0.7 }}
             transition={{ duration: 0.34, ease: 'easeOut' }}
           >
-            <div className="relative overflow-hidden border-b border-blue-100 bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-5 text-white">
+            <div className="relative overflow-hidden border-b border-[#d8def2] bg-gradient-to-br from-[#122361] via-[#243b8e] to-[#2f84c0] p-5 text-white">
               <div className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-white/15" />
-              <div className="absolute bottom-0 right-16 h-20 w-20 rounded-full bg-cyan-200/20 blur-sm" />
+              <div className="absolute bottom-0 right-16 h-20 w-20 rounded-full bg-[#d8def2]/20 blur-sm" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
                   
-                  <h2 className="mt-3 font-montserrat text-2xl font-extrabold leading-tight">
+                  <h2 className="mt-3 text-2xl font-extrabold leading-tight">
                     {draft.document.name}
                   </h2>
-                  <p className="mt-1 text-sm font-medium text-blue-50">
+                  <p className="mt-1 text-sm font-medium text-[#eef3ff]">
                     Autofilled resident details. Add purpose and attachments only.
                   </p>
                 </div>
@@ -352,11 +352,11 @@ export function RequestDrawerProvider({ children }) {
             </div>
 
             <form onSubmit={submitRequest} className="flex min-h-0 flex-1 flex-col">
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-gradient-to-b from-blue-50/60 to-white p-5">
-                <section className="overflow-hidden rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto bg-[#FAFAFA] p-5">
+                <section className="overflow-hidden rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-extrabold uppercase tracking-wide text-blue-600">Resident information</p>
+                      <p className="text-xs font-extrabold uppercase tracking-wide text-[#243b8e]">Resident information</p>
                       <p className="text-sm text-slate-500">Pulled from your account</p>
                     </div>
                     <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -369,7 +369,7 @@ export function RequestDrawerProvider({ children }) {
                       { icon: MapPin, label: 'Address', value: residentInfo.address },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex min-w-0 gap-3 rounded-2xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-100">
-                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#243b8e]" />
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">{label}</p>
                           <p className="whitespace-normal break-words text-sm font-bold leading-snug text-slate-700">{value}</p>
@@ -379,9 +379,9 @@ export function RequestDrawerProvider({ children }) {
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <label htmlFor="request-purpose" className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                    <FileText className="h-4 w-4 text-blue-600" />
+                    <FileText className="h-4 w-4 text-[#243b8e]" />
                     Purpose of request <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -390,26 +390,26 @@ export function RequestDrawerProvider({ children }) {
                     onChange={(event) => updatePurpose(event.target.value)}
                     rows={5}
                     placeholder="Example: For school enrollment, employment requirement, scholarship application..."
-                    className="mt-3 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    className="mt-3 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700 outline-none transition focus:border-[#9eaddd] focus:bg-white focus:ring-4 focus:ring-[#d8def2]"
                     required
                   />
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                        <Paperclip className="h-4 w-4 text-blue-600" />
+                        <Paperclip className="h-4 w-4 text-[#243b8e]" />
                         Attachments
                       </p>
                       <p className="mt-1 text-xs font-medium text-slate-500">Upload IDs or supporting files if required.</p>
                     </div>
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-extrabold text-blue-700 ring-1 ring-blue-100">
+                    <span className="rounded-full bg-[#eef3ff] px-2.5 py-1 text-xs font-extrabold text-[#122361] ring-1 ring-[#d8def2]">
                       {draft.files.length} file{draft.files.length === 1 ? '' : 's'}
                     </span>
                   </div>
 
-                  <div className="mt-3 rounded-2xl border border-dashed border-blue-200 bg-blue-50/60 p-3">
+                  <div className="mt-3 rounded-2xl border border-dashed border-[#c2cbea] bg-[#eef3ff]/60 p-3">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -420,7 +420,7 @@ export function RequestDrawerProvider({ children }) {
                     />
                     <label
                       htmlFor="request-drawer-file-upload"
-                      className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-extrabold text-blue-700 shadow-sm ring-1 ring-blue-100 transition hover:-translate-y-0.5 hover:shadow-md"
+                      className="flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-extrabold text-[#122361] shadow-sm ring-1 ring-[#d8def2] transition hover:-translate-y-0.5 hover:shadow-sm"
                     >
                       <Upload className="h-4 w-4" />
                       {draft.files.length > 0 ? 'Add more files' : 'Choose files'}
@@ -435,7 +435,7 @@ export function RequestDrawerProvider({ children }) {
                           className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200"
                         >
                           <div className="flex min-w-0 items-center gap-2">
-                            <File className="h-4 w-4 shrink-0 text-blue-600" />
+                            <File className="h-4 w-4 shrink-0 text-[#243b8e]" />
                             <div className="min-w-0">
                               <p className="truncate text-sm font-bold text-slate-700">{file.name}</p>
                               <p className="text-xs font-medium text-slate-400">{getFileSize(file.size)}</p>
@@ -455,10 +455,10 @@ export function RequestDrawerProvider({ children }) {
                   )}
                 </section>
 
-                <section className="rounded-3xl border border-blue-100 bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
+                <section className="rounded-3xl border border-[#d8def2] bg-white p-4 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
                   <div className="flex items-center justify-between">
                     <p className="flex items-center gap-2 text-sm font-extrabold text-slate-800">
-                      <FileCheck2 className="h-4 w-4 text-blue-600" />
+                      <FileCheck2 className="h-4 w-4 text-[#243b8e]" />
                       Requirements
                     </p>
                     <span className="text-xs font-extrabold text-slate-400">
@@ -468,13 +468,13 @@ export function RequestDrawerProvider({ children }) {
                   {requirements.length > 0 ? (
                     <div className="mt-3 grid gap-2">
                       {requirements.slice(0, 3).map((requirement, index) => (
-                        <div key={`${requirement}-${index}`} className="flex gap-2 rounded-2xl bg-blue-50/70 p-2 text-xs font-semibold text-slate-700">
+                        <div key={`${requirement}-${index}`} className="flex gap-2 rounded-2xl bg-[#eef3ff]/70 p-2 text-xs font-semibold text-slate-700">
                           <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
                           <span>{requirement}</span>
                         </div>
                       ))}
                       {requirements.length > 3 && (
-                        <p className="text-xs font-bold text-blue-600">
+                        <p className="text-xs font-bold text-[#243b8e]">
                           +{requirements.length - 3} more requirement{requirements.length - 3 === 1 ? '' : 's'} available in the document view.
                         </p>
                       )}
@@ -487,12 +487,12 @@ export function RequestDrawerProvider({ children }) {
                 </section>
               </div>
 
-              <div className="border-t border-blue-100 bg-white p-4">
+              <div className="border-t border-[#d8def2] bg-white p-4">
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={minimizeRequest}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-blue-300 hover:text-blue-700"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-extrabold text-slate-700 transition hover:border-[#9eaddd] hover:text-[#122361]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Save to side
@@ -500,7 +500,7 @@ export function RequestDrawerProvider({ children }) {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 px-4 py-3 text-sm font-extrabold text-white shadow-[0_16px_36px_rgba(37,99,235,0.25)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex flex-[1.25] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#243b8e] to-[#2f84c0] px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {submitting ? (
                       <>
@@ -526,18 +526,18 @@ export function RequestDrawerProvider({ children }) {
           <motion.button
             type="button"
             onClick={restoreRequest}
-            className="fixed right-0 top-1/2 z-[44] flex -translate-y-1/2 items-center gap-2 rounded-l-3xl border border-r-0 border-blue-100 bg-white px-3 py-4 text-left shadow-[-14px_12px_44px_rgba(15,23,42,0.18)] transition hover:bg-blue-50"
+            className="fixed right-0 top-1/2 z-[44] flex -translate-y-1/2 items-center gap-2 rounded-l-3xl border border-r-0 border-[#d8def2] bg-white px-3 py-4 text-left shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition hover:bg-[#eef3ff]"
             initial={{ x: 80, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 80, opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             aria-label="Restore document request draft"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 to-sky-500 text-white shadow-lg">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#122361] to-[#2f84c0] text-white shadow-sm">
               <FileText className="h-5 w-5" />
             </div>
             <div className="hidden max-w-[150px] sm:block">
-              <p className="text-xs font-extrabold uppercase tracking-wide text-blue-600">Draft saved</p>
+              <p className="text-xs font-extrabold uppercase tracking-wide text-[#243b8e]">Draft saved</p>
               <p className="truncate text-sm font-extrabold text-slate-800">{draft.document.name}</p>
             </div>
             <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -554,7 +554,7 @@ export function RequestDrawerProvider({ children }) {
         message="You already have an unfinished request. Starting a new one will discard the current draft."
         confirmText="Start new request"
         cancelText="Keep draft"
-        confirmButtonClass="bg-blue-600 hover:bg-blue-700"
+        confirmButtonClass="bg-[#243b8e] hover:bg-[#122361]"
       />
 
       <NotificationModal

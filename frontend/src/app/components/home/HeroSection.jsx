@@ -76,8 +76,10 @@ export default function HeroSection() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Left Column - Text Content */}
         <div className="space-y-6">
-          <h1 className="text-5xl md:text-6xl font-extrabold leading-tight bg-gradient-to-r from-[#1E2566] to-[#2F87C3] bg-clip-text text-transparent">
-            Streamlined Document Requests for Every Residents
+          <h1 className="font-[family-name:var(--font-montserrat)] text-[clamp(3rem,4vw,4.5rem)] font-extrabold leading-tight bg-gradient-to-r from-[#122361] to-[#2f84c0] bg-clip-text text-transparent">
+            <span className="block whitespace-nowrap">Streamlined</span>
+            <span className="block whitespace-nowrap">Document Requests</span>
+            <span className="block whitespace-nowrap">for Every Residents</span>
           </h1>
 
           <p
@@ -96,12 +98,12 @@ export default function HeroSection() {
             style={{ letterSpacing: '-.1px' }}
           >
             Documents such as{' '}
-            <span className="font-semibold text-[#1E2566]">Cedula</span>,{' '}
-            <span className="font-semibold text-[#1E2566]">
+            <span className="font-semibold text-[#122361]">Cedula</span>,{' '}
+            <span className="font-semibold text-[#122361]">
               Barangay Certificate
             </span>
             ,{' '}
-            <span className="font-semibold text-[#1E2566]">
+            <span className="font-semibold text-[#122361]">
               Certificate of Indigency
             </span>{' '}
             and many more!
@@ -124,7 +126,7 @@ export default function HeroSection() {
 
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('showSignUp'))}
-            className="bg-[#004AAD] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#003A88] transition-colors"
+            className="bg-[#243b8e] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#122361] transition-colors"
           >
             Start requesting now!
           </button>
@@ -133,12 +135,12 @@ export default function HeroSection() {
         {/* Right Column - Image Section */}
         <div className="relative min-h-[600px] flex items-center justify-center">
           {!showSignUp ? (
-            <div className="flex justify-center items-end w-full transition-opacity duration-500 ease-in-out">
+            <div className="flex -translate-y-10 justify-center items-end w-full transition-opacity duration-500 ease-in-out">
               {/* IMAGE 1: Certificate of Indigency */}
               <Image
                 src="/documents/certificate-of-indigency.png"
                 alt="Certificate of Indigency"
-                className={`w-[220px] md:w-[260px] -mr-35 rounded-xl shadow-lg z-10 transition-all duration-700 ease-in-out hover:scale-105 ${
+                className={`w-[220px] md:w-[260px] -mr-35 rounded-xl shadow-sm z-10 transition-all duration-700 ease-in-out hover:scale-105 ${
                   showImg1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 }`}
                 width={260}
@@ -148,7 +150,7 @@ export default function HeroSection() {
               <Image
                 src="/documents/first-time-jobseeker.png"
                 alt="First Time Job Seeker"
-                className={`w-[260px] md:w-[300px] -mr-35 rounded-xl shadow-xl z-20 transition-all duration-700 ease-in-out hover:scale-105 ${
+                className={`w-[260px] md:w-[300px] -mr-35 rounded-xl shadow-sm z-20 transition-all duration-700 ease-in-out hover:scale-105 ${
                   showImg2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 }`}
                 width={300}
@@ -158,7 +160,7 @@ export default function HeroSection() {
               <Image
                 src="/documents/barangay-clearance.png"
                 alt="Barangay Clearance"
-                className={`w-[300px] md:w-[360px] rounded-xl shadow-2xl z-30 transition-all duration-700 ease-in-out hover:scale-105 ${
+                className={`w-[300px] md:w-[360px] rounded-xl shadow-sm z-30 transition-all duration-700 ease-in-out hover:scale-105 ${
                   showImg3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
                 }`}
                 width={360}
