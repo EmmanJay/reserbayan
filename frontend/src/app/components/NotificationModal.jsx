@@ -11,7 +11,9 @@ export default function NotificationModal({
   title, 
   message, 
   autoClose = false, 
-  autoCloseDelay = 3000 
+  autoCloseDelay = 3000,
+  zIndexClass = 'z-50',
+  backdropBlur = true,
 }) {
 
   useEffect(() => {
@@ -61,14 +63,14 @@ export default function NotificationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+    <div className={`fixed inset-0 ${zIndexClass} flex items-center justify-center p-4 sm:p-0`}>
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+        className={`absolute inset-0 bg-gray-900/40 transition-opacity ${backdropBlur ? 'backdrop-blur-sm' : ''}`}
       />
 
       {/* Modal Card */}

@@ -549,7 +549,11 @@ export default function SuperAdminDashboard() {
 
   // Navigation Handlers
   const handleAddAdmin = () => router.push('/superadmin/management?tab=administrators&action=addAdmin');
-  const handleAddDocument = () => router.push('/superadmin/documents/add');
+  const handleAddDocument = () => {
+    window.dispatchEvent(new CustomEvent('reserbayan:open-add-document-modal', {
+      detail: { basePath: '/superadmin' },
+    }));
+  };
   const handleManageResidents = () => router.push('/superadmin/management?tab=residents');
   const handleViewNotifications = () => router.push('/superadmin/notifications');
   const handleViewAllAnnouncements = () => router.push('/superadmin/announcements');

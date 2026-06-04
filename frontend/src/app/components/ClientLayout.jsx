@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import Footer from './home/Footer';
 import { usePathname } from 'next/navigation';
+import AddDocumentDraftDock from '@/app/components/admin/AddDocumentDraftDock';
 
 const NavbarWrapper = dynamic(() => import('./home/NavbarWrapper'), { ssr: false });
 
@@ -18,6 +19,7 @@ export default function ClientLayout({ children }) {
       <main className="flex-1 min-h-screen bg-white">
         {children}
       </main>
+      {isAdminRoute && <AddDocumentDraftDock />}
       {!isAdminRoute && <Footer />}
     </div>
   );

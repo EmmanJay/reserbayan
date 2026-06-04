@@ -326,6 +326,8 @@ export default function AdminDocumentDetailView() {
       type: 'warning',
       title: 'Finish editing first',
       message: 'Save or cancel the document edits before returning to the documents list.',
+      zIndexClass: 'z-[120]',
+      backdropBlur: false,
     });
   };
 
@@ -1051,6 +1053,8 @@ export default function AdminDocumentDetailView() {
         message={notificationModal?.message}
         autoClose={notificationModal?.autoClose}
         autoCloseDelay={notificationModal?.autoCloseDelay}
+        zIndexClass={notificationModal?.zIndexClass}
+        backdropBlur={notificationModal?.backdropBlur}
       />
     </div>
   );
