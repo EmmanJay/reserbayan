@@ -1,26 +1,107 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Search, SortAsc, SortDesc, Grid3X3, List } from 'lucide-react';
+import {
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  Grid3X3,
+  LayoutList,
+  Search,
+  SlidersHorizontal,
+  SortAsc,
+  SortDesc,
+  Tags,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
 import RequestCard from '@/app/components/requests/RequestCard';
-import RequestModal from '@/app/components/requests/RequestModal'; // Ensure this points to your new/updated modal
+import RequestModal from '@/app/components/requests/RequestModal';
 import RequestsList from '@/app/components/requests/RequestsList';
+
+const statusKeys = ['pending', 'approved', 'completed', 'rejected', 'cancelled'];
+
+const sortOptions = [
+  { value: 'submittedAt', label: 'Date' },
+  { value: 'status', label: 'Status' },
+  { value: 'documentName', label: 'Document' },
+];
+
+function CustomDropdown({ icon: Icon, options, value, onChange, ariaLabel }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((option) => option.value === value) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={dropdownRef} className="relative z-[100]">
+      <button
+        type="button"
+        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
+        className={`flex h-[3.25rem] w-full items-center gap-3 rounded-2xl border bg-white px-4 text-left text-sm font-bold text-slate-700 outline-none transition-all ${
+          isOpen
+            ? 'border-blue-400 ring-4 ring-blue-100'
+            : 'border-slate-200 hover:border-blue-200'
+        }`}
+      >
+        <Icon className="h-4 w-4 shrink-0 text-slate-400" />
+        <span className="min-w-0 flex-1 truncate">{selectedOption.label}</span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-[120] overflow-hidden rounded-2xl border border-slate-100 bg-white p-1.5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+          {options.map((option) => {
+            const isSelected = option.value === value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-all ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-sm'
+                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-800'
+                }`}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function RequestsPage() {
   const { user } = useUser();
-  // Ensure your hook exposes refetchRequests if you need it for the modal callbacks
   const { requests, loading, cancelRequest, refetchRequests } = useRequests(user);
-  
-  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('submittedAt');
   const [sortOrder, setSortOrder] = useState('desc');
-  const [viewMode, setViewMode] = useState('card');
+  const [viewMode, setViewMode] = useState('grid');
   const router = useRouter();
 
   const handleRequestClick = useCallback((request) => {
@@ -31,52 +112,67 @@ export default function RequestsPage() {
     setSelectedRequest(null);
   }, []);
 
-  // UPDATED: Added 'cancelled' to the categories list
-  const categories = useMemo(() => [
-    { key: 'all', label: 'All Requests', count: requests.length },
-    { key: 'pending', label: 'Pending', count: requests.filter(r => r.status?.toLowerCase() === 'pending').length },
-    { key: 'approved', label: 'Approved', count: requests.filter(r => r.status?.toLowerCase() === 'approved').length },
-    { key: 'completed', label: 'Completed', count: requests.filter(r => r.status?.toLowerCase() === 'completed').length },
-    { key: 'rejected', label: 'Rejected', count: requests.filter(r => r.status?.toLowerCase() === 'rejected').length },
-    { key: 'cancelled', label: 'Cancelled', count: requests.filter(r => r.status?.toLowerCase() === 'cancelled').length },
-  ], [requests]);
+  const statusOptions = useMemo(() => {
+    const counts = statusKeys.reduce((accumulator, status) => {
+      accumulator[status] = requests.filter((request) => request.status?.toLowerCase() === status).length;
+      return accumulator;
+    }, {});
+
+    return [
+      { value: 'all', label: `All Requests (${requests.length})` },
+      { value: 'pending', label: `Pending (${counts.pending || 0})` },
+      { value: 'approved', label: `Approved (${counts.approved || 0})` },
+      { value: 'completed', label: `Completed (${counts.completed || 0})` },
+      { value: 'rejected', label: `Rejected (${counts.rejected || 0})` },
+      { value: 'cancelled', label: `Cancelled (${counts.cancelled || 0})` },
+    ];
+  }, [requests]);
 
   const filteredRequests = useMemo(() => {
-    return requests
-      .filter(r => selectedCategory === 'all' || r.status?.toLowerCase() === selectedCategory)
-      .filter(r =>
-        searchTerm === '' ||
-        r.documentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.details?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.requestId?.toString().includes(searchTerm)
-      )
-      .sort((a, b) => {
-        let aValue, bValue;
-        if (sortBy === 'submittedAt') {
-          aValue = new Date(a.submittedAt);
-          bValue = new Date(b.submittedAt);
-        } else if (sortBy === 'status') {
-          aValue = a.status?.toLowerCase() || '';
-          bValue = b.status?.toLowerCase() || '';
-        } else if (sortBy === 'documentName') {
-          aValue = a.documentName?.toLowerCase() || '';
-          bValue = b.documentName?.toLowerCase() || '';
-        }
+    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
 
-        if (sortOrder === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
+    return requests
+      .filter((request) => selectedStatus === 'all' || request.status?.toLowerCase() === selectedStatus)
+      .filter((request) => {
+        if (!normalizedSearchTerm) return true;
+
+        return [
+          request.documentName,
+          request.details,
+          request.requestId?.toString(),
+          request.status,
+        ].filter(Boolean).join(' ').toLowerCase().includes(normalizedSearchTerm);
+      })
+      .sort((firstRequest, secondRequest) => {
+        const getSortValue = (request) => {
+          if (sortBy === 'submittedAt') {
+            const dateValue = new Date(request.submittedAt).getTime();
+            return Number.isNaN(dateValue) ? 0 : dateValue;
+          }
+          if (sortBy === 'status') {
+            return request.status?.toLowerCase() || '';
+          }
+          return request.documentName?.toLowerCase() || '';
+        };
+
+        const firstValue = getSortValue(firstRequest);
+        const secondValue = getSortValue(secondRequest);
+
+        if (firstValue === secondValue) return 0;
+        const sortDirection = sortOrder === 'asc' ? 1 : -1;
+        return firstValue > secondValue ? sortDirection : -sortDirection;
       });
-  }, [requests, selectedCategory, searchTerm, sortBy, sortOrder]);
+  }, [requests, searchTerm, selectedStatus, sortBy, sortOrder]);
+
+  const activeFiltersCount = [selectedStatus !== 'all', searchTerm.trim() !== ''].filter(Boolean).length;
+  const hasNoRequests = requests.length === 0;
 
   if (loading) {
     return (
-      <div className="pt-24 px-8 min-h-screen bg-[#FAFAFA] flex items-center justify-center" role="status" aria-live="polite">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" aria-hidden="true"></div>
-          <p className="mt-4 text-gray-600">Loading your requests...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-8 pt-24" role="status" aria-live="polite">
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-[0_24px_70px_rgba(15,23,42,0.1)]">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-b-blue-600" aria-hidden="true" />
+          <p className="mt-4 font-medium text-slate-600">Loading your requests...</p>
         </div>
       </div>
     );
@@ -87,174 +183,164 @@ export default function RequestsPage() {
   }
 
   return (
-    <motion.div
-      className="pt-32 px-8 min-h-screen bg-[#FAFAFA] pb-16"
-      initial={{ opacity: 0, y: 50 }}
+    <motion.main
+      className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(47,135,195,0.16),transparent_34%),linear-gradient(180deg,#F8FBFF_0%,#FFFFFF_40%,#F6F8FC_100%)] px-4 pb-16 pt-24 sm:px-6 lg:px-8"
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
     >
-      <div className="max-w-6xl mx-auto">
-        <motion.h1
-          className="font-montserrat font-extrabold text-4xl text-blue-900 mb-8 text-center"
-          initial={{ opacity: 0, y: 30 }}
+      <div className="mx-auto max-w-7xl">
+        <motion.section
+          className="sticky top-1 z-20 mt-4 rounded-3xl border border-white/80 bg-white/90 p-3 shadow-[0_18px_44px_rgba(15,23,42,0.09)] backdrop-blur-xl"
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.12, ease: 'easeOut' }}
         >
-          My Document Requests
-        </motion.h1>
-
-        {/* Category Filters */}
-        <motion.div
-          className="mb-6 flex flex-wrap justify-center gap-2"
-          role="group"
-          aria-label="Filter requests by status"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-        >
-          {categories.map((category) => (
-            <button
-              key={category.key}
-              onClick={() => setSelectedCategory(category.key)}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                selectedCategory === category.key
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-              aria-pressed={selectedCategory === category.key}
-              aria-label={`Filter by ${category.label.toLowerCase()}, ${category.count} requests`}
-            >
-              {category.label} ({category.count})
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Search Bar and Controls */}
-        <motion.div
-          className="mb-8 mt-12 flex flex-wrap items-center gap-4"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-        >
-          {/* Search Bar on the left */}
-          <div className="flex-1 max-w-none">
-            <label htmlFor="search-requests" className="sr-only">Search requests</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
+          <div className="grid gap-4 lg:grid-cols-[1fr_230px_180px_auto_auto]">
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <input
                 id="search-requests"
                 type="text"
-                placeholder="Search requests..."
+                placeholder="Search by document, purpose, or request ID..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-[3.25rem] w-full rounded-2xl border border-slate-200 bg-slate-50/80 pl-12 pr-4 text-sm font-medium text-slate-700 shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
                 aria-describedby="search-help"
               />
-            </div>
-            <div id="search-help" className="sr-only">Search by document name, details, or request ID</div>
-          </div>
+              <span id="search-help" className="sr-only">Search by document name, purpose, status, or request ID</span>
+            </label>
 
-          {/* View Toggle and Sort Controls on the right */}
-          <div className="flex flex-wrap gap-6 items-center">
-            <fieldset className="flex bg-gray-100 border border-gray-200 rounded-lg p-1">
-              <legend className="sr-only">Choose view mode</legend>
+            <CustomDropdown
+              icon={Tags}
+              options={statusOptions}
+              value={selectedStatus}
+              onChange={setSelectedStatus}
+              ariaLabel="Filter requests by status"
+            />
+
+            <CustomDropdown
+              icon={SlidersHorizontal}
+              options={sortOptions}
+              value={sortBy}
+              onChange={setSortBy}
+              ariaLabel="Sort requests"
+            />
+
+            <button
+              type="button"
+              onClick={() => setSortOrder((currentOrder) => currentOrder === 'asc' ? 'desc' : 'asc')}
+              className="inline-flex h-[3.25rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-100"
+              title={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
+              aria-label={`Sort ${sortOrder === 'asc' ? 'descending' : 'ascending'}`}
+            >
+              {sortOrder === 'asc' ? <SortAsc className="h-5 w-5" /> : <SortDesc className="h-5 w-5" />}
+            </button>
+
+            <div className="grid grid-cols-2 rounded-2xl border border-slate-200 bg-slate-100 p-1">
               <button
-                onClick={() => setViewMode('card')}
-                className={`px-3 py-2 rounded-md font-medium transition-colors ${
-                  viewMode === 'card'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
-                aria-pressed={viewMode === 'card'}
-                aria-label="View as cards"
+                aria-pressed={viewMode === 'grid'}
               >
-                <Grid3X3 className="w-4 h-4 inline mr-1" aria-hidden="true" />
-                Cards
+                <Grid3X3 className="h-4 w-4" />
+                Grid
               </button>
               <button
+                type="button"
                 onClick={() => setViewMode('list')}
-                className={`px-3 py-2 rounded-md font-medium transition-colors ${
+                className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-bold transition-all ${
                   viewMode === 'list'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800'
+                    ? 'bg-white text-blue-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
                 aria-pressed={viewMode === 'list'}
-                aria-label="View as list"
               >
-                <List className="w-4 h-4 inline mr-1" aria-hidden="true" />
+                <LayoutList className="h-4 w-4" />
                 List
-              </button>
-            </fieldset>
-
-            <div className="flex gap-2 items-center">
-              <label htmlFor="sort-by" className="text-sm text-gray-600 font-medium">Sort by:</label>
-              <select
-                id="sort-by"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              >
-                <option value="submittedAt">Date</option>
-                <option value="status">Status</option>
-                <option value="documentName">Document</option>
-              </select>
-              <button
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="p-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
-                title={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-                aria-label={`Sort ${sortOrder === 'asc' ? 'Descending' : 'Ascending'}`}
-              >
-                {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" aria-hidden="true" /> : <SortDesc className="w-4 h-4" aria-hidden="true" />}
               </button>
             </div>
           </div>
-        </motion.div>
+        </motion.section>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-        >
-          {filteredRequests.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-md" role="status" aria-live="polite">
-              <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Requests Yet
-              </h3>
-              <p className="text-gray-500 mb-6">
-                You haven't submitted any document requests yet.
-              </p>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedStatus('all');
+              }}
+              className="text-left text-sm font-bold text-blue-700 hover:text-blue-900 sm:text-right"
+            >
+              Clear {activeFiltersCount} active filter{activeFiltersCount > 1 ? 's' : ''}
+            </button>
+          )}
+        </div>
+
+        {filteredRequests.length === 0 ? (
+          <motion.div
+            className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white/85 p-12 text-center shadow-[0_20px_50px_rgba(15,23,42,0.06)]"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            <FileText className="mx-auto h-12 w-12 text-slate-300" aria-hidden="true" />
+            <h3 className="mt-4 text-xl font-bold text-slate-800">
+              {hasNoRequests ? 'No requests yet' : 'No requests found'}
+            </h3>
+            <p className="mt-2 text-slate-500">
+              {hasNoRequests
+                ? "You haven't submitted any document requests yet."
+                : 'Try a different keyword or status filter.'}
+            </p>
+            {hasNoRequests && (
               <button
+                type="button"
                 onClick={() => router.push('/documents')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="mt-6 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-100"
               >
                 Browse Documents
               </button>
-            </div>
-          ) : viewMode === 'card' ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" role="grid" aria-label="Document requests in card view">
-              {filteredRequests.map((request) => (
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            className={viewMode === 'grid'
+              ? 'mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3'
+              : 'mt-5 space-y-2.5'}
+            initial={{ opacity: 0, y: 32 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.18, ease: 'easeOut' }}
+          >
+            {viewMode === 'grid' ? (
+              filteredRequests.map((request) => (
                 <RequestCard key={request.requestId} request={request} onClick={handleRequestClick} />
-              ))}
-            </div>
-          ) : (
-            <RequestsList requests={filteredRequests} onRequestClick={handleRequestClick} />
-          )}
-        </motion.div>
+              ))
+            ) : (
+              <RequestsList requests={filteredRequests} onRequestClick={handleRequestClick} />
+            )}
+          </motion.div>
+        )}
 
-        {/* Detailed View Modal - Updated to pass onUpdateRequest/onReRequest if your modal supports it */}
         {selectedRequest && (
-          <RequestModal 
-            request={selectedRequest} 
-            user={user} 
-            onClose={handleCloseModal} 
+          <RequestModal
+            request={selectedRequest}
+            user={user}
+            onClose={handleCloseModal}
             cancelRequest={cancelRequest}
-            // Add these if you updated your useRequests hook to export refetchRequests
             onUpdateRequest={refetchRequests}
             onReRequest={refetchRequests}
           />
         )}
       </div>
-    </motion.div>
+    </motion.main>
   );
 }
