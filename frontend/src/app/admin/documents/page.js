@@ -306,7 +306,7 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
         className="group relative flex h-full min-h-[9.5rem] cursor-pointer items-center gap-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 pr-7 pl-5 shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#9eaddd] hover:shadow-[0_8px_18px_rgba(36,59,142,0.14)]"
       >
         <CategoryCornerBadge category={doc.details?.category} />
-        <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[3.5rem] bg-gradient-to-br from-[#eef3ff] to-[#e6eefb] opacity-80 transition-transform duration-300 group-hover:scale-110" />
+        
 
         <div className="relative z-10 shrink-0">
           <DocumentIcon />
