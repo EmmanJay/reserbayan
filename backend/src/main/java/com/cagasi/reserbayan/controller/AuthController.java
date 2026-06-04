@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.cagasi.reserbayan.dto.RegisterRequest; // IMPORT THIS!
-import com.cagasi.reserbayan.dto.ResidentDTO;
+import com.cagasi.reserbayan.dto.ProfileUpdateDTO;
 import com.cagasi.reserbayan.entity.Admin;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.entity.ResidentStatus;
@@ -120,13 +121,25 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody ResidentDTO residentDTO) {
+    public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateDTO profileDTO, Authentication authentication) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            Resident updatedResident = authService.updateProfile(residentDTO.getResidentId(), residentDTO);
+            if (authentication == null || !authentication.isAuthenticated()) {
+                response.put("success", false);
+                response.put("message", "Authentication required");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+            String role = authentication.getAuthorities().iterator().next().getAuthority();
+            Map<String, Object> profileResult = authService.updateAuthenticatedProfile(
+                    authentication.getName(),
+                    role,
+                    profileDTO);
             response.put("success", true);
-            response.put("user", updatedResident);
+            response.put("user", profileResult.get("user"));
+            response.put("role", profileResult.get("role"));
+            response.put("token", profileResult.get("token"));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

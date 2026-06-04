@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import NotificationDrawer from '@/app/components/notifications/NotificationDrawer';
+import ProfileDrawer from '@/app/components/profile/ProfileDrawer';
 
 const roleNavItems = {
   SUPER_ADMIN: [
@@ -93,6 +94,7 @@ export default function UserNavbar() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [role, setRole] = useState(null);
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [profileDrawerOpen, setProfileDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const navRole = getNavRole(role);
@@ -135,6 +137,14 @@ export default function UserNavbar() {
 
   const openNotifications = () => {
     setNotificationDrawerOpen(true);
+    setProfileDrawerOpen(false);
+    setIsOpen(false);
+  };
+
+  const openProfile = () => {
+    setProfileDrawerOpen(true);
+    setNotificationDrawerOpen(false);
+    setDropdownOpen(false);
     setIsOpen(false);
   };
 
@@ -180,14 +190,14 @@ export default function UserNavbar() {
 
             {dropdownOpen && user && (
               <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg">
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-2 px-4 py-3 text-gray-700 transition-colors first:rounded-t-lg hover:bg-gray-50 hover:text-[#1E2566]"
-                  onClick={() => setDropdownOpen(false)}
+                <button
+                  type="button"
+                  className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors first:rounded-t-lg hover:bg-gray-50 hover:text-[#1E2566]"
+                  onClick={openProfile}
                 >
                   <User className="h-4 w-4" />
                   <span>View Profile</span>
-                </Link>
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -239,17 +249,14 @@ export default function UserNavbar() {
 
                 {dropdownOpen && (
                   <div className="overflow-hidden rounded-lg bg-gray-50">
-                    <Link
-                      href="/profile"
-                      className="flex items-center space-x-2 px-4 py-3 text-gray-700 transition-colors hover:bg-gray-100 hover:text-[#1E2566]"
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        setIsOpen(false);
-                      }}
+                    <button
+                      type="button"
+                      className="flex w-full items-center space-x-2 px-4 py-3 text-left text-gray-700 transition-colors hover:bg-gray-100 hover:text-[#1E2566]"
+                      onClick={openProfile}
                     >
                       <User className="h-4 w-4" />
                       <span>View Profile</span>
-                    </Link>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
@@ -276,6 +283,13 @@ export default function UserNavbar() {
         role={navRole}
         user={user}
         onUnreadCountChange={setUnreadCount}
+      />
+
+      <ProfileDrawer
+        isOpen={profileDrawerOpen}
+        onClose={() => setProfileDrawerOpen(false)}
+        role={navRole}
+        user={user}
       />
 
       {showLogoutConfirm && (
