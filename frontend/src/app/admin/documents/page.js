@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -71,6 +70,8 @@ const timelineOptions = [
   { value: 'multi-day', label: 'Multi-day' },
   { value: 'variable', label: 'Variable' },
 ];
+
+const skipDocumentsAnimationKey = 'reserbayan:skip-documents-animation';
 
 function getCategoryConfig(category) {
   return categoryStyles[category] || {
@@ -349,10 +350,12 @@ function AdminDocumentCard({ doc, viewMode, onDelete, basePath, deleteMode }) {
   );
 }
 
-export default function AdminDocumentsPage() {
+export default function AdminDocumentsPage({ disableEntranceAnimation = false } = {}) {
   const pathname = usePathname();
   const isSuperAdmin = pathname?.startsWith('/superadmin');
+  const isAddDocumentRoute = pathname?.endsWith('/documents/add');
   const basePath = isSuperAdmin ? '/superadmin' : '/admin';
+  const [skipEntranceAnimation, setSkipEntranceAnimation] = useState(disableEntranceAnimation || isAddDocumentRoute);
   const [documentsData, setDocumentsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -366,8 +369,14 @@ export default function AdminDocumentsPage() {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const shouldAnimateEntrance = !skipEntranceAnimation;
 
   useEffect(() => {
+    if (sessionStorage.getItem(skipDocumentsAnimationKey) === 'true') {
+      setSkipEntranceAnimation(true);
+      sessionStorage.removeItem(skipDocumentsAnimationKey);
+    }
+
     fetchDocuments();
   }, []);
 
@@ -400,6 +409,12 @@ export default function AdminDocumentsPage() {
     setDeleteTarget(null);
     setDeletePassword('');
     setDeleteError('');
+  };
+
+  const openAddDocumentModal = () => {
+    window.dispatchEvent(new CustomEvent('reserbayan:open-add-document-modal', {
+      detail: { basePath },
+    }));
   };
 
   const handleDelete = async (event) => {
@@ -511,9 +526,9 @@ export default function AdminDocumentsPage() {
   return (
     <motion.div
       className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 px-4 pb-12 pt-24 sm:px-6 lg:px-8"
-      initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: 'easeOut' }}
+      initial={shouldAnimateEntrance ? { opacity: 0, y: 32 } : false}
+      animate={shouldAnimateEntrance ? { opacity: 1, y: 0 } : undefined}
+      transition={shouldAnimateEntrance ? { duration: 0.45, ease: 'easeOut' } : undefined}
     >
       <div className="mx-auto max-w-[100rem] px-10 py-5">
         <section className="relative z-20 rounded-2xl border border-white/80 bg-white/95 p-3 shadow-[0_14px_40px_rgba(15,23,42,0.08)]">
@@ -574,8 +589,9 @@ export default function AdminDocumentsPage() {
                 </button>
               </div>
 
-              <Link
-                href={`${basePath}/documents/add`}
+              <button
+                type="button"
+                onClick={openAddDocumentModal}
                 className="group relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-sky-600 text-white shadow-[0_12px_28px_rgba(37,99,235,0.2)] transition hover:-translate-y-0.5"
                 aria-label="Add a new document"
               >
@@ -583,7 +599,7 @@ export default function AdminDocumentsPage() {
                 <span className="pointer-events-none absolute right-0 top-[calc(100%+0.55rem)] z-[120] whitespace-nowrap rounded-xl bg-slate-900 px-3 py-2 text-xs font-extrabold text-white opacity-0 shadow-lg transition-all group-hover:translate-y-0 group-hover:opacity-100">
                   Add a new document
                 </span>
-              </Link>
+              </button>
               <button
                 type="button"
                 onClick={() => setDeleteMode((currentValue) => !currentValue)}
@@ -608,9 +624,9 @@ export default function AdminDocumentsPage() {
         {filteredDocuments.length === 0 ? (
           <motion.div
             className="mt-6 rounded-[1.75rem] border border-dashed border-blue-200 bg-white/80 p-12 text-center shadow-[0_16px_44px_rgba(15,23,42,0.07)]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            initial={shouldAnimateEntrance ? { opacity: 0, y: 20 } : false}
+            animate={shouldAnimateEntrance ? { opacity: 1, y: 0 } : undefined}
+            transition={shouldAnimateEntrance ? { duration: 0.3, ease: 'easeOut' } : undefined}
           >
             <FileText className="mx-auto h-12 w-12 text-blue-300" />
             <h3 className="mt-4 font-montserrat text-2xl font-extrabold text-[#0F2A6B]">No documents found</h3>
@@ -621,9 +637,9 @@ export default function AdminDocumentsPage() {
             className={viewMode === 'grid'
               ? 'mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
               : 'mt-4 grid gap-3'}
-            initial={{ opacity: 0, y: 28 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+            initial={shouldAnimateEntrance ? { opacity: 0, y: 28 } : false}
+            animate={shouldAnimateEntrance ? { opacity: 1, y: 0 } : undefined}
+            transition={shouldAnimateEntrance ? { duration: 0.4, delay: 0.1, ease: 'easeOut' } : undefined}
           >
             {filteredDocuments.map((doc) => (
               <AdminDocumentCard
