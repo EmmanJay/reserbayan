@@ -3,9 +3,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FileText, Plus, ArrowRight, Calendar, Megaphone, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, FileText, Plus, ArrowRight, Calendar, Megaphone, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
+import { useRequestDrawer } from '@/contexts/RequestDrawerContext';
 import { useRequests } from '@/hooks/useRequests';
 import PendingRestrictionModal from '@/app/components/PendingRestrictionModal';
 import RequestModal from '@/app/components/requests/RequestModal'; // Detail View
@@ -16,6 +17,12 @@ import { StatusBadge } from '@/app/components/ui/status-badge';
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const {
+    draft: documentDetailRequestDraft,
+    hasDraft: hasDocumentDetailRequestDraft,
+    restoreRequest,
+    discardRequest,
+  } = useRequestDrawer();
   const { requests, loading, refetchRequests, cancelRequest } = useRequests(user);
   const router = useRouter();
   
@@ -28,6 +35,7 @@ export default function DashboardPage() {
   const [showRejectedModal, setShowRejectedModal] = useState(false);
   const [viewRequest, setViewRequest] = useState(null);
   const [showAccountActivityModal, setShowAccountActivityModal] = useState(false);
+  const [showExistingRequestPrompt, setShowExistingRequestPrompt] = useState(false);
 
   // Announcements state
   const [announcements, setAnnouncements] = useState([]);
@@ -161,6 +169,10 @@ export default function DashboardPage() {
                       }
                       if (user.status === 'REJECTED') {
                         setShowRejectedModal(true);
+                        return;
+                      }
+                      if (hasDocumentDetailRequestDraft) {
+                        setShowExistingRequestPrompt(true);
                         return;
                       }
                       setShowRequestModal(true);
@@ -401,6 +413,73 @@ export default function DashboardPage() {
         </div>
 
         {/* === MODALS SECTION === */}
+
+        {showExistingRequestPrompt && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+            <motion.div
+              className="w-full max-w-md overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.24)]"
+              initial={{ opacity: 0, y: 32, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 32, scale: 0.96 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="existing-request-title"
+            >
+              <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-400 p-5 text-white">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-2xl bg-white/20 p-2">
+                    <AlertTriangle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 id="existing-request-title" className="font-montserrat text-xl font-extrabold">
+                      Finish this request first
+                    </h2>
+                    <p className="mt-1 text-sm font-medium text-amber-50">
+                      You already have an unfinished document request from the document details page.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Current draft</p>
+                  <p className="mt-1 text-sm font-extrabold text-slate-800">
+                    {documentDetailRequestDraft?.document?.name || 'Document request'}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-600">
+                    Continue editing the current draft, or discard it to start a new dashboard request.
+                  </p>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      discardRequest();
+                      setShowExistingRequestPrompt(false);
+                      setShowRequestModal(true);
+                    }}
+                    className="inline-flex flex-1 items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-extrabold text-red-700 transition hover:bg-red-100"
+                  >
+                    Discard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowExistingRequestPrompt(false);
+                      restoreRequest();
+                    }}
+                    className="inline-flex flex-[1.2] items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-blue-700"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
         
         {/* 1. CREATE REQUEST MODAL */}
         {showRequestModal && (
