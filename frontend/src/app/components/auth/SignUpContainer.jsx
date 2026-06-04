@@ -667,6 +667,16 @@ export default function SignUpContainer({ onClose }) {
         >
           {/* Reduced space-y-8 to space-y-5 */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {loginError && (
+              <div
+                className="relative z-20 rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-left shadow-sm"
+                role="alert"
+                aria-live="polite"
+              >
+                <p className="text-sm font-bold leading-6 text-red-700">{loginError}</p>
+              </div>
+            )}
+
              <motion.div variants={fieldVariants} className="space-y-1">
               <label htmlFor="login-email" className={labelStyle}>Email or Username</label>
               <div className="relative">
@@ -676,7 +686,10 @@ export default function SignUpContainer({ onClose }) {
                   type="text" 
                   placeholder="Enter your email or username" 
                   value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    if (loginError) setLoginError('');
+                  }}
                   className={inputStyle} 
                   required 
                 />
@@ -692,7 +705,10 @@ export default function SignUpContainer({ onClose }) {
                   type={showLoginPassword ? "text" : "password"} 
                   placeholder="Enter your password" 
                   value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onChange={(e) => {
+                    setLoginPassword(e.target.value);
+                    if (loginError) setLoginError('');
+                  }}
                   className={`${inputStyle} pr-10`} 
                   required 
                 />
@@ -702,17 +718,6 @@ export default function SignUpContainer({ onClose }) {
               </div>
             </motion.div>
 
-            {loginError && (
-              <motion.div
-                variants={fieldVariants}
-                className="mt-1 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-left shadow-sm"
-                role="alert"
-                aria-live="polite"
-              >
-                <p className="text-sm font-semibold leading-6 text-red-700">{loginError}</p>
-              </motion.div>
-            )}
-            
             <motion.div variants={fieldVariants} className="pt-4">
               <Button type="submit" className={`w-full bg-[#004AAD] hover:bg-[#003A88] text-white font-bold rounded-xl ${inputHeight} text-lg shadow-lg transition-all`} disabled={loading}>
                 {loading ? "Logging in..." : "Log In"}

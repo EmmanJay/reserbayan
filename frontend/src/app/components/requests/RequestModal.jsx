@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, XCircle, Paperclip, Edit2, Save, Trash2, Plus, RotateCcw, Mail, MapPin, Phone, User } from 'lucide-react';
+import { FileText, Calendar, XCircle, Paperclip, Edit2, Save, Trash2, Plus, RotateCcw, Mail, MapPin, Phone, User, CheckCircle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
 
-function RequestModal({ request, user, onClose, cancelRequest, approveRequest, rejectRequest, onReRequest, onUpdateRequest }) {
+function RequestModal({ request, user, onClose, cancelRequest, completeRequest, approveRequest, rejectRequest, onReRequest, onUpdateRequest }) {
   const [notification, setNotification] = useState(null);
   
   // --- LOCAL DISPLAY STATE ---
@@ -21,6 +21,7 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
   const [filesToRemove, setFilesToRemove] = useState([]); 
   const [newFiles, setNewFiles] = useState([]); 
   const [isSaving, setIsSaving] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [isDownloading, setIsDownloading] = useState({});
 
   if (!displayRequest) return null;
@@ -207,6 +208,41 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
       } catch (err) {
         setNotification({ type: 'error', title: 'Network Error', message: err.message });
       }
+    }
+  };
+
+  const handleCompleteRequest = async () => {
+    if (!window.confirm('Mark this request as complete? Use this once the resident has claimed the document.')) {
+      return;
+    }
+
+    setIsCompleting(true);
+    try {
+      if (!completeRequest) {
+        throw new Error('Completing requests is not available in this view.');
+      }
+
+      const updatedRequest = await completeRequest(displayRequest.requestId);
+
+      setDisplayRequest((current) => ({
+        ...current,
+        ...(updatedRequest || {}),
+        status: 'Completed',
+        updatedAt: updatedRequest?.updatedAt || new Date().toISOString(),
+      }));
+
+      setNotification({
+        type: 'success',
+        title: 'Marked Complete',
+        message: 'Document request has been marked as completed.',
+        autoClose: true
+      });
+
+      if (onUpdateRequest) onUpdateRequest();
+    } catch (err) {
+      setNotification({ type: 'error', title: 'Completion Failed', message: err.message });
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -592,6 +628,17 @@ function RequestModal({ request, user, onClose, cancelRequest, approveRequest, r
                         Approve Request
                     </button>
                     </>
+                 )}
+
+                 {user === null && displayRequest.status?.toLowerCase() === 'approved' && (
+                    <button
+                        onClick={handleCompleteRequest}
+                        disabled={isCompleting}
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2 font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        <CheckCircle className="w-4 h-4" />
+                        {isCompleting ? 'Completing...' : 'Mark as Complete'}
+                    </button>
                  )}
 
                  {user !== null && displayRequest.status?.toLowerCase() === 'pending' && (
