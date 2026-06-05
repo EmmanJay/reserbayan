@@ -72,8 +72,26 @@ public class AdminController {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
-        return role.equals("ROLE_ADMIN") || role.equals("ROLE_SUPER_ADMIN");
+
+        boolean hasAdminAuthority = authentication.getAuthorities().stream()
+                .anyMatch(authority -> {
+                    String role = authority.getAuthority();
+                    return "ROLE_ADMIN".equals(role)
+                            || "ROLE_SUPER_ADMIN".equals(role)
+                            || "ADMIN".equals(role)
+                            || "SUPER_ADMIN".equals(role);
+                });
+        if (hasAdminAuthority) {
+            return true;
+        }
+
+        String username = authentication.getName();
+        Admin admin = adminRepository.findByUsername(username).orElse(null);
+        if (admin == null) {
+            admin = adminRepository.findByResidentEmail(username).orElse(null);
+        }
+
+        return admin != null && (admin.getRole() == Role.ADMIN || admin.getRole() == Role.SUPER_ADMIN);
     }
 
     // Summary & Analytics - Limited for admin role
