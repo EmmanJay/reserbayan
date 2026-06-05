@@ -16,6 +16,7 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+import NotificationModal from '@/shared/components/modals/NotificationModal';
 
 const categoryOptions = [
   { value: '', label: 'Select category' },
@@ -194,6 +195,7 @@ export default function AddDocumentModalPage({
   const [usesText, setUsesText] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
+  const [notification, setNotification] = useState(null);
   const hasDraft = Boolean(
     generatedId ||
     formData.name ||
@@ -334,7 +336,11 @@ export default function AddDocumentModalPage({
     event.preventDefault();
 
     if (!formData.details.category) {
-      alert('Please select a document category.');
+      setNotification({
+        type: 'error',
+        title: 'Category Required',
+        message: 'Please select a document category.',
+      });
       return;
     }
 
@@ -384,7 +390,11 @@ export default function AddDocumentModalPage({
         router.push(`${basePath}/documents`);
       }
     } catch (error) {
-      alert(`Error creating document type: ${error.message}`);
+      setNotification({
+        type: 'error',
+        title: 'Document Creation Failed',
+        message: `Error creating document type: ${error.message}`,
+      });
     } finally {
       setLoading(false);
     }
@@ -814,6 +824,15 @@ export default function AddDocumentModalPage({
           </div>
         )}
       </AnimatePresence>
+
+      <NotificationModal
+        isOpen={!!notification}
+        onClose={() => setNotification(null)}
+        type={notification?.type}
+        title={notification?.title}
+        message={notification?.message}
+        autoClose={notification?.autoClose}
+      />
     </>
   );
 }

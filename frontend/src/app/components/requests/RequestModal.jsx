@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { FileText, Calendar, XCircle, Paperclip, Edit2, Save, Trash2, Plus, RotateCcw, Mail, MapPin, Phone, User, CheckCircle } from 'lucide-react';
 import NotificationModal from '@/app/components/NotificationModal';
+import ConfirmationModal from '@/shared/components/modals/ConfirmationModal';
+import RejectionReasonModal from '@/shared/components/modals/RejectionReasonModal';
 
 function RequestModal({ request, user, onClose, cancelRequest, completeRequest, approveRequest, rejectRequest, onReRequest, onUpdateRequest }) {
   const [notification, setNotification] = useState(null);
@@ -23,6 +25,9 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
   const [isSaving, setIsSaving] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isDownloading, setIsDownloading] = useState({});
+  const [confirmation, setConfirmation] = useState(null);
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   if (!displayRequest) return null;
 
@@ -140,115 +145,145 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
   // --- ACTIONS ---
 
   const handleCancelRequest = async () => {
-    if (window.confirm('Are you sure you want to cancel this request?')) {
-      const result = await cancelRequest(displayRequest.requestId);
-      if (result.success) {
-        setNotification({
-            type: 'success',
-            title: 'Cancelled',
-            message: 'Request cancelled successfully.',
-            autoClose: true
-        });
-        setTimeout(onClose, 2000);
-      } else {
-        setNotification({ type: 'error', title: 'Error', message: result.error });
-      }
-    }
+    setConfirmation({
+      type: 'delete',
+      title: 'Cancel Request',
+      message: 'Are you sure you want to cancel this request?',
+      confirmText: 'Cancel Request',
+      confirmButtonClass: 'bg-red-600 hover:bg-red-700',
+      onConfirm: async () => {
+        const result = await cancelRequest(displayRequest.requestId);
+        if (result.success) {
+          setNotification({
+              type: 'success',
+              title: 'Cancelled',
+              message: 'Request cancelled successfully.',
+              autoClose: true
+          });
+          setTimeout(onClose, 2000);
+        } else {
+          setNotification({ type: 'error', title: 'Error', message: result.error });
+        }
+      },
+    });
   };
 
   const handleApproveRequest = async () => {
-    if (window.confirm('Are you sure you want to approve this request?')) {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:8080/api/document-requests/${displayRequest.requestId}/approve`, {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (res.ok) {
-            setNotification({
-                type: 'success',
-                title: 'Approved',
-                message: 'Request approved successfully.',
-                autoClose: true
-            });
-            setTimeout(onClose, 2000);
-        } else {
-            setNotification({ type: 'error', title: 'Error', message: 'Failed to approve request.' });
+    setConfirmation({
+      type: 'approve',
+      title: 'Approve Request',
+      message: 'Are you sure you want to approve this request?',
+      confirmText: 'Approve',
+      confirmButtonClass: 'bg-green-600 hover:bg-green-700',
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`http://localhost:8080/api/document-requests/${displayRequest.requestId}/approve`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (res.ok) {
+              setNotification({
+                  type: 'success',
+                  title: 'Approved',
+                  message: 'Request approved successfully.',
+                  autoClose: true
+              });
+              setTimeout(onClose, 2000);
+          } else {
+              setNotification({ type: 'error', title: 'Error', message: 'Failed to approve request.' });
+          }
+        } catch (err) {
+          setNotification({ type: 'error', title: 'Network Error', message: err.message });
         }
-      } catch (err) {
-        setNotification({ type: 'error', title: 'Network Error', message: err.message });
-      }
-    }
+      },
+    });
   };
 
   const handleRejectRequest = async () => {
-    const rejectionReason = window.prompt('Enter the rejection reason for this request:');
-    if (rejectionReason?.trim()) {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:8080/api/document-requests/${displayRequest.requestId}/reject`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ rejectionReason: rejectionReason.trim() }),
-        });
-        if (res.ok) {
-            setNotification({
-                type: 'success',
-                title: 'Rejected',
-                message: 'Request rejected successfully.',
-                autoClose: true
-            });
-            setTimeout(onClose, 2000);
-        } else {
-            setNotification({ type: 'error', title: 'Error', message: 'Failed to reject request.' });
-        }
-      } catch (err) {
-        setNotification({ type: 'error', title: 'Network Error', message: err.message });
+    setRejectionModalOpen(true);
+  };
+
+  const handleRejectSubmit = async (rejectionReason) => {
+    setIsRejecting(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:8080/api/document-requests/${displayRequest.requestId}/reject`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rejectionReason: rejectionReason.trim() }),
+      });
+      if (res.ok) {
+          setRejectionModalOpen(false);
+          setNotification({
+              type: 'success',
+              title: 'Rejected',
+              message: 'Request rejected successfully.',
+              autoClose: true
+          });
+          setTimeout(onClose, 2000);
+      } else {
+          setNotification({ type: 'error', title: 'Error', message: 'Failed to reject request.' });
       }
+    } catch (err) {
+      setNotification({ type: 'error', title: 'Network Error', message: err.message });
+    } finally {
+      setIsRejecting(false);
     }
   };
 
   const handleCompleteRequest = async () => {
-    if (!window.confirm('Mark this request as complete? Use this once the resident has claimed the document.')) {
-      return;
-    }
+    setConfirmation({
+      type: 'complete',
+      title: 'Mark Request Complete',
+      message: 'Mark this request as complete? Use this once the resident has claimed the document.',
+      confirmText: 'Mark Complete',
+      confirmButtonClass: 'bg-[#243b8e] hover:bg-[#122361]',
+      onConfirm: async () => {
+        setIsCompleting(true);
+        try {
+          if (!completeRequest) {
+            throw new Error('Completing requests is not available in this view.');
+          }
 
-    setIsCompleting(true);
-    try {
-      if (!completeRequest) {
-        throw new Error('Completing requests is not available in this view.');
-      }
+          const updatedRequest = await completeRequest(displayRequest.requestId);
 
-      const updatedRequest = await completeRequest(displayRequest.requestId);
+          setDisplayRequest((current) => ({
+            ...current,
+            ...(updatedRequest || {}),
+            status: 'Completed',
+            updatedAt: updatedRequest?.updatedAt || new Date().toISOString(),
+          }));
 
-      setDisplayRequest((current) => ({
-        ...current,
-        ...(updatedRequest || {}),
-        status: 'Completed',
-        updatedAt: updatedRequest?.updatedAt || new Date().toISOString(),
-      }));
+          setNotification({
+            type: 'success',
+            title: 'Marked Complete',
+            message: 'Document request has been marked as completed.',
+            autoClose: true
+          });
 
-      setNotification({
-        type: 'success',
-        title: 'Marked Complete',
-        message: 'Document request has been marked as completed.',
-        autoClose: true
-      });
-
-      if (onUpdateRequest) onUpdateRequest();
-    } catch (err) {
-      setNotification({ type: 'error', title: 'Completion Failed', message: err.message });
-    } finally {
-      setIsCompleting(false);
-    }
+          if (onUpdateRequest) onUpdateRequest();
+        } catch (err) {
+          setNotification({ type: 'error', title: 'Completion Failed', message: err.message });
+        } finally {
+          setIsCompleting(false);
+        }
+      },
+    });
   };
 
   // --- RE-REQUEST LOGIC ---
   const handleReRequest = async () => {
-    if(window.confirm('Do you want to create a new request with the same details?')) {
+    setConfirmation({
+      type: 'warning',
+      title: 'Create New Request',
+      message: 'Do you want to create a new request with the same details?',
+      confirmText: 'Create Request',
+      confirmButtonClass: 'bg-[#243b8e] hover:bg-[#122361]',
+      onConfirm: async () => {
         try {
             const token = localStorage.getItem('token');
             const dataPayload = {
@@ -285,7 +320,8 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
         } catch (error) {
             setNotification({ type: 'error', title: 'Error', message: 'Network error occurred.' });
         }
-    }
+      },
+    });
   };
 
   // --- EDITING LOGIC ---
@@ -672,6 +708,26 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
             autoClose={notification.autoClose}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={!!confirmation}
+        onClose={() => setConfirmation(null)}
+        onConfirm={confirmation?.onConfirm}
+        type={confirmation?.type}
+        title={confirmation?.title}
+        message={confirmation?.message}
+        confirmText={confirmation?.confirmText}
+        confirmButtonClass={confirmation?.confirmButtonClass}
+      />
+
+      <RejectionReasonModal
+        isOpen={rejectionModalOpen}
+        onClose={() => setRejectionModalOpen(false)}
+        onSubmit={handleRejectSubmit}
+        title="Reject Request"
+        itemName={displayRequest.documentName}
+        loading={isRejecting}
+      />
     </div>
   );
 }
