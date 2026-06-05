@@ -1,73 +1,11 @@
 import { ArrowRight, Calendar, Clock3, FileText, Hash, Paperclip } from 'lucide-react';
-import { StatusBadge } from '@/app/components/ui/status-badge';
-
-const formatDate = (dateValue) => {
-  if (!dateValue) return 'Not updated yet';
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return 'Date unavailable';
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
-const getAttachmentCount = (request) => {
-  if (typeof request.attachmentCount === 'number') return request.attachmentCount;
-  return request.attachments?.length || 0;
-};
-
-const getStatusAccent = (status) => {
-  const statusLower = status?.toLowerCase() || '';
-
-  if (statusLower === 'pending') {
-    return {
-      bar: 'from-amber-400 via-orange-400 to-yellow-400',
-      glow: 'from-amber-50 to-orange-50',
-      icon: 'from-amber-500 to-orange-500',
-    };
-  }
-  if (statusLower === 'approved') {
-    return {
-      bar: 'from-emerald-500 via-green-500 to-teal-400',
-      glow: 'from-emerald-50 to-green-50',
-      icon: 'from-emerald-600 to-green-500',
-    };
-  }
-  if (statusLower === 'rejected' || statusLower === 'declined') {
-    return {
-      bar: 'from-red-500 via-rose-500 to-red-400',
-      glow: 'from-red-50 to-rose-50',
-      icon: 'from-red-600 to-rose-500',
-    };
-  }
-  if (statusLower === 'completed') {
-    return {
-      bar: 'from-[#243b8e] via-[#2f84c0] to-[#2f84c0]',
-      glow: 'from-[#eef3ff] to-[#eef3ff]',
-      icon: 'from-[#243b8e] to-[#2f84c0]',
-    };
-  }
-  if (statusLower === 'cancelled') {
-    return {
-      bar: 'from-slate-500 via-gray-500 to-slate-400',
-      glow: 'from-slate-50 to-gray-50',
-      icon: 'from-slate-600 to-gray-500',
-    };
-  }
-
-  return {
-    bar: 'from-[#243b8e] via-[#2f84c0] to-[#2f84c0]',
-    glow: 'from-[#eef3ff] to-[#eef3ff]',
-    icon: 'from-[#122361] to-[#2f84c0]',
-  };
-};
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { formatShortDate } from '@/shared/lib/date';
+import { getAttachmentCount, getRequestStatusAccent } from '@/shared/lib/requests';
 
 function RequestCard({ request, onClick }) {
   const attachmentCount = getAttachmentCount(request);
-  const accent = getStatusAccent(request.status);
+  const accent = getRequestStatusAccent(request.status);
 
   return (
     <button
@@ -113,14 +51,14 @@ function RequestCard({ request, onClick }) {
             <Calendar className="h-3 w-3 text-[#243b8e]" aria-hidden="true" />
             Submitted
           </span>
-          <p className="truncate text-slate-700">{formatDate(request.submittedAt)}</p>
+          <p className="truncate text-slate-700">{formatShortDate(request.submittedAt)}</p>
         </div>
         <div className="rounded-xl bg-slate-50 px-2.5 py-2 ring-1 ring-slate-100">
           <span className="mb-0.5 flex items-center gap-1 text-slate-400">
             <Clock3 className="h-3 w-3 text-emerald-600" aria-hidden="true" />
             Updated
           </span>
-          <p className="truncate text-slate-700">{formatDate(request.updatedAt)}</p>
+          <p className="truncate text-slate-700">{formatShortDate(request.updatedAt)}</p>
         </div>
         <div className="rounded-xl bg-[#eef3ff] px-2.5 py-2 text-[#122361] ring-1 ring-[#d8def2]">
           <span className="mb-0.5 flex items-center gap-1 text-[#2f84c0]">

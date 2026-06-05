@@ -1,41 +1,14 @@
 import { ArrowRight, Calendar, Clock3, FileText, Hash, Paperclip } from 'lucide-react';
-import { StatusBadge } from '@/app/components/ui/status-badge';
-
-const formatDate = (dateValue) => {
-  if (!dateValue) return 'Not updated yet';
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return 'Date unavailable';
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
-const getAttachmentCount = (request) => {
-  if (typeof request.attachmentCount === 'number') return request.attachmentCount;
-  return request.attachments?.length || 0;
-};
-
-const getStatusAccent = (status) => {
-  const statusLower = status?.toLowerCase() || '';
-
-  if (statusLower === 'pending') return 'from-amber-400 to-orange-400';
-  if (statusLower === 'approved') return 'from-emerald-500 to-green-500';
-  if (statusLower === 'rejected' || statusLower === 'declined') return 'from-red-500 to-rose-500';
-  if (statusLower === 'completed') return 'from-[#243b8e] to-[#2f84c0]';
-  if (statusLower === 'cancelled') return 'from-slate-500 to-gray-500';
-  return 'from-[#243b8e] to-[#2f84c0]';
-};
+import { StatusBadge } from '@/shared/components/ui/StatusBadge';
+import { formatShortDate } from '@/shared/lib/date';
+import { getAttachmentCount, getRequestStatusAccent } from '@/shared/lib/requests';
 
 function RequestsList({ requests, onRequestClick }) {
   return (
     <div className="space-y-2.5" role="list" aria-label="Document requests in list view">
       {requests.map((request) => {
         const attachmentCount = getAttachmentCount(request);
-        const accent = getStatusAccent(request.status);
+        const accent = getRequestStatusAccent(request.status).compact;
 
         return (
           <button
@@ -84,11 +57,11 @@ function RequestsList({ requests, onRequestClick }) {
                 <div className="grid flex-1 grid-cols-1 gap-2 text-[0.72rem] font-bold text-slate-600 sm:grid-cols-2 lg:max-w-[20rem]">
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
                     <Calendar className="h-3.5 w-3.5 text-[#243b8e]" aria-hidden="true" />
-                    <span className="truncate">{formatDate(request.submittedAt)}</span>
+                    <span className="truncate">{formatShortDate(request.submittedAt)}</span>
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-100">
                     <Clock3 className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
-                    <span className="truncate">{formatDate(request.updatedAt)}</span>
+                    <span className="truncate">{formatShortDate(request.updatedAt)}</span>
                   </span>
                 </div>
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eef3ff] text-[#122361] transition-all group-hover:bg-[#243b8e] group-hover:text-white">

@@ -1,4 +1,4 @@
-import AnnouncementsManagement from '@/app/components/admin/AnnouncementsManagementPage';
+import AnnouncementsManagement from '@/features/admin/announcements/AnnouncementsManagementPage';
 
 export default function SuperAdminAnnouncementsPage() {
   return (
