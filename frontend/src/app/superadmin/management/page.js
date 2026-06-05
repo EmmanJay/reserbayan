@@ -282,6 +282,22 @@ function SuperAdminManagementContent() {
     }
   };
 
+  useEffect(() => {
+    if (loading || loadingData || activeTab !== 'resident-requests') return;
+
+    const residentIdParam = searchParams.get('residentId');
+    if (!residentIdParam) return;
+
+    const residentRequest = data.find((item) => String(item.residentId) === residentIdParam);
+    if (residentRequest) {
+      setSelectedResident(residentRequest);
+      setModalType('resident-requests');
+      setIsViewDetailsModalOpen(true);
+    }
+
+    window.history.replaceState(null, '', '/superadmin/management?tab=resident-requests');
+  }, [activeTab, data, loading, loadingData, searchParams]);
+
   const handleTabChange = (tab) => {
     if (!SUPERADMIN_ALLOWED_TABS.includes(tab)) return;
     if (tab === activeTab) return;

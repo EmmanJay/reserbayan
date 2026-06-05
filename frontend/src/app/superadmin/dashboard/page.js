@@ -361,9 +361,7 @@ export default function SuperAdminDashboard() {
 
   // Function to handle viewing account details
   const handleViewAccountDetails = (account) => {
-    setSelectedAccount(account);
-    setIsModalOpen(true);
-    fetchAccountDetails(account.id);
+    router.push(`/superadmin/management?tab=resident-requests&residentId=${account.id}`);
   };
 
   // Enhanced function to handle account approval

@@ -10,10 +10,11 @@ import RequestModal from '@/app/components/requests/RequestModal';
 import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 import Link from 'next/link';
 
-const ADMIN_ALLOWED_TABS = ['residents', 'document-requests'];
+const ADMIN_ALLOWED_TABS = ['residents', 'resident-requests', 'document-requests'];
 
 const managementTabConfig = {
   residents: { label: 'Residents', icon: Users, color: 'green', description: 'Manage verified resident records' },
+  'resident-requests': { label: 'Pending Accounts', icon: Users, color: 'orange', description: 'Review resident verification requests' },
   'document-requests': { label: 'Document Requests', icon: FileText, color: 'purple', description: 'Review and process document requests' },
 };
 
@@ -174,6 +175,9 @@ function AdminManagementContent() {
         case 'residents':
           endpoint = 'residents';
           break;
+        case 'resident-requests':
+          endpoint = 'resident-requests';
+          break;
         case 'document-requests':
           endpoint = 'requests';
           break;
@@ -181,7 +185,7 @@ function AdminManagementContent() {
           endpoint = 'residents';
       }
 
-      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}`, {
+      const response = await fetch(`http://localhost:8080/api/admin/${endpoint}`, {
         headers: token ? {
           'Authorization': `Bearer ${token}`,
         } : {},
@@ -219,6 +223,22 @@ function AdminManagementContent() {
       }
     }
   };
+
+  useEffect(() => {
+    if (loading || loadingData || activeTab !== 'resident-requests') return;
+
+    const residentIdParam = searchParams.get('residentId');
+    if (!residentIdParam) return;
+
+    const residentRequest = data.find((item) => String(item.residentId) === residentIdParam);
+    if (residentRequest) {
+      setSelectedResident(residentRequest);
+      setModalType('resident-requests');
+      setIsViewDetailsModalOpen(true);
+    }
+
+    window.history.replaceState(null, '', '/admin/management?tab=resident-requests');
+  }, [activeTab, data, loading, loadingData, searchParams]);
 
   const handleTabChange = (tab) => {
     if (!ADMIN_ALLOWED_TABS.includes(tab)) return;
@@ -289,10 +309,10 @@ function AdminManagementContent() {
       confirmText: 'Delete',
       onConfirm: async () => {
         const endpoint = activeTab === 'residents' ? 'residents' : 'resident-requests';
-
+        
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}`, {
+          const response = await fetch(`http://localhost:8080/api/admin/${endpoint}/${item.residentId}`, {
             method: 'DELETE',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -328,7 +348,7 @@ function AdminManagementContent() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${item.residentId}/password`, {
+      const response = await fetch(`http://localhost:8080/api/admin/${endpoint}/${item.residentId}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -411,7 +431,7 @@ function AdminManagementContent() {
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${itemId}/approve`, {
+          const response = await fetch(`http://localhost:8080/api/admin/${endpoint}/${itemId}/approve`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -476,7 +496,7 @@ function AdminManagementContent() {
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const response = await fetch(`http://localhost:8080/api/superadmin/requests/${item.requestId}/complete`, {
+          const response = await fetch(`http://localhost:8080/api/admin/requests/${item.requestId}/complete`, {
             method: 'PUT',
             headers: token ? {
               'Authorization': `Bearer ${token}`,
@@ -515,7 +535,7 @@ function AdminManagementContent() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/superadmin/${endpoint}/${itemId}/reject`, {
+      const response = await fetch(`http://localhost:8080/api/admin/${endpoint}/${itemId}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -616,7 +636,7 @@ function AdminManagementContent() {
         className="mb-6"
       >
         <div className="rounded-[1.5rem] border border-[#d8def2] bg-white p-2 shadow-sm">
-          <div className="grid gap-2 md:grid-cols-2">
+          <div className="grid gap-2 md:grid-cols-3">
             {ADMIN_ALLOWED_TABS.map((tabId) => {
               const tab = { id: tabId, ...managementTabConfig[tabId] };
               return (
