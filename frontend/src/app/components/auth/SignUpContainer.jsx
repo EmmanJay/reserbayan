@@ -641,14 +641,16 @@ export default function SignUpContainer({ onClose }) {
           <Image
             src="/reserbayan-logo.png"
             alt="ReserBayan logo"
-            width={48}
-            height={48}
-            className="h-12 w-12 object-contain"
+            width={30}
+            height={30}
+            className="h-10 w-10 object-contain"
             priority
           />
           <span className="text-2xl font-bold text-[#122361]">ReserBayan</span>
         </div>
       </div>
+
+    
 
       <div className="flex justify-center gap-10 mb-5 font-semibold text-xl flex-shrink-0">
         <button onClick={() => setActiveTab('login')} className={`pb-3 px-4 transition-colors ${activeTab === 'login' ? 'text-[#243b8e] border-b-4 border-[#243b8e]' : `text-gray-400 hover:text-[#243b8e]`}`}>Log In</button>

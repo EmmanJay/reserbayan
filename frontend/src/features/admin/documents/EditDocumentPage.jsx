@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
+import NotificationModal from '@/shared/components/modals/NotificationModal';
 
 export default function EditDocumentPage({ basePath = '/admin' }) {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function EditDocumentPage({ basePath = '/admin' }) {
   const [usesText, setUsesText] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const uploadFile = async (file) => {
     if (!file) return null;
@@ -83,8 +85,13 @@ export default function EditDocumentPage({ basePath = '/admin' }) {
       setRequirementsText((data.details?.requirements || []).join('\n'));
       setUsesText((data.details?.uses || []).join('\n'));
     } catch (err) {
-      alert('Error fetching document: ' + err.message);
-      router.push(`${basePath}/documents`);
+      setNotification({
+        type: 'error',
+        title: 'Document Load Failed',
+        message: 'Error fetching document: ' + err.message,
+        autoClose: true,
+      });
+      setTimeout(() => router.push(`${basePath}/documents`), 1200);
     } finally {
       setFetchLoading(false);
     }
@@ -142,7 +149,11 @@ export default function EditDocumentPage({ basePath = '/admin' }) {
 
       router.push(`${basePath}/documents`);
     } catch (err) {
-      alert('Error updating document type: ' + err.message);
+      setNotification({
+        type: 'error',
+        title: 'Document Update Failed',
+        message: 'Error updating document type: ' + err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -369,6 +380,14 @@ export default function EditDocumentPage({ basePath = '/admin' }) {
           </div>
         </form>
       </div>
+      <NotificationModal
+        isOpen={!!notification}
+        onClose={() => setNotification(null)}
+        type={notification?.type}
+        title={notification?.title}
+        message={notification?.message}
+        autoClose={notification?.autoClose}
+      />
     </div>
   );
 }

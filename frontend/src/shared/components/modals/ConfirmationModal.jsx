@@ -22,6 +22,8 @@ export default function ConfirmationModal({
         return <Trash2 className="w-8 h-8 text-red-600" />;
       case 'approve':
         return <CheckCircle className="w-8 h-8 text-green-600" />;
+      case 'complete':
+        return <CheckCircle className="w-8 h-8 text-[#243b8e]" />;
       case 'reject':
         return <XCircle className="w-8 h-8 text-red-600" />;
       default:
@@ -35,6 +37,8 @@ export default function ConfirmationModal({
         return 'bg-red-50 border-red-200';
       case 'approve':
         return 'bg-green-50 border-green-200';
+      case 'complete':
+        return 'bg-[#eef3ff] border-[#c2cbea]';
       case 'reject':
         return 'bg-red-50 border-red-200';
       default:

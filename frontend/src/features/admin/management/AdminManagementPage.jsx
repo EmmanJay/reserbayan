@@ -91,6 +91,88 @@ function CustomManagementDropdown({ value, options, onChange, className = '' }) 
   );
 }
 
+function PasswordPromptModal({
+  isOpen,
+  title,
+  message,
+  label = 'Password',
+  confirmText = 'Continue',
+  loading = false,
+  onClose,
+  onSubmit,
+}) {
+  const [value, setValue] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setValue('');
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent p-4 backdrop-blur-md">
+      <motion.form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (value.trim() && !loading) {
+            onSubmit(value.trim());
+          }
+        }}
+        className="w-full max-w-md rounded-2xl border border-[#d8def2] bg-white shadow-sm"
+        initial={{ opacity: 0, scale: 0.94, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 12 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+      >
+        <div className="border-b border-slate-100 bg-[#eef3ff] px-6 py-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#243b8e] text-white">
+              <Key className="h-5 w-5" />
+            </span>
+            <div>
+              <h3 className="text-lg font-extrabold text-[#00114e]">{title}</h3>
+              <p className="mt-1 text-sm font-medium text-slate-600">{message}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-5 p-6">
+          <label className="block">
+            <span className="text-sm font-bold text-slate-700">{label}</span>
+            <input
+              type="password"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-[#2f84c0] focus:ring-4 focus:ring-[#d8def2]"
+              autoFocus
+            />
+          </label>
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={loading || !value.trim()}
+              className="flex-1 rounded-xl bg-[#243b8e] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-[#122361] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Please wait...' : confirmText}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </motion.form>
+    </div>
+  );
+}
+
 function AdminManagementContent({ variant = 'superadmin' }) {
   const config = managementRoleConfigs[variant] || managementRoleConfigs.superadmin;
   const { allowedRoles, allowedTabs, basePath, defaultTab, redirectForRole } = config;
@@ -127,8 +209,9 @@ function AdminManagementContent({ variant = 'superadmin' }) {
   const [isViewDetailsModalOpen, setIsViewDetailsModalOpen] = useState(false);
   const [selectedResident, setSelectedResident] = useState(null);
   const [modalType, setModalType] = useState(null);
-  const [passwordWarningModal, setPasswordWarningModal] = useState(null);
   const [passwordRevealModal, setPasswordRevealModal] = useState(null);
+  const [passwordPromptModal, setPasswordPromptModal] = useState(null);
+  const [passwordPromptLoading, setPasswordPromptLoading] = useState(false);
   const [expandedImage, setExpandedImage] = useState(null);
   const [notificationModal, setNotificationModal] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState(null);
@@ -422,46 +505,7 @@ function AdminManagementContent({ variant = 'superadmin' }) {
     });
   };
 
-  const handlePasswordReset = async (item) => {
-    if (activeTab === 'administrators') {
-      const password = prompt('Enter your Super Admin password to reset this administrator\'s password:');
-      if (!password) return;
-
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${apiBase}/verify-password`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ password }),
-        });
-
-        const result = await response.json();
-        if (!result.valid) {
-          setNotificationModal({
-            type: 'error',
-            title: 'Authentication Failed',
-            message: 'Incorrect Super Admin password. Access denied.',
-            autoClose: true,
-            autoCloseDelay: 4000
-          });
-          return;
-        }
-      } catch (err) {
-        setNotificationModal({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to verify password: ' + err.message
-        });
-        return;
-      }
-    }
-
-    const newPassword = prompt(`Enter new password for ${item.firstName} ${item.lastName}:`);
-    if (!newPassword) return;
-
+  const submitPasswordReset = async (item, newPassword) => {
     const endpoint = activeTab === 'administrators' ? 'admins' : 'residents';
 
     try {
@@ -489,7 +533,61 @@ function AdminManagementContent({ variant = 'superadmin' }) {
         title: 'Password Reset Failed',
         message: 'Error resetting password: ' + err.message
       });
+    } finally {
+      setPasswordPromptLoading(false);
+      setPasswordPromptModal(null);
     }
+  };
+
+  const openNewPasswordPrompt = (item) => {
+    setPasswordPromptModal({
+      title: 'Reset Password',
+      message: `Enter the new password for ${item.firstName} ${item.lastName}.`,
+      label: 'New Password',
+      confirmText: 'Reset Password',
+      onSubmit: (newPassword) => submitPasswordReset(item, newPassword),
+    });
+  };
+
+  const handlePasswordReset = (item) => {
+    if (activeTab !== 'administrators') {
+      openNewPasswordPrompt(item);
+      return;
+    }
+
+    setPasswordPromptModal({
+      title: 'Verify Super Admin Password',
+      message: 'Enter your Super Admin password before resetting this administrator password.',
+      label: 'Super Admin Password',
+      confirmText: 'Verify',
+      onSubmit: async (password) => {
+        setPasswordPromptLoading(true);
+        try {
+          const isValid = await verifySuperAdminPassword(password);
+          if (!isValid) {
+            setNotificationModal({
+              type: 'error',
+              title: 'Authentication Failed',
+              message: 'Incorrect Super Admin password. Access denied.',
+              autoClose: true,
+              autoCloseDelay: 4000
+            });
+            setPasswordPromptLoading(false);
+            return;
+          }
+
+          setPasswordPromptLoading(false);
+          openNewPasswordPrompt(item);
+        } catch (err) {
+          setPasswordPromptLoading(false);
+          setNotificationModal({
+            type: 'error',
+            title: 'Error',
+            message: 'Failed to verify password: ' + err.message
+          });
+        }
+      },
+    });
   };
 
   const handleAddAdmin = async () => {
@@ -603,6 +701,21 @@ function AdminManagementContent({ variant = 'superadmin' }) {
   const handleEditFromView = (item) => {
     setViewInfoModal(null);
     setEditModal(item);
+  };
+
+  const verifySuperAdminPassword = async (password) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${apiBase}/verify-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const result = await response.json();
+    return Boolean(result.valid);
   };
 
   const handleAccept = (item) => {
@@ -769,40 +882,39 @@ function AdminManagementContent({ variant = 'superadmin' }) {
     }
   };
 
-  const handleSuperAdminPasswordVerification = async (item) => {
-    const password = prompt('Enter your Super Admin password to view this administrator\'s password:');
-    if (!password) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${apiBase}/verify-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ password }),
-      });
-
-      const result = await response.json();
-      if (result.valid) {
-        setPasswordRevealModal({ item: item, password: item.plainPassword || 'Admin123' });
-      } else {
-        setNotificationModal({
-          type: 'error',
-          title: 'Authentication Failed',
-          message: 'Incorrect Super Admin password. Access denied.',
-          autoClose: true,
-          autoCloseDelay: 4000
-        });
-      }
-    } catch (err) {
-      setNotificationModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to verify password: ' + err.message
-      });
-    }
+  const handleSuperAdminPasswordVerification = (item) => {
+    setPasswordPromptModal({
+      title: 'Verify Super Admin Password',
+      message: 'Enter your Super Admin password before viewing this administrator password.',
+      label: 'Super Admin Password',
+      confirmText: 'View Password',
+      onSubmit: async (password) => {
+        setPasswordPromptLoading(true);
+        try {
+          const isValid = await verifySuperAdminPassword(password);
+          if (isValid) {
+            setPasswordPromptModal(null);
+            setPasswordRevealModal({ item: item, password: item.plainPassword || 'Admin123' });
+          } else {
+            setNotificationModal({
+              type: 'error',
+              title: 'Authentication Failed',
+              message: 'Incorrect Super Admin password. Access denied.',
+              autoClose: true,
+              autoCloseDelay: 4000
+            });
+          }
+        } catch (err) {
+          setNotificationModal({
+            type: 'error',
+            title: 'Error',
+            message: 'Failed to verify password: ' + err.message
+          });
+        } finally {
+          setPasswordPromptLoading(false);
+        }
+      },
+    });
   };
 
   const handleToggleAdminStatus = async (item) => {
@@ -1533,49 +1645,16 @@ function AdminManagementContent({ variant = 'superadmin' }) {
         </div>
       )}
 
-      {passwordWarningModal && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
-          <motion.div
-            className="bg-white rounded-lg shadow-sm max-w-md w-full mx-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-          >
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Security Warning</h3>
-                  <p className="text-sm text-gray-600">Password Visibility</p>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <p className="text-sm text-gray-700">
-                  WARNING: Viewing plain-text passwords poses a security risk and should only be used for critical recovery/verification purposes. Are you sure you want to proceed?
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => confirmViewPassword(passwordWarningModal)}
-                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Proceed
-                </button>
-                <button
-                  onClick={() => setPasswordWarningModal(null)}
-                  className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
+      <PasswordPromptModal
+        isOpen={!!passwordPromptModal}
+        title={passwordPromptModal?.title}
+        message={passwordPromptModal?.message}
+        label={passwordPromptModal?.label}
+        confirmText={passwordPromptModal?.confirmText}
+        loading={passwordPromptLoading}
+        onClose={() => setPasswordPromptModal(null)}
+        onSubmit={passwordPromptModal?.onSubmit}
+      />
 
       {passwordRevealModal && (
         <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center z-50">
@@ -1638,8 +1717,18 @@ function AdminManagementContent({ variant = 'superadmin' }) {
                   'Authorization': `Bearer ${token}`,
                 } : {},
               });
-              if (!response.ok) throw new Error('Failed to mark request as complete.');
-              return response.json();
+              const responseText = await response.text().catch(() => '');
+              if (!response.ok) {
+                throw new Error(responseText || 'Failed to mark request as complete.');
+              }
+              if (!responseText.trim()) {
+                return {};
+              }
+              try {
+                return JSON.parse(responseText);
+              } catch {
+                return {};
+              }
             }}
             onUpdateRequest={() => fetchData(activeTab, true)}
           />

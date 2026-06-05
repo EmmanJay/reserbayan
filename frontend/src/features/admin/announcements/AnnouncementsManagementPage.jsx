@@ -822,7 +822,7 @@ export default function AnnouncementsManagement({ apiBase = 'http://localhost:80
     visibilityFilter !== 'ALL';
 
   return (
-    <PageFade className="min-h-screen bg-[#FAFAFA] pt-20">
+    <PageFade className="min-h-screen bg-[#FAFAFA] pt-18">
       <AnimatePresence>
         {notification.show && (
           <motion.div
@@ -858,7 +858,7 @@ export default function AnnouncementsManagement({ apiBase = 'http://localhost:80
       </AnimatePresence>
 
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[100rem] px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef3ff] text-[#243b8e] ring-1 ring-[#d8def2]">
