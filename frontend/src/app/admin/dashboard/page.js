@@ -378,9 +378,7 @@ export default function AdminDashboard() {
 
   // Function to handle viewing account details
   const handleViewAccountDetails = (account) => {
-    setSelectedAccount(account);
-    setIsModalOpen(true);
-    fetchAccountDetails(account.id);
+    router.push(`/admin/management?tab=resident-requests&residentId=${account.id}`);
   };
 
   // Enhanced function to handle account approval

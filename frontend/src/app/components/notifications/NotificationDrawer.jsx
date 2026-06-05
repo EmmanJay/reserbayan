@@ -20,7 +20,6 @@ import {
 import ConfirmationModal from '@/app/components/ConfirmationModal';
 import RequestModal from '@/app/components/requests/RequestModal';
 import AccountActivityModal from '@/app/components/AccountActivityModal';
-import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsModal';
 
 const adminFilters = [
   { value: 'all', label: 'All' },
@@ -93,9 +92,7 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
   const [activeFilter, setActiveFilter] = useState('all');
   const [messageNotification, setMessageNotification] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [selectedAccount, setSelectedAccount] = useState(null);
   const [showAccountActivity, setShowAccountActivity] = useState(false);
-  const [actionLoading, setActionLoading] = useState({ approve: false, reject: false, accountId: null });
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -429,18 +426,8 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
     }
 
     if (notification.targetType === 'RESIDENT_REQUEST' && notification.targetId) {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/api/${basePath}/residents/${notification.targetId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        const account = await response.json();
-        openModalAfterNavigation(`/${basePath}/management?tab=resident-requests`, () => setSelectedAccount(account));
-      } else {
-        onClose?.();
-        router.push(`/${basePath}/management?tab=resident-requests`);
-      }
+      onClose?.();
+      router.push(`/${basePath}/management?tab=resident-requests&residentId=${notification.targetId}`);
     }
   };
 
@@ -504,39 +491,6 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
       setMessageNotification(null);
       router.push('/requests');
     }
-  };
-
-  const approveAccount = async (residentId) => {
-    const token = localStorage.getItem('token');
-    const basePath = role === 'SUPER_ADMIN' ? 'superadmin' : 'admin';
-    setActionLoading({ approve: true, reject: false, accountId: residentId });
-    await fetch(`http://localhost:8080/api/${basePath}/resident-requests/${residentId}/approve`, {
-      method: 'PUT',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setActionLoading({ approve: false, reject: false, accountId: null });
-    setSelectedAccount(null);
-    fetchNotifications();
-  };
-
-  const rejectAccount = async (residentId) => {
-    const reason = window.prompt('Enter the rejection reason for this resident:');
-    if (!reason?.trim()) return;
-
-    const token = localStorage.getItem('token');
-    const basePath = role === 'SUPER_ADMIN' ? 'superadmin' : 'admin';
-    setActionLoading({ approve: false, reject: true, accountId: residentId });
-    await fetch(`http://localhost:8080/api/${basePath}/resident-requests/${residentId}/reject`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ rejectionReason: reason }),
-    });
-    setActionLoading({ approve: false, reject: false, accountId: null });
-    setSelectedAccount(null);
-    fetchNotifications();
   };
 
   const openModalAfterNavigation = (path, openModal) => {
@@ -860,14 +814,6 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
         />
       )}
 
-      <PendingAccountDetailsModal
-        isOpen={!!selectedAccount}
-        onClose={() => setSelectedAccount(null)}
-        accountDetails={selectedAccount}
-        onApprove={approveAccount}
-        onReject={rejectAccount}
-        actionLoading={actionLoading}
-      />
     </>
   );
 }
