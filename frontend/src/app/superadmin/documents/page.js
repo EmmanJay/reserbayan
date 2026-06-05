@@ -1,3 +1,3 @@
 'use client';
 
-export { default } from '@/app/admin/documents/page';
+export { default } from '@/features/admin/documents/AdminDocumentsPage';

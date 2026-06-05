@@ -1,3 +1,7 @@
 'use client';
 
-export { default } from '@/app/components/admin/AdminDocumentDetailView';
+import AdminDocumentDetailPage from '@/features/admin/documents/AdminDocumentDetailPage';
+
+export default function AdminDocumentDetailRoute() {
+  return <AdminDocumentDetailPage />;
+}

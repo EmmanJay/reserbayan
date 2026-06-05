@@ -1,5 +1,5 @@
-import AddDocumentModalPage from '@/app/components/admin/AddDocumentModalPage';
-import AdminDocumentsPage from '@/app/admin/documents/page';
+import AddDocumentModalPage from '@/features/admin/documents/AddDocumentModalPage';
+import AdminDocumentsPage from '@/features/admin/documents/AdminDocumentsPage';
 
 export default function SuperAdminAddDocumentPage() {
   return (

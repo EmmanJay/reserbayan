@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import Footer from './home/Footer';
 import { usePathname } from 'next/navigation';
-import AddDocumentDraftDock from '@/app/components/admin/AddDocumentDraftDock';
+import AddDocumentDraftDock from '@/features/admin/documents/AddDocumentDraftDock';
 
 const NavbarWrapper = dynamic(() => import('./home/NavbarWrapper'), { ssr: false });
 

@@ -1,3 +1,7 @@
 'use client';
 
-export { default } from '@/app/components/admin/AdminDocumentDetailView';
+import SuperAdminDocumentDetailPage from '@/features/admin/documents/SuperAdminDocumentDetailPage';
+
+export default function SuperAdminDocumentDetailRoute() {
+  return <SuperAdminDocumentDetailPage />;
+}
