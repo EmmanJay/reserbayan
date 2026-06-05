@@ -7,6 +7,21 @@ import PendingAccountDetailsModal from '@/app/components/PendingAccountDetailsMo
 import RequestDetailsModal from '@/app/components/RequestDetailsModal';
 import RejectionReasonModal from '@/app/components/RejectionReasonModal';
 
+async function getResponseErrorMessage(response, fallbackMessage) {
+  const responseText = await response.text().catch(() => '');
+
+  if (responseText) {
+    try {
+      const parsedBody = JSON.parse(responseText);
+      return parsedBody.error || parsedBody.message || responseText;
+    } catch {
+      return responseText;
+    }
+  }
+
+  return `${fallbackMessage} (${response.status})`;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -157,7 +172,8 @@ export default function AdminDashboard() {
         const announcementsData = await response.json();
         setAnnouncements(announcementsData);
       } else {
-        console.error('Failed to fetch announcements:', response.statusText);
+        const errorMessage = await getResponseErrorMessage(response, 'Failed to fetch announcements');
+        console.error('Failed to fetch announcements:', errorMessage);
       }
     } catch (error) {
       console.error('Error fetching announcements:', error);
@@ -230,8 +246,9 @@ export default function AdminDashboard() {
         });
         setRecentDocRequests(recentRequests);
       } else {
-        console.error('Failed to fetch recent requests:', requestsResponse.statusText);
-        setRequestsError('Failed to load recent requests');
+        const errorMessage = await getResponseErrorMessage(requestsResponse, 'Failed to fetch recent requests');
+        console.error('Failed to fetch recent requests:', errorMessage);
+        setRequestsError(errorMessage || 'Failed to load recent requests');
         setRecentDocRequests([]);
       }
 

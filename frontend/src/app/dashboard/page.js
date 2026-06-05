@@ -13,6 +13,7 @@ import RequestModal from '@/app/components/requests/RequestModal'; // Detail Vie
 import RequestFormModal from '@/app/components/requests/RequestFormModal'; // Create View
 import AccountActivityModal from '@/app/components/AccountActivityModal';
 import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
+import AnnouncementModal from '@/app/components/AnnouncementModal';
 import { StatusBadge } from '@/app/components/ui/status-badge';
 
 export default function DashboardPage() {
@@ -41,6 +42,7 @@ export default function DashboardPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [expandedAnnouncements, setExpandedAnnouncements] = useState(new Set());
+  const [showLatestAnnouncementModal, setShowLatestAnnouncementModal] = useState(false);
 
   const recentRequests = useMemo(() => {
     return requests
@@ -99,11 +101,79 @@ export default function DashboardPage() {
     });
   };
 
+  const formatAnnouncementDate = (dateValue) => {
+    if (!dateValue) return 'Date unavailable';
+    return new Date(dateValue).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatAnnouncementTime = (dateValue) => {
+    if (!dateValue) return '';
+    return new Date(dateValue).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
+  const formatAnnouncementRange = (announcement) => {
+    if (announcement.startDate && announcement.endDate) {
+      return `${formatAnnouncementDate(announcement.startDate)} - ${formatAnnouncementDate(announcement.endDate)}`;
+    }
+    if (announcement.startDate) {
+      return `Starts ${formatAnnouncementDate(announcement.startDate)}`;
+    }
+    if (announcement.endDate) {
+      return `Until ${formatAnnouncementDate(announcement.endDate)}`;
+    }
+    return 'Available now';
+  };
+
+  const isAnnouncementCurrentlyActive = (announcement) => {
+    const now = new Date();
+    const startDate = announcement.startDate ? new Date(announcement.startDate) : null;
+    const endDate = announcement.endDate ? new Date(announcement.endDate) : null;
+
+    if (startDate && now < startDate) return false;
+    if (endDate && now > endDate) return false;
+
+    return true;
+  };
+
+  const latestActiveAnnouncement = useMemo(() => {
+    return announcements
+      .filter(isAnnouncementCurrentlyActive)
+      .sort((firstAnnouncement, secondAnnouncement) => (
+        new Date(secondAnnouncement.createdAt) - new Date(firstAnnouncement.createdAt)
+      ))[0] || null;
+  }, [announcements]);
+
   useEffect(() => {
     if (user) {
       fetchAnnouncements();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (announcementsLoading) return;
+
+    const shouldShowModal = sessionStorage.getItem('showDashboardAnnouncementModal') === 'true';
+    if (!shouldShowModal) return;
+
+    if (latestActiveAnnouncement) {
+      setShowLatestAnnouncementModal(true);
+    } else {
+      sessionStorage.removeItem('showDashboardAnnouncementModal');
+      setShowLatestAnnouncementModal(false);
+    }
+  }, [announcementsLoading, latestActiveAnnouncement]);
+
+  const dismissLatestAnnouncementModal = () => {
+    sessionStorage.removeItem('showDashboardAnnouncementModal');
+    setShowLatestAnnouncementModal(false);
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -297,24 +367,37 @@ export default function DashboardPage() {
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
           >
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 bg-gradient-to-r from-[#d8def2] to-[#eef3ff] rounded-lg">
-                    <Megaphone className="w-4 h-4 text-[#122361]" />
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between gap-3 mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-[#eef3ff] rounded-md border border-[#d8def2]">
+                    <Megaphone className="w-3.5 h-3.5 text-[#122361]" />
+                    </div>
+                    <div>
+                      <h2 className="font-bold text-base text-[#00114e]">Announcements</h2>
+                      <p className="text-[11px] font-medium text-slate-500">Latest barangay updates</p>
+                    </div>
                   </div>
-                  <h2 className="font-bold text-lg text-gray-800">Announcements</h2>
+                  {announcements.length > 0 && (
+                    <span className="rounded-full border border-[#d8def2] bg-white px-2 py-0.5 text-[11px] font-bold text-[#122361]">
+                      {announcements.length}
+                    </span>
+                  )}
                 </div>
 
                 {announcementsLoading ? (
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#122361] mx-auto mb-4"></div>
-                    <p className="text-gray-600 text-sm">Loading announcements...</p>
+                  <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
+                    <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-[#122361] mx-auto mb-3"></div>
+                    <p className="text-gray-600 text-xs font-medium">Loading announcements...</p>
                   </div>
                 ) : announcements.length > 0 ? (
                   <div>
-                    <div className="space-y-4">
+                    <div className="space-y-2.5">
                       {announcements.slice(0, 3).map((announcement, index) => {
                         const isExpanded = expandedAnnouncements.has(announcement.announcementId);
+                        const announcedDate = formatAnnouncementDate(announcement.createdAt);
+                        const announcedTime = formatAnnouncementTime(announcement.createdAt);
+                        const visiblePeriod = formatAnnouncementRange(announcement);
                         
                         return (
                           <motion.div
@@ -322,86 +405,105 @@ export default function DashboardPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 * index }}
-                            className="p-4 bg-gradient-to-r from-[#eef3ff] to-[#eef3ff] rounded-xl border border-[#d8def2] hover:shadow-sm hover:border-[#c2cbea] transition-all duration-300 group"
+                            className="overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:border-[#c2cbea]"
                           >
-                            <div className="flex items-start justify-between gap-3 mb-2">
-                              <div className="flex items-center gap-3 flex-1">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white flex items-center justify-center shadow-sm group-hover:shadow-sm transition-all duration-300 flex-shrink-0">
-                                  <Megaphone className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-bold text-gray-900 text-sm md:text-base group-hover:text-[#122361] transition-colors line-clamp-2">
+                            <div className="border-b border-slate-100 bg-white px-3 py-2.5">
+                              <div className="flex items-start justify-between gap-2.5">
+                                <div className="min-w-0 flex-1">
+                                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                                    {announcement.priority && (
+                                      <span className="rounded-full border border-[#d8def2] bg-[#fafafa] px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-[#243b8e]">
+                                        {announcement.priority}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] font-semibold text-slate-500">
+                                      Announced {announcedDate}{announcedTime ? `, ${announcedTime}` : ''}
+                                    </span>
+                                  </div>
+                                  <h4 className="mt-0.5 font-bold text-gray-900 text-sm leading-snug line-clamp-2">
                                     {announcement.title}
                                   </h4>
-                                  <p className="text-[11px] md:text-xs text-gray-500 flex items-center mt-1">
-                                    <Calendar className="w-3 h-3 mr-1" />
-                                    <span className="truncate">
-                                      Posted by {announcement.postedBy} on {new Date(announcement.createdAt).toLocaleDateString()}
-                                    </span>
-                                  </p>
                                 </div>
-                              </div>
                               
-                              <button
-                                onClick={() => toggleAnnouncementExpansion(announcement.announcementId)}
-                                className="p-1.5 rounded-full hover:bg-white hover:bg-opacity-50 transition-all duration-200 group/toggle flex-shrink-0"
-                                aria-label={isExpanded ? 'Collapse announcement' : 'Expand announcement'}
-                                aria-expanded={isExpanded}
-                                aria-controls={`announcement-content-${announcement.announcementId}`}
-                              >
-                                {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-[#122361] group-hover/toggle:text-[#2f84c0] transition-colors" />
-                                ) : (
-                                  <ChevronDown className="w-4 h-4 text-[#122361] group-hover/toggle:text-[#2f84c0] transition-colors" />
-                                )}
-                              </button>
+                                <button
+                                  onClick={() => toggleAnnouncementExpansion(announcement.announcementId)}
+                                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border border-transparent text-[#122361] transition-all duration-200 hover:border-[#d8def2] hover:bg-[#fafafa]"
+                                  aria-label={isExpanded ? 'Collapse announcement' : 'Expand announcement'}
+                                  aria-expanded={isExpanded}
+                                  aria-controls={`announcement-content-${announcement.announcementId}`}
+                                >
+                                  {isExpanded ? (
+                                    <ChevronUp className="w-4 h-4" />
+                                  ) : (
+                                    <ChevronDown className="w-4 h-4" />
+                                  )}
+                                </button>
+                              </div>
                             </div>
-                            
-                            <motion.div
-                              id={`announcement-content-${announcement.announcementId}`}
-                              initial={false}
-                              animate={{
-                                height: isExpanded ? 'auto' : 0,
-                                opacity: isExpanded ? 1 : 0
-                              }}
-                              transition={{ duration: 0.3, ease: 'easeInOut' }}
-                              className="overflow-hidden"
-                            >
-                              <div className="pt-2">
-                                <p className="text-xs md:text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+
+                            <div className="bg-white px-3 py-2.5">
+                              <p className="mb-1 text-[10px] font-extrabold uppercase tracking-wide text-slate-400">Details</p>
+                              <motion.div
+                                id={`announcement-content-${announcement.announcementId}`}
+                                initial={false}
+                                animate={{
+                                  height: isExpanded ? 'auto' : 0,
+                                  opacity: isExpanded ? 1 : 0
+                                }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="overflow-hidden"
+                              >
+                                <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">
                                   {announcement.content}
                                 </p>
+                              </motion.div>
+                              
+                              {!isExpanded && (
+                                <p className="text-xs text-gray-700 leading-relaxed line-clamp-2 transition-colors">
+                                  {announcement.content}
+                                </p>
+                              )}
+                            </div>
+
+                            <div className="grid gap-2 border-t border-slate-100 bg-[#fafafa] px-3 py-2 text-[10px] font-semibold text-slate-500 sm:grid-cols-2">
+                              <div>
+                                <p className="mb-0.5 text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Posted By</p>
+                                <div className="flex items-center gap-1.5 text-[#122361]">
+                                  <Megaphone className="h-3 w-3" />
+                                  <span className="truncate">{announcement.postedBy || 'Administrator'}</span>
+                                </div>
                               </div>
-                            </motion.div>
-                            
-                            {!isExpanded && (
-                              <p className="text-xs md:text-sm text-gray-700 leading-relaxed line-clamp-2 md:line-clamp-3 group-hover:text-gray-800 transition-colors">
-                                {announcement.content}
-                              </p>
-                            )}
+                              <div className="sm:text-right">
+                                <p className="mb-0.5 text-[9px] font-extrabold uppercase tracking-wide text-slate-400">Availability</p>
+                                <div className="flex items-center gap-1.5 text-[#122361] sm:justify-end">
+                                  <Calendar className="h-3 w-3" />
+                                  <span className="truncate">{visiblePeriod}</span>
+                                </div>
+                              </div>
+                            </div>
                           </motion.div>
                         );
                       })}
                     </div>
                     {announcements.length > 3 && (
-                      <div className="mt-5 text-center">
+                      <div className="mt-3 text-center">
                         <button
                           onClick={() => router.push('/announcements')}
-                          className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#122361] to-[#2f84c0] text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-sm transition-all duration-300 hover:-translate-y-0.5"
+                          className="inline-flex items-center space-x-2 rounded-lg border border-[#d8def2] bg-white px-4 py-2 text-xs font-bold text-[#122361] transition-all duration-300 hover:bg-[#eef3ff]"
                         >
                           <span>View All Announcements ({announcements.length})</span>
-                          <ArrowRight className="w-4 h-4" />
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="rounded-2xl border border-gray-100 bg-gray-50/60 p-8 text-center">
-                    <div className="bg-gradient-to-r from-[#d8def2] to-[#d8def2] rounded-full p-4 w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                      <Megaphone className="w-10 h-10 text-[#122361]" />
+                  <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
+                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg border border-[#d8def2] bg-[#eef3ff]">
+                      <Megaphone className="w-6 h-6 text-[#122361]" />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-700 mb-2">No Announcements</h3>
-                    <p className="text-gray-500 text-sm">There are no announcements at this time. Check back later!</p>
+                    <h3 className="text-base font-bold text-gray-700 mb-1">No Announcements</h3>
+                    <p className="text-gray-500 text-xs">There are no announcements at this time. Check back later!</p>
                   </div>
                 )}
               </div>
@@ -410,6 +512,12 @@ export default function DashboardPage() {
         </div>
 
         {/* === MODALS SECTION === */}
+
+        <AnnouncementModal
+          isOpen={showLatestAnnouncementModal}
+          announcement={latestActiveAnnouncement}
+          onDismiss={dismissLatestAnnouncementModal}
+        />
 
         {showExistingRequestPrompt && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">

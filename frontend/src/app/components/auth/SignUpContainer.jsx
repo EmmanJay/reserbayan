@@ -479,6 +479,7 @@ export default function SignUpContainer({ onClose }) {
           } else if (data.role === 'ADMIN') {
              window.location.href = '/admin/dashboard';
           } else {
+             sessionStorage.setItem('showDashboardAnnouncementModal', 'true');
              window.location.href = '/dashboard';
           }
         } else {

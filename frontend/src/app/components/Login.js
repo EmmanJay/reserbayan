@@ -147,6 +147,7 @@ export default function SignUpContainer({ onClose }) {
              window.location.href = '/superadmin/dashboard';
           } else {
              console.log('Redirecting to user dashboard');
+             sessionStorage.setItem('showDashboardAnnouncementModal', 'true');
              window.location.href = '/dashboard';
           }
         } else {

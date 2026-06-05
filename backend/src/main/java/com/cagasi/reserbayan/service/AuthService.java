@@ -167,7 +167,7 @@ public class AuthService {
         // ... (Keep existing authentication logic)
         Admin superAdmin = authenticateAdmin(identifier, password);
         if (superAdmin != null && superAdmin.getRole() == Role.SUPER_ADMIN) {
-            String token = jwtUtil.generateToken(identifier, "SUPER_ADMIN");
+            String token = jwtUtil.generateToken(getAdminTokenSubject(superAdmin), "SUPER_ADMIN");
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("token", token);
             response.put("role", "SUPER_ADMIN");
@@ -177,7 +177,7 @@ public class AuthService {
 
         Admin admin = authenticateAdmin(identifier, password);
         if (admin != null && admin.getRole() == Role.ADMIN) {
-            String token = jwtUtil.generateToken(identifier, "ADMIN");
+            String token = jwtUtil.generateToken(getAdminTokenSubject(admin), "ADMIN");
             java.util.Map<String, Object> response = new java.util.HashMap<>();
             response.put("token", token);
             response.put("role", "ADMIN");
@@ -330,5 +330,12 @@ public class AuthService {
         response.put("role", role);
         response.put("token", jwtUtil.generateToken(tokenSubject, role));
         return response;
+    }
+
+    private String getAdminTokenSubject(Admin admin) {
+        if (admin.getUsername() != null && !admin.getUsername().isBlank()) {
+            return admin.getUsername();
+        }
+        return admin.getResidentEmail();
     }
 }

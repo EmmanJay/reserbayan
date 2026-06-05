@@ -35,6 +35,18 @@ public class AdminNotificationController {
             return false;
         }
 
+        boolean hasAdminAuthority = authentication.getAuthorities().stream()
+                .anyMatch(authority -> {
+                    String role = authority.getAuthority();
+                    return "ROLE_ADMIN".equals(role)
+                            || "ROLE_SUPER_ADMIN".equals(role)
+                            || "ADMIN".equals(role)
+                            || "SUPER_ADMIN".equals(role);
+                });
+        if (hasAdminAuthority) {
+            return true;
+        }
+
         String username = authentication.getName();
         Admin admin = adminRepository.findByUsername(username).orElse(null);
         if (admin == null) {

@@ -432,7 +432,7 @@ export default function AddDocumentModalPage({
         {!isMinimized && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/35 p-4 sm:p-6">
             <motion.div
-        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-[#d8def2] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[1rem] bg-white shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
         initial={{ opacity: 0, y: 90, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 90, scale: 0.96 }}

@@ -71,6 +71,21 @@ function isAdminRole(role) {
   return role === 'ADMIN' || role === 'SUPER_ADMIN';
 }
 
+async function getResponseErrorMessage(response, fallbackMessage) {
+  const responseText = await response.text().catch(() => '');
+
+  if (responseText) {
+    try {
+      const parsedBody = JSON.parse(responseText);
+      return parsedBody.error || parsedBody.message || responseText;
+    } catch {
+      return responseText;
+    }
+  }
+
+  return `${fallbackMessage} (${response.status})`;
+}
+
 export default function NotificationDrawer({ isOpen, onClose, role, user, onUnreadCountChange }) {
   const router = useRouter();
   const [notifications, setNotifications] = useState([]);
@@ -113,7 +128,9 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
       const response = await fetch('http://localhost:8080/api/admin-notifications?category=all', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to load unread count');
+      if (!response.ok) {
+        throw new Error(await getResponseErrorMessage(response, 'Failed to load unread count'));
+      }
       const allNotifications = await response.json();
       onUnreadCountChange?.(Array.isArray(allNotifications) ? allNotifications.filter(isUnread).length : 0);
     } catch (error) {
@@ -143,7 +160,9 @@ export default function NotificationDrawer({ isOpen, onClose, role, user, onUnre
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error('Failed to load notifications');
+      if (!response.ok) {
+        throw new Error(await getResponseErrorMessage(response, 'Failed to load notifications'));
+      }
 
       const data = await response.json();
       const nextNotifications = Array.isArray(data) ? data : [];
