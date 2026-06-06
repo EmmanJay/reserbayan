@@ -6,6 +6,7 @@ import ClientLayout from '@/app/components/ClientLayout';
 import AuthModal from '@/app/components/auth/AuthModal';
 import { UserProvider } from '@/contexts/UserContext';
 import { RequestDrawerProvider } from '@/contexts/RequestDrawerContext';
+import BackendWarmup from '@/app/components/BackendWarmup';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}>
         <UserProvider>
+          <BackendWarmup />
           <RequestDrawerProvider>
             <ClientLayout>
               {/* 'children' will be your homepage or any other page */}
