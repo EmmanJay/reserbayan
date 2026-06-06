@@ -41,7 +41,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/resubmit",
-                                "/api/document-types", "/api/document-types/**", "/uploads/**")
+                                "/api/document-types", "/api/document-types/**", "/uploads/**",
+                                "/api/health")
                         .permitAll()
                         .requestMatchers("/api/superadmin/**").authenticated()
                         .anyRequest().authenticated())
