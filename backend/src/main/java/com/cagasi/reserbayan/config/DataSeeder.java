@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Component
+@Transactional
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
