@@ -5,7 +5,7 @@ import AdminDashboardPage from '@/features/admin/dashboard/AdminDashboardPage';
 export default function SuperAdminDashboard() {
   return (
     <AdminDashboardPage
-      apiBase="http://localhost:8080/api/superadmin"
+      apiBase=`\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/superadmin`
       basePath="superadmin"
       allowedRoles={['SUPER_ADMIN']}
       redirectForRole={{ ADMIN: '/admin/dashboard' }}

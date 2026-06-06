@@ -54,7 +54,7 @@ function DocumentDetailContent({ params }) {
   const requirements = doc.details?.requirements || [];
   const uses = doc.details?.uses || [];
   const imageSource = doc.imagePath.startsWith('/uploads/')
-    ? `http://localhost:8080${doc.imagePath}`
+    ? `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}${doc.imagePath}`
     : doc.imagePath;
 
   const handleRequestDocument = () => {
