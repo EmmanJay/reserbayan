@@ -89,7 +89,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
       }
 
       const response = await fetch(
-        ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/attachments/${file.id}/download`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/attachments/${file.id}/download`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -178,7 +178,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
       onConfirm: async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/approve`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/approve`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${token}` },
           });
@@ -208,7 +208,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
     setIsRejecting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/reject`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}/reject`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -296,7 +296,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
             const formData = new FormData();
             formData.append('data', JSON.stringify(dataPayload));
 
-            const res = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
@@ -355,7 +355,7 @@ function RequestModal({ request, user, onClose, cancelRequest, completeRequest, 
             formData.append('files', file);
         });
 
-        const res = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${displayRequest.requestId}`, {
             method: 'PUT', 
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
