@@ -62,7 +62,7 @@ export default function DashboardPage() {
         return;
       }
       
-      const response = await fetch(`\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/residents/announcements`, {
+      const response = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/residents/announcements`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

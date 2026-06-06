@@ -36,16 +36,16 @@ export default function PendingAccountDetailsModal({
     // If it's a Windows absolute path, extract just the filename
     if (path.includes('\\') || path.includes('C:')) {
       const fileName = path.split('\\').pop().split('/').pop();
-      return `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/uploads/resident/${fileName}`;
+      return ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/uploads/resident/${fileName}`;
     }
     
     // If it's a relative path, prepend the backend URL
     if (path.startsWith('uploads/')) {
-      return `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${path}`;
+      return ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${path}`;
     }
     
     // Default: assume it's just a filename in the uploads directory
-    return `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/uploads/resident/${path}`;
+    return ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/uploads/resident/${path}`;
   };
 
   // Utility function to check if file is an image (PNG, JPG, JPEG only)

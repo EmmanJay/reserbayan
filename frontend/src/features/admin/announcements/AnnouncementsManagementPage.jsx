@@ -435,7 +435,7 @@ function StatCard({ label, value, icon: Icon }) {
   );
 }
 
-export default function AnnouncementsManagement({ apiBase = `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/superadmin`, roleLabel = 'Announcements'}) {
+export default function AnnouncementsManagement({ apiBase = ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/superadmin`, roleLabel = 'Announcements'}) {
   const API_BASE = apiBase;
 
   const router = useRouter();
