@@ -258,7 +258,7 @@ export function RequestDrawerProvider({ children }) {
       formDataToSend.append('data', JSON.stringify(dataPayload));
       draft.files.forEach((file) => formDataToSend.append('files', file));
 
-      const response = await fetch(`\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests`, {
+      const response = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

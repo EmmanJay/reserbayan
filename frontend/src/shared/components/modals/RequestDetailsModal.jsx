@@ -32,7 +32,7 @@ export default function RequestDetailsModal({
       
       // Fetch the full request details including attachments
       const response = await fetch(
-        `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${requestDetails.requestId}`,
+        ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${requestDetails.requestId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -64,7 +64,7 @@ export default function RequestDetailsModal({
       }
 
       const response = await fetch(
-        `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${requestDetails.requestId}/attachments/${file.id}/download`,
+        ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${requestDetails.requestId}/attachments/${file.id}/download`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
