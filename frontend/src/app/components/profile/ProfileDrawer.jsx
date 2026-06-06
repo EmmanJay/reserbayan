@@ -221,7 +221,7 @@ export default function ProfileDrawer({ isOpen, onClose, user, role }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/auth/profile', {
+      const response = await fetch(`\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

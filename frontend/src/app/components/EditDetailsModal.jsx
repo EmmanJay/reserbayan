@@ -40,7 +40,7 @@ export default function EditDetailsModal({ isOpen, onClose, resident, onSubmit }
         sitio: resident.sitio || '',
         addressLine1: resident.addressLine1 || ''
       });
-      setCurrentFileUrl(resident.validIdPath ? `http://localhost:8080/${resident.validIdPath.replace(/\\/g, '/')}` : '');
+      setCurrentFileUrl(resident.validIdPath ? `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${resident.validIdPath.replace(/\\/g, '/')}` : '');
       setSelectedFile(null);
     }
   }, [resident, isOpen]);

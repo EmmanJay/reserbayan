@@ -30,7 +30,7 @@ export default function AnnouncementsPage() {
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
   // API base URL
-  const API_BASE = 'http://localhost:8080/api/residents';
+  const API_BASE = `\${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/residents`;
 
   // Show notification helper
   const showNotification = (message, type = 'success') => {
