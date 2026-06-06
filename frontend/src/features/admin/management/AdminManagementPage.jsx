@@ -177,7 +177,7 @@ function AdminManagementContent({ variant = 'superadmin' }) {
   const config = managementRoleConfigs[variant] || managementRoleConfigs.superadmin;
   const { allowedRoles, allowedTabs, basePath, defaultTab, redirectForRole } = config;
   const routeBase = `/${basePath}/management`;
-  const apiBase = ``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/${basePath}`;
+  const apiBase = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/${basePath}`;
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState(null);
@@ -669,7 +669,7 @@ function AdminManagementContent({ variant = 'superadmin' }) {
     if (activeTab === 'document-requests') {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(``${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${resident.requestId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/document-requests/${resident.requestId}`, {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {},
         });
 
