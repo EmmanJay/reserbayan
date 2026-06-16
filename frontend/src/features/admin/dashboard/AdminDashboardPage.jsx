@@ -8,7 +8,7 @@ import RejectionReasonModal from '@/shared/components/modals/RejectionReasonModa
 import { getResponseErrorMessage, getStoredJson } from '@/shared/lib/api';
 
 export default function AdminDashboardPage({
-  apiBase = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/admin`,
+  apiBase = '/api/admin',
   basePath = 'admin',
   allowedRoles = ['ADMIN', 'SUPER_ADMIN'],
   redirectForRole = {},
@@ -445,6 +445,87 @@ export default function AdminDashboardPage({
     }));
   };
 
+  const handleReadyForPickupRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/ready-for-pickup`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Request marked ready for pickup.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to mark request ready for pickup. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error marking request ready for pickup:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
+  const handleHardCopySubmittedRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/hard-copy-submitted`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Hard-copy requirements marked as received.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to mark hard-copy requirements received. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error marking hard-copy requirements received:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
+  const handleCompleteRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Request marked as completed.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to complete request. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error completing request:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
   const quickActions = quickActionMode === 'superadmin'
     ? [
         { icon: 'admin', label: 'New Admin', onClick: handleAddAdmin },
@@ -505,6 +586,9 @@ export default function AdminDashboardPage({
         loading={requestModalLoading}
         onApprove={handleApproveRequest}
         onReject={handleRejectRequest}
+        onHardCopySubmitted={handleHardCopySubmittedRequest}
+        onReadyForPickup={handleReadyForPickupRequest}
+        onComplete={handleCompleteRequest}
       />
 
       <RejectionReasonModal
