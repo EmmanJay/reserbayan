@@ -1,10 +1,13 @@
 package com.cagasi.reserbayan.config;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +27,12 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${app.cors.allowed-origin-patterns:http://localhost:3000,http://localhost:3001,http://localhost:3002}")
+    private String allowedOriginPatterns;
+
+    @Value("${FRONTEND_URL:http://localhost:3000}")
+    private String frontendUrl;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -41,8 +50,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/resubmit",
-                                "/api/document-types", "/api/document-types/**", "/uploads/**",
-                                "/api/health")
+                                "/api/residents/announcements", "/api/residents/announcements/**",
+                                "/uploads/**", "/api/health")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/document-types", "/api/document-types/**")
                         .permitAll()
                         .requestMatchers("/api/superadmin/**").authenticated()
                         .anyRequest().authenticated())
@@ -50,14 +61,21 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:3000}")
-    private String frontendUrl;
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(
-                Arrays.asList(frontendUrl, "http://localhost:3000", "http://localhost:3001", "http://localhost:3002"));
+        List<String> origins = Arrays.stream(allowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .toList();
+        // Include frontendUrl from env var if not already in the list
+        if (!origins.contains(frontendUrl) && frontendUrl != null && !frontendUrl.isBlank()) {
+            origins = new java.util.ArrayList<>(origins);
+            origins.add(frontendUrl);
+        }
+        configuration.setAllowedOriginPatterns(origins.isEmpty()
+                ? List.of("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
+                : origins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

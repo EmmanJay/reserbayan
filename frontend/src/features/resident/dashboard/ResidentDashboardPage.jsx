@@ -16,6 +16,21 @@ import RejectedResubmitModal from '@/app/components/RejectedResubmitModal';
 import AnnouncementModal from '@/app/components/AnnouncementModal';
 import { StatusBadge } from '@/shared/components/ui/StatusBadge';
 
+function isAnnouncementVisibleNow(announcement) {
+  const now = new Date();
+  const startDate = announcement?.startDate ? new Date(announcement.startDate) : null;
+  const endDate = announcement?.endDate ? new Date(announcement.endDate) : null;
+
+  if (startDate && now < startDate) return false;
+  if (endDate && now > endDate) return false;
+
+  return true;
+}
+
+function normalizeRequestStatus(status) {
+  return String(status || '').trim().toLowerCase().replace(/[\s_-]+/g, '-');
+}
+
 export default function DashboardPage() {
   const { user } = useUser();
   const {
@@ -50,21 +65,35 @@ export default function DashboardPage() {
       .slice(0, 3);
   }, [requests]);
 
+  const requestUpdates = useMemo(() => {
+    const popupStatuses = new Set([
+      'approved',
+      'awaiting-hard-copy-submission',
+      'hard-copy-submitted',
+      'ready-for-pickup',
+    ]);
+
+    return requests
+      .filter((request) => {
+        const status = normalizeRequestStatus(request.status);
+        return popupStatuses.has(status);
+      })
+      .sort((firstRequest, secondRequest) => (
+        new Date(secondRequest.updatedAt || secondRequest.submittedAt || 0) -
+        new Date(firstRequest.updatedAt || firstRequest.submittedAt || 0)
+      ))
+      .slice(0, 4);
+  }, [requests]);
+
   // Fetch announcements for residents
   const fetchAnnouncements = async () => {
     try {
       setAnnouncementsLoading(true);
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      
-      if (!token) {
-        console.error('No authentication token found');
-        setAnnouncements([]);
-        return;
-      }
-      
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/residents/announcements`, {
+
+      const response = await fetch('/api/residents/announcements', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           'Content-Type': 'application/json'
         }
       });
@@ -72,16 +101,18 @@ export default function DashboardPage() {
       if (response.ok) {
         const responseData = await response.json();
         // Extract the announcements array from the response
-        const announcementsList = responseData.announcements || [];
+        const announcementsList = (responseData.announcements || []).filter(isAnnouncementVisibleNow);
         console.log('Fetched announcements:', announcementsList.length, announcementsList);
         setAnnouncements(announcementsList);
       } else {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        console.error('Failed to fetch announcements:', response.status, response.statusText, errorText);
+        if (response.status !== 401 && response.status !== 403) {
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.warn('Failed to fetch announcements:', response.status, response.statusText, errorText);
+        }
         setAnnouncements([]);
       }
     } catch (error) {
-      console.error('Error fetching announcements:', error);
+      console.warn('Error fetching announcements:', error);
       setAnnouncements([]);
     } finally {
       setAnnouncementsLoading(false);
@@ -131,20 +162,9 @@ export default function DashboardPage() {
     return 'Available now';
   };
 
-  const isAnnouncementCurrentlyActive = (announcement) => {
-    const now = new Date();
-    const startDate = announcement.startDate ? new Date(announcement.startDate) : null;
-    const endDate = announcement.endDate ? new Date(announcement.endDate) : null;
-
-    if (startDate && now < startDate) return false;
-    if (endDate && now > endDate) return false;
-
-    return true;
-  };
-
   const latestActiveAnnouncement = useMemo(() => {
     return announcements
-      .filter(isAnnouncementCurrentlyActive)
+      .filter(isAnnouncementVisibleNow)
       .sort((firstAnnouncement, secondAnnouncement) => (
         new Date(secondAnnouncement.createdAt) - new Date(firstAnnouncement.createdAt)
       ))[0] || null;
@@ -157,18 +177,18 @@ export default function DashboardPage() {
   }, [user]);
 
   useEffect(() => {
-    if (announcementsLoading) return;
+    if (announcementsLoading || loading) return;
 
     const shouldShowModal = sessionStorage.getItem('showDashboardAnnouncementModal') === 'true';
     if (!shouldShowModal) return;
 
-    if (latestActiveAnnouncement) {
+    if (latestActiveAnnouncement || requestUpdates.length > 0) {
       setShowLatestAnnouncementModal(true);
     } else {
       sessionStorage.removeItem('showDashboardAnnouncementModal');
       setShowLatestAnnouncementModal(false);
     }
-  }, [announcementsLoading, latestActiveAnnouncement]);
+  }, [announcementsLoading, latestActiveAnnouncement, loading, requestUpdates.length]);
 
   const dismissLatestAnnouncementModal = () => {
     sessionStorage.removeItem('showDashboardAnnouncementModal');
@@ -319,7 +339,7 @@ export default function DashboardPage() {
                               <FileText className="w-4 h-4" />
                             </div>
                             <div>
-                              <h4 className="font-bold text-gray-900 text-sm md:text-base">{request.documentName}</h4>
+                              <h4 className="font-[family-name:var(--font-montserrat)] font-bold text-gray-900 text-sm md:text-base">{request.documentName}</h4>
                               <p className="text-xs md:text-sm text-gray-600 flex items-center">
                                 <Calendar className="w-3.5 h-3.5 mr-1" />
                                 Submitted {new Date(request.submittedAt).toLocaleDateString()}
@@ -516,7 +536,12 @@ export default function DashboardPage() {
         <AnnouncementModal
           isOpen={showLatestAnnouncementModal}
           announcement={latestActiveAnnouncement}
+          requestUpdates={requestUpdates}
           onDismiss={dismissLatestAnnouncementModal}
+          onViewRequests={() => {
+            dismissLatestAnnouncementModal();
+            router.push('/requests');
+          }}
         />
 
         {showExistingRequestPrompt && (

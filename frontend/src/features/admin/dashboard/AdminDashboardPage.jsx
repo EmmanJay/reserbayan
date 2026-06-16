@@ -8,7 +8,7 @@ import RejectionReasonModal from '@/shared/components/modals/RejectionReasonModa
 import { getResponseErrorMessage, getStoredJson } from '@/shared/lib/api';
 
 export default function AdminDashboardPage({
-  apiBase = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/admin`,
+  apiBase = '/api/admin',
   basePath = 'admin',
   allowedRoles = ['ADMIN', 'SUPER_ADMIN'],
   redirectForRole = {},
@@ -163,7 +163,17 @@ export default function AdminDashboardPage({
 
   const fetchDashboardData = async () => {
     try {
-      setDataLoading(true);
+      // 1. Try to load from cache immediately for instant UI
+      const cachedDashboard = getStoredJson('reserbayan_admin_dashboard_cache');
+      if (cachedDashboard && cachedDashboard.timestamp > Date.now() - 1000 * 60 * 60) { // 1 hour expiry
+        if (cachedDashboard.stats) setStats(cachedDashboard.stats);
+        if (cachedDashboard.recentDocRequests) setRecentDocRequests(cachedDashboard.recentDocRequests);
+        if (cachedDashboard.pendingAccounts) setPendingAccounts(cachedDashboard.pendingAccounts);
+        setDataLoading(false); // We have cached data, so stop blocking UI
+      } else {
+        setDataLoading(true);
+      }
+      
       setRequestsError(null);
       const token = localStorage.getItem('token');
 
@@ -175,16 +185,20 @@ export default function AdminDashboardPage({
         }
       });
 
+      let newStats = { ...stats };
       if (summaryResponse.ok) {
         const summaryData = await summaryResponse.json();
-        setStats({
+        newStats = {
           totalResidents: summaryData.totalResidents || 0,
           totalRequests: summaryData.totalRequests || 0,
           pendingRequests: summaryData.pendingRequests || 0,
           pendingResidents: summaryData.pendingResidents || 0,
           totalAnnouncements: summaryData.totalAnnouncements || 0,
           activeAnnouncements: summaryData.activeAnnouncements || 0
-        });
+        };
+        setStats(newStats);
+      } else if (summaryResponse.status === 403) {
+        console.warn('CORS or Auth error fetching summary. Check FRONTEND_URL env var on backend.');
       }
 
       // Fetch recent document requests using the new enhanced endpoint
@@ -195,9 +209,10 @@ export default function AdminDashboardPage({
         }
       });
 
+      let newRecentRequests = [];
       if (requestsResponse.ok) {
         const requestsData = await requestsResponse.json();
-        const recentRequests = requestsData.map(req => {
+        newRecentRequests = requestsData.map(req => {
           // Extract resident name from the nested object structure
           let residentName = 'Unknown Resident';
           if (req.resident) {
@@ -225,12 +240,14 @@ export default function AdminDashboardPage({
             status: req.status
           };
         });
-        setRecentDocRequests(recentRequests);
+        setRecentDocRequests(newRecentRequests);
       } else {
         const errorMessage = await getResponseErrorMessage(requestsResponse, 'Failed to fetch recent requests');
         console.error('Failed to fetch recent requests:', errorMessage);
-        setRequestsError(errorMessage || 'Failed to load recent requests');
-        setRecentDocRequests([]);
+        if (!cachedDashboard) {
+          setRequestsError(errorMessage || 'Failed to load recent requests');
+          setRecentDocRequests([]);
+        }
       }
 
       // Fetch pending resident approvals
@@ -241,15 +258,30 @@ export default function AdminDashboardPage({
         }
       });
 
+      let newPendingAccounts = [];
       if (residentRequestsResponse.ok) {
         const residentRequestsData = await residentRequestsResponse.json();
-        const formattedData = residentRequestsData.map(resident => ({
+        newPendingAccounts = residentRequestsData.map(resident => ({
           id: resident.residentId,
           name: resident.firstName + ' ' + resident.lastName,
           email: resident.residentEmail,
           date: new Date(resident.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
         }));
-        setPendingAccounts(formattedData);
+        setPendingAccounts(newPendingAccounts);
+      }
+
+      // Save to cache
+      if (summaryResponse.ok || requestsResponse.ok || residentRequestsResponse.ok) {
+        try {
+          localStorage.setItem('reserbayan_admin_dashboard_cache', JSON.stringify({
+            timestamp: Date.now(),
+            stats: newStats,
+            recentDocRequests: newRecentRequests.length > 0 ? newRecentRequests : (cachedDashboard?.recentDocRequests || []),
+            pendingAccounts: newPendingAccounts.length > 0 ? newPendingAccounts : (cachedDashboard?.pendingAccounts || [])
+          }));
+        } catch (e) {
+          console.error('Failed to cache dashboard data', e);
+        }
       }
 
       // Fetch announcements
@@ -257,8 +289,11 @@ export default function AdminDashboardPage({
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      setRequestsError('Failed to connect to server. Please check your internet connection.');
-      setRecentDocRequests([]);
+      const cached = getStoredJson('reserbayan_admin_dashboard_cache');
+      if (!cached) {
+        setRequestsError('Failed to connect to server. Please check your internet connection.');
+        setRecentDocRequests([]);
+      }
     } finally {
       setDataLoading(false);
     }
@@ -445,6 +480,87 @@ export default function AdminDashboardPage({
     }));
   };
 
+  const handleReadyForPickupRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/ready-for-pickup`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Request marked ready for pickup.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to mark request ready for pickup. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error marking request ready for pickup:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
+  const handleHardCopySubmittedRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/hard-copy-submitted`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Hard-copy requirements marked as received.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to mark hard-copy requirements received. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error marking hard-copy requirements received:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
+  const handleCompleteRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE}/requests/${requestId}/complete`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setIsRequestModalOpen(false);
+        setSelectedRequest(null);
+        setRequestDetails(null);
+        fetchDashboardData();
+        showNotification('Request marked as completed.', 'success');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        showNotification(errorData.message || 'Failed to complete request. Please try again.', 'error');
+      }
+    } catch (error) {
+      console.error('Error completing request:', error);
+      showNotification('Error connecting to server. Please check your internet connection.', 'error');
+    }
+  };
+
   const quickActions = quickActionMode === 'superadmin'
     ? [
         { icon: 'admin', label: 'New Admin', onClick: handleAddAdmin },
@@ -505,6 +621,9 @@ export default function AdminDashboardPage({
         loading={requestModalLoading}
         onApprove={handleApproveRequest}
         onReject={handleRejectRequest}
+        onHardCopySubmitted={handleHardCopySubmittedRequest}
+        onReadyForPickup={handleReadyForPickupRequest}
+        onComplete={handleCompleteRequest}
       />
 
       <RejectionReasonModal

@@ -11,8 +11,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -24,26 +26,32 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cagasi.reserbayan.dto.DocumentRequestDTO;
 import com.cagasi.reserbayan.dto.DocumentRequestUpdateDTO;
+import com.cagasi.reserbayan.dto.AiAttachmentMetadataDTO;
 import com.cagasi.reserbayan.entity.DocumentRequest;
 import com.cagasi.reserbayan.entity.DocumentType;
 import com.cagasi.reserbayan.entity.RequestAttachment;
 import com.cagasi.reserbayan.entity.Resident;
 import com.cagasi.reserbayan.entity.ResidentStatus;
+import com.cagasi.reserbayan.entity.StatusLog;
 import com.cagasi.reserbayan.repository.DocumentRequestRepository;
 import com.cagasi.reserbayan.repository.DocumentTypeRepository;
 import com.cagasi.reserbayan.repository.RequestAttachmentRepository;
 import com.cagasi.reserbayan.repository.ResidentRepository;
+import com.cagasi.reserbayan.repository.StatusLogRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import com.cagasi.reserbayan.service.AdminNotificationService;
+import com.cagasi.reserbayan.service.AiRequirementAnalysisService;
 import com.cagasi.reserbayan.service.NotificationService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/document-requests")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001", "http://localhost:3002" })
 public class DocumentRequestController {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private DocumentRequestRepository documentRequestRepository;
@@ -58,13 +66,19 @@ public class DocumentRequestController {
     private ResidentRepository residentRepository;
 
     @Autowired
+    private StatusLogRepository statusLogRepository;
+
+    @Autowired
     private AdminNotificationService adminNotificationService;
 
     @Autowired
     private NotificationService notificationService;
 
-    // Define the folder where files will be saved
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
+    @Autowired
+    private AiRequirementAnalysisService analysisService;
+
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
 
     @GetMapping
     public ResponseEntity<List<DocumentRequestDTO>> getAllDocumentRequests(HttpServletRequest request) {
@@ -141,6 +155,7 @@ public class DocumentRequestController {
     public ResponseEntity<?> createDocumentRequest(
             @RequestParam("data") String dataJson,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "attachmentMetadata", required = false) String attachmentMetadataJson,
             HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
@@ -158,6 +173,8 @@ public class DocumentRequestController {
 
             DocumentRequest documentRequest = new DocumentRequest();
             documentRequest.setDocumentType(documentType); // This will also set documentId and documentName via the setter
+            documentRequest.setHardCopySubmissionRequired(documentType.isHardCopySubmissionRequired());
+            documentRequest.setHardCopyRequirements(normalizedStoredRequirements(documentType.getHardCopyRequirements()));
             documentRequest.setResident(resident);
             documentRequest.setDetails(dto.getDetails());
             documentRequest.setStatus("Pending");
@@ -175,11 +192,13 @@ public class DocumentRequestController {
                     savedRequest.getRequestId());
 
             // Handle file uploads
+            List<AiAttachmentMetadataDTO> attachmentMetadata = parseAttachmentMetadata(attachmentMetadataJson);
             if (files != null && !files.isEmpty()) {
-                for (MultipartFile file : files) {
+                for (int fileIndex = 0; fileIndex < files.size(); fileIndex++) {
+                    MultipartFile file = files.get(fileIndex);
                     if (!file.isEmpty()) {
-                        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                        Path uploadPath = Paths.get(UPLOAD_DIR);
+                        String filename = createStoredFileName(file.getOriginalFilename());
+                        Path uploadPath = uploadPath();
 
                         if (!Files.exists(uploadPath)) {
                             Files.createDirectories(uploadPath);
@@ -194,10 +213,18 @@ public class DocumentRequestController {
                         attachment.setFileType(file.getContentType());
                         attachment.setFileSize(file.getSize());
                         attachment.setDocumentRequest(savedRequest);
+                        applyAttachmentMetadata(attachment, attachmentMetadata, fileIndex);
 
                         requestAttachmentRepository.save(attachment);
                     }
                 }
+            }
+
+            try {
+                analysisService.analyzeAndSave(savedRequest.getRequestId());
+            } catch (Exception analysisError) {
+                System.err.println("AI analysis failed for request " + savedRequest.getRequestId() + ": "
+                        + analysisError.getMessage());
             }
 
             DocumentRequestDTO savedDto = convertToDTO(savedRequest);
@@ -216,6 +243,7 @@ public class DocumentRequestController {
             @RequestParam("data") String dataJson,
             @RequestParam(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "filesToRemove", required = false) List<Long> filesToRemove,
+            @RequestParam(value = "attachmentMetadata", required = false) String attachmentMetadataJson,
             HttpServletRequest request) {
         try {
             String authHeader = request.getHeader("Authorization");
@@ -238,7 +266,7 @@ public class DocumentRequestController {
                             .orElseThrow(() -> new RuntimeException("Attachment not found"));
 
                     // Delete physical file
-                    Path filePath = Paths.get(UPLOAD_DIR, attachment.getFilePath());
+                    Path filePath = uploadPath().resolve(attachment.getFilePath());
                     try {
                         Files.deleteIfExists(filePath);
                     } catch (IOException e) {
@@ -251,11 +279,13 @@ public class DocumentRequestController {
             }
 
             // Add new files
+            List<AiAttachmentMetadataDTO> attachmentMetadata = parseAttachmentMetadata(attachmentMetadataJson);
             if (files != null && !files.isEmpty()) {
-                for (MultipartFile file : files) {
+                for (int fileIndex = 0; fileIndex < files.size(); fileIndex++) {
+                    MultipartFile file = files.get(fileIndex);
                     if (!file.isEmpty()) {
-                        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                        Path uploadPath = Paths.get(UPLOAD_DIR);
+                        String filename = createStoredFileName(file.getOriginalFilename());
+                        Path uploadPath = uploadPath();
 
                         if (!Files.exists(uploadPath)) {
                             Files.createDirectories(uploadPath);
@@ -270,6 +300,7 @@ public class DocumentRequestController {
                         attachment.setFileType(file.getContentType());
                         attachment.setFileSize(file.getSize());
                         attachment.setDocumentRequest(documentRequest);
+                        applyAttachmentMetadata(attachment, attachmentMetadata, fileIndex);
 
                         requestAttachmentRepository.save(attachment);
                     }
@@ -277,6 +308,12 @@ public class DocumentRequestController {
             }
 
             DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+            try {
+                analysisService.analyzeAndSave(savedRequest.getRequestId());
+            } catch (Exception analysisError) {
+                System.err.println("AI analysis failed for request " + savedRequest.getRequestId() + ": "
+                        + analysisError.getMessage());
+            }
             adminNotificationService.createNotification(
                     "Document Request Updated",
                     savedRequest.getResident().getFirstName() + " " + savedRequest.getResident().getLastName()
@@ -332,7 +369,7 @@ public class DocumentRequestController {
             // authorization)
 
             // Load file
-            Path filePath = Paths.get(UPLOAD_DIR, attachment.getFilePath());
+            Path filePath = uploadPath().resolve(attachment.getFilePath());
             File file = filePath.toFile();
 
             if (!file.exists()) {
@@ -398,18 +435,35 @@ public class DocumentRequestController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            DocumentRequest documentRequest = documentRequestRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Document request not found"));
+            Optional<DocumentRequest> optionalRequest = documentRequestRepository.findById(id);
+            if (optionalRequest.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Document request not found");
+            }
 
-            documentRequest.setStatus("Approved");
+            DocumentRequest documentRequest = optionalRequest.get();
+            if (!"Pending".equals(documentRequest.getStatus())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Request must be pending before approval");
+            }
+
+            boolean needsHardCopy = documentRequest.isHardCopySubmissionRequired();
+            String nextStatus = needsHardCopy ? "Awaiting Hard Copy Submission" : "Approved";
+            documentRequest.setStatus(nextStatus);
             documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
             DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
 
+            StatusLog statusLog = new StatusLog();
+            statusLog.setDocumentRequest(savedRequest);
+            statusLog.setStatus(nextStatus);
+            statusLog.setTimestamp(java.time.LocalDateTime.now());
+            statusLogRepository.save(statusLog);
+
             notificationService.createNotification(
                     savedRequest.getResident(),
-                    "Document Request Approved",
-                    "Your request for '" + savedRequest.getDocumentName() + "' has been approved.",
-                    "REQUEST_APPROVED",
+                    needsHardCopy ? "Hard Copy Requirements Needed" : "Document Request Approved",
+                    needsHardCopy
+                            ? "Your request for '" + savedRequest.getDocumentName() + "' has been verified. Please submit the required hard-copy documents at the barangay office."
+                            : "Your request for '" + savedRequest.getDocumentName() + "' has been verified and is being prepared.",
+                    needsHardCopy ? "REQUEST_HARD_COPY_REQUIRED" : "REQUEST_APPROVED",
                     null,
                     "DOCUMENT_REQUEST",
                     savedRequest.getRequestId());
@@ -417,6 +471,100 @@ public class DocumentRequestController {
             return ResponseEntity.ok("Request approved successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error approving request");
+        }
+    }
+
+    @PutMapping("/{id}/ready-for-pickup")
+    public ResponseEntity<String> markDocumentRequestReadyForPickup(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Optional<DocumentRequest> optionalRequest = documentRequestRepository.findById(id);
+            if (optionalRequest.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Document request not found");
+            }
+
+            DocumentRequest documentRequest = optionalRequest.get();
+            String requiredStatus = documentRequest.isHardCopySubmissionRequired() ? "Hard Copy Submitted" : "Approved";
+            if (!requiredStatus.equals(documentRequest.getStatus())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                        documentRequest.isHardCopySubmissionRequired()
+                                ? "Hard-copy requirements must be received before pickup"
+                                : "Request must be approved before pickup");
+            }
+
+            documentRequest.setStatus("Ready for Pickup");
+            documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
+            DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            StatusLog statusLog = new StatusLog();
+            statusLog.setDocumentRequest(savedRequest);
+            statusLog.setStatus("Ready for Pickup");
+            statusLog.setTimestamp(java.time.LocalDateTime.now());
+            statusLogRepository.save(statusLog);
+
+            notificationService.createNotification(
+                    savedRequest.getResident(),
+                    "Document Ready for Pickup",
+                    "Your request for '" + savedRequest.getDocumentName() + "' is ready to claim at the barangay office.",
+                    "REQUEST_READY_FOR_PICKUP",
+                    null,
+                    "DOCUMENT_REQUEST",
+                    savedRequest.getRequestId());
+
+            return ResponseEntity.ok("Request marked ready for pickup");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error marking request ready for pickup");
+        }
+    }
+
+    @PutMapping("/{id}/hard-copy-submitted")
+    public ResponseEntity<String> markHardCopySubmitted(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            Optional<DocumentRequest> optionalRequest = documentRequestRepository.findById(id);
+            if (optionalRequest.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Document request not found");
+            }
+
+            DocumentRequest documentRequest = optionalRequest.get();
+            if (!documentRequest.isHardCopySubmissionRequired()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("This request does not require hard-copy submission");
+            }
+            if (!"Awaiting Hard Copy Submission".equals(documentRequest.getStatus())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Request must be awaiting hard-copy submission");
+            }
+
+            documentRequest.setStatus("Hard Copy Submitted");
+            documentRequest.setHardCopySubmittedAt(java.time.LocalDateTime.now());
+            documentRequest.setUpdatedAt(java.time.LocalDateTime.now());
+            DocumentRequest savedRequest = documentRequestRepository.save(documentRequest);
+
+            StatusLog statusLog = new StatusLog();
+            statusLog.setDocumentRequest(savedRequest);
+            statusLog.setStatus("Hard Copy Submitted");
+            statusLog.setTimestamp(java.time.LocalDateTime.now());
+            statusLogRepository.save(statusLog);
+
+            notificationService.createNotification(
+                    savedRequest.getResident(),
+                    "Hard Copy Requirements Received",
+                    "The barangay office received the hard-copy requirements for '" + savedRequest.getDocumentName() + "'.",
+                    "REQUEST_HARD_COPY_SUBMITTED",
+                    null,
+                    "DOCUMENT_REQUEST",
+                    savedRequest.getRequestId());
+
+            return ResponseEntity.ok("Hard-copy requirements marked as received");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error marking hard-copy requirements received");
         }
     }
 
@@ -503,9 +651,14 @@ public class DocumentRequestController {
         dto.setDetails(request.getDetails());
         dto.setStatus(request.getStatus());
         dto.setSubmittedAt(request.getSubmittedAt().toString());
+        dto.setHardCopySubmissionRequired(request.isHardCopySubmissionRequired());
+        dto.setHardCopyRequirements(parseStoredList(request.getHardCopyRequirements()));
 
         if (request.getUpdatedAt() != null) {
             dto.setUpdatedAt(request.getUpdatedAt().toString());
+        }
+        if (request.getHardCopySubmittedAt() != null) {
+            dto.setHardCopySubmittedAt(request.getHardCopySubmittedAt().toString());
         }
 
         // Set attachments
@@ -537,6 +690,28 @@ public class DocumentRequestController {
         return attachment;
     }
 
+    private String normalizedStoredRequirements(String json) {
+        try {
+            return objectMapper.writeValueAsString(parseStoredList(json));
+        } catch (Exception e) {
+            return "[]";
+        }
+    }
+
+    private List<String> parseStoredList(String json) {
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<String>>() {}).stream()
+                    .filter(value -> value != null && !value.isBlank())
+                    .map(String::trim)
+                    .toList();
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
     private DocumentRequestDTO parseJson(String dataJson) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -553,5 +728,42 @@ public class DocumentRequestController {
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse JSON data: " + e.getMessage());
         }
+    }
+
+    private List<AiAttachmentMetadataDTO> parseAttachmentMetadata(String attachmentMetadataJson) {
+        if (attachmentMetadataJson == null || attachmentMetadataJson.isBlank()) {
+            return List.of();
+        }
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(attachmentMetadataJson, new TypeReference<List<AiAttachmentMetadataDTO>>() {
+            });
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private void applyAttachmentMetadata(RequestAttachment attachment, List<AiAttachmentMetadataDTO> metadata,
+            int fileIndex) {
+        if (metadata == null || metadata.size() <= fileIndex) {
+            attachment.setUploadGroup("SUPPORTING");
+            return;
+        }
+        AiAttachmentMetadataDTO itemMetadata = metadata.get(fileIndex);
+        attachment.setUploadGroup(itemMetadata.getUploadGroup() != null ? itemMetadata.getUploadGroup() : "SUPPORTING");
+        attachment.setRequirementIndex(itemMetadata.getRequirementIndex());
+        attachment.setRequirementLabel(itemMetadata.getRequirementLabel());
+    }
+
+    private Path uploadPath() {
+        return Paths.get(uploadDir).toAbsolutePath().normalize();
+    }
+
+    private String createStoredFileName(String originalFilename) {
+        String safeName = originalFilename == null || originalFilename.isBlank()
+                ? "upload"
+                : Paths.get(originalFilename).getFileName().toString();
+        safeName = safeName.replaceAll("[^A-Za-z0-9._-]", "_");
+        return UUID.randomUUID() + "_" + safeName;
     }
 }

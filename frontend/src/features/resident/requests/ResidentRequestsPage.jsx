@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  ChevronLeft,
+  ChevronRight,
   ClipboardList,
   FileText,
   Grid3X3,
@@ -13,7 +15,7 @@ import {
   SortDesc,
   Tags,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useUser } from '@/contexts/UserContext';
 import { useRequests } from '@/hooks/useRequests';
 import RequestCard from '@/app/components/requests/RequestCard';
@@ -21,13 +23,81 @@ import RequestModal from '@/app/components/requests/RequestModal';
 import RequestsList from '@/app/components/requests/RequestsList';
 import FilterDropdown from '@/shared/components/forms/FilterDropdown';
 
-const statusKeys = ['pending', 'approved', 'completed', 'rejected', 'cancelled'];
+const normalizeRequestStatus = (status) => status?.toLowerCase().replace(/[\s_-]+/g, '-') || '';
+
+const statusKeys = ['pending', 'approved', 'awaiting-hard-copy-submission', 'hard-copy-submitted', 'ready-for-pickup', 'completed', 'rejected', 'cancelled'];
 
 const sortOptions = [
   { value: 'submittedAt', label: 'Date' },
   { value: 'status', label: 'Status' },
   { value: 'documentName', label: 'Document' },
 ];
+
+const REQUESTS_PER_PAGE = 9;
+
+function RequestsPagination({ currentPage, totalPages, totalItems, onPageChange }) {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  const firstVisibleItem = (currentPage - 1) * REQUESTS_PER_PAGE + 1;
+  const lastVisibleItem = Math.min(currentPage * REQUESTS_PER_PAGE, totalItems);
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
+    .filter((page) => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1);
+
+  return (
+    <nav className="mt-6 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/90 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.06)] sm:flex-row sm:items-center sm:justify-between" aria-label="Requests pagination">
+      <p className="px-2 text-sm font-semibold text-slate-500">
+        Showing <span className="text-[#122361]">{firstVisibleItem}-{lastVisibleItem}</span> of <span className="text-[#122361]">{totalItems}</span> requests
+      </p>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#122361] transition hover:border-[#9eaddd] hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Previous requests page"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+
+        {pages.map((page, index) => {
+          const previousPage = pages[index - 1];
+          const showGap = previousPage && page - previousPage > 1;
+
+          return (
+            <div key={page} className="flex items-center gap-2">
+              {showGap && <span className="text-sm font-bold text-slate-300">...</span>}
+              <button
+                type="button"
+                onClick={() => onPageChange(page)}
+                className={`h-10 min-w-10 rounded-2xl px-3 text-sm font-extrabold transition ${
+                  page === currentPage
+                    ? 'bg-gradient-to-r from-[#243b8e] to-[#2f84c0] text-white shadow-[0_8px_18px_rgba(36,59,142,0.14)]'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:border-[#9eaddd] hover:bg-[#eef3ff] hover:text-[#122361]'
+                }`}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            </div>
+          );
+        })}
+
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage === totalPages}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#122361] transition hover:border-[#9eaddd] hover:bg-[#eef3ff] disabled:cursor-not-allowed disabled:opacity-40"
+          aria-label="Next requests page"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </nav>
+  );
+}
 
 export default function RequestsPage() {
   const { user } = useUser();
@@ -39,6 +109,7 @@ export default function RequestsPage() {
   const [sortBy, setSortBy] = useState('submittedAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [viewMode, setViewMode] = useState('grid');
+  const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
   const handleRequestClick = useCallback((request) => {
@@ -51,7 +122,7 @@ export default function RequestsPage() {
 
   const statusOptions = useMemo(() => {
     const counts = statusKeys.reduce((accumulator, status) => {
-      accumulator[status] = requests.filter((request) => request.status?.toLowerCase() === status).length;
+      accumulator[status] = requests.filter((request) => normalizeRequestStatus(request.status) === status).length;
       return accumulator;
     }, {});
 
@@ -59,6 +130,9 @@ export default function RequestsPage() {
       { value: 'all', label: `All Requests (${requests.length})` },
       { value: 'pending', label: `Pending (${counts.pending || 0})` },
       { value: 'approved', label: `Approved (${counts.approved || 0})` },
+      { value: 'awaiting-hard-copy-submission', label: `Awaiting Hard Copy (${counts['awaiting-hard-copy-submission'] || 0})` },
+      { value: 'hard-copy-submitted', label: `Hard Copy Submitted (${counts['hard-copy-submitted'] || 0})` },
+      { value: 'ready-for-pickup', label: `Ready for Pickup (${counts['ready-for-pickup'] || 0})` },
       { value: 'completed', label: `Completed (${counts.completed || 0})` },
       { value: 'rejected', label: `Rejected (${counts.rejected || 0})` },
       { value: 'cancelled', label: `Cancelled (${counts.cancelled || 0})` },
@@ -69,7 +143,7 @@ export default function RequestsPage() {
     const normalizedSearchTerm = searchTerm.toLowerCase().trim();
 
     return requests
-      .filter((request) => selectedStatus === 'all' || request.status?.toLowerCase() === selectedStatus)
+      .filter((request) => selectedStatus === 'all' || normalizeRequestStatus(request.status) === selectedStatus)
       .filter((request) => {
         if (!normalizedSearchTerm) return true;
 
@@ -101,8 +175,25 @@ export default function RequestsPage() {
       });
   }, [requests, searchTerm, selectedStatus, sortBy, sortOrder]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / REQUESTS_PER_PAGE));
+  const paginatedRequests = useMemo(() => {
+    const startIndex = (currentPage - 1) * REQUESTS_PER_PAGE;
+    return filteredRequests.slice(startIndex, startIndex + REQUESTS_PER_PAGE);
+  }, [currentPage, filteredRequests]);
   const activeFiltersCount = [selectedStatus !== 'all', searchTerm.trim() !== ''].filter(Boolean).length;
   const hasNoRequests = requests.length === 0;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, sortBy, sortOrder]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return (
@@ -260,25 +351,36 @@ export default function RequestsPage() {
             transition={{ duration: 0.5, delay: 0.18, ease: 'easeOut' }}
           >
             {viewMode === 'grid' ? (
-              filteredRequests.map((request) => (
+              paginatedRequests.map((request) => (
                 <RequestCard key={request.requestId} request={request} onClick={handleRequestClick} />
               ))
             ) : (
-              <RequestsList requests={filteredRequests} onRequestClick={handleRequestClick} />
+              <RequestsList requests={paginatedRequests} onRequestClick={handleRequestClick} />
             )}
           </motion.div>
         )}
 
-        {selectedRequest && (
-          <RequestModal
-            request={selectedRequest}
-            user={user}
-            onClose={handleCloseModal}
-            cancelRequest={cancelRequest}
-            onUpdateRequest={refetchRequests}
-            onReRequest={refetchRequests}
+        {filteredRequests.length > 0 && (
+          <RequestsPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredRequests.length}
+            onPageChange={handlePageChange}
           />
         )}
+
+        <AnimatePresence>
+          {selectedRequest && (
+            <RequestModal
+              request={selectedRequest}
+              user={user}
+              onClose={handleCloseModal}
+              cancelRequest={cancelRequest}
+              onUpdateRequest={refetchRequests}
+              onReRequest={refetchRequests}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </motion.main>
   );

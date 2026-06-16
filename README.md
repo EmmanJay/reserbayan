@@ -1,71 +1,59 @@
 # ReserBayan
 
-**ReserBayan** is a digital Barangay Document Request System designed for Filipino residents. It simplifies the process of requesting, tracking, and managing barangay documents by replacing traditional in-person visits with a secure, user-friendly online platform. With ReserBayan, residents can easily browse available documents, submit requests, and monitor their status—all in one seamless digital experience.
+ReserBayan is a digital Barangay Document Request System built to make local government document processing faster, clearer, and more accessible for Filipino residents. Formerly developed as a school project, ReserBayan has been expanded and refined into a hackathon-ready platform focused on modernizing how residents request, track, and manage barangay documents online.
 
----
+Instead of requiring residents to visit the barangay hall for every inquiry or request, ReserBayan provides a secure and user-friendly digital experience where users can browse available documents, view requirements and processing details, submit requests, upload needed files, and monitor the progress of their applications in one place.
 
-## Features
+For administrators, the system includes dedicated tools for managing resident accounts, verifying pending registrations, reviewing document requests, posting announcements, and maintaining document types. The platform is designed with a clean, responsive interface using a consistent ReserBayan dark-blue visual identity, making it suitable for both residents and government staff.
 
-- Resident & Admin authentication
-- Browse 25+ barangay document types
-- Document detail pages with requirements & processing times
-- Real-time request tracking (backend support)
-- Responsive, mobile-first design with animations
-- Admin dashboard for request management
+## Purpose
 
----
+ReserBayan aims to reduce manual paperwork, long queues, and unclear request updates by giving barangays a simple digital system for document services. It helps residents save time while giving administrators a more organized way to process requests and communicate important updates.
+
+## Key Features
+
+- Resident, admin, and super admin authentication
+- Browse barangay document types with detailed requirements and processing information
+- Online document request submission with file attachments
+- Request status tracking for pending, approved, completed, rejected, and cancelled requests
+- Admin and super admin dashboards for one-glance management
+- Resident account verification and pending account review
+- Announcement management for barangay updates and resident notifications
+- Responsive, mobile-friendly interface with subtle animations
+- Custom modals, drawers, dropdowns, and calendar controls for a consistent user experience
 
 ## Tech Stack
 
-**Frontend:** Next.js 15 + React 19, Tailwind CSS v4, ShadCN UI, Framer Motion  
-**Backend:** Spring Boot 3.5.7, Spring Data JPA, MySQL  
-**Database:** MySQL 8+ (local: `localhost:3306/reserbayan`)
-
----
+- **Frontend:** Next.js 15, React 19, Tailwind CSS v4, Framer Motion
+- **Backend:** Spring Boot, Spring Data JPA
+- **Database:** MySQL
+- **Architecture:** Full-stack web application with separate frontend and backend folders
 
 ## Project Structure
 
-```bash
-/frontend # Next.js app
-/backend # Spring Boot API
-
-src/
-├─ app/ # Pages & layouts
-├─ components/ # Reusable UI components
-├─ lib/ # Utilities & static data
-└─ public/ # Logo & document images
+```txt
+/frontend   Next.js application
+/backend    Spring Boot API
 ```
 
----
+## Deployment Notes
 
-## Quick Start
+The Next.js frontend can be deployed on Vercel. The Spring Boot backend should be deployed separately on a host that can run Java and the native Tesseract OCR binary, such as Render, Railway, Fly.io, or a Docker-capable VPS.
 
-### 1. Install dependencies
+Frontend environment variables on Vercel:
 
-```bash
-npm install
+```txt
+BACKEND_URL=https://your-backend-domain.example.com
 ```
 
-### 2. Run Project
+The frontend calls same-origin `/api/...` and `/uploads/...` paths. Next.js rewrites those paths to `BACKEND_URL`, so production does not depend on `localhost:8080`.
 
-```bash
-# Full stack
-npm run dev
+Backend environment variables:
 
-# Frontend only
-npm run dev:frontend
-
-# Backend only
-npm run dev:backend
-
+```txt
+TESSERACT_COMMAND=tesseract
+DEEPSEEK_API_KEY=your_deepseek_api_key
+OCR_SPACE_API_KEY=your_ocr_space_api_key_optional
 ```
 
----
-
-## Database Setup
-
-```bash
-CREATE DATABASE reserbayan;
-```
-
-Update backend/src/main/resources/application.properties with your database credentials. Tables are auto-created via JPA.
+The backend uses online OCR by default, so local Tesseract is not required for development. The backend Dockerfile still installs `tesseract-ocr` as a fallback and sets `TESSERACT_COMMAND=tesseract` by default. If automatic checking is temporarily unavailable, uploads remain submittable and staff can review them manually.
