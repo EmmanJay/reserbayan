@@ -33,7 +33,7 @@ public class DocumentRequestAnalysis {
     @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String resultJson;
 
     private LocalDateTime analyzedAt;

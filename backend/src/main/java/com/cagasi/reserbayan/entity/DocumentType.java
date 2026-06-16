@@ -19,17 +19,17 @@ public class DocumentType {
     private String description;
     private String imagePath;
     private String category;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String longDescription;
     private String processingTime;
     private int processingDays;
     private String pdfPath;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String requirements; // JSON string
     private boolean hardCopySubmissionRequired;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String hardCopyRequirements; // JSON string
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String uses; // JSON string
     private boolean isActive;
     private String department;
